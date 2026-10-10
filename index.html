@@ -72,7 +72,7 @@
 
     <section id="courseView" class="hide" aria-label="Curso Guiado de Lógica Formal">
       <button class="back" id="courseHomeBack" type="button">← Página inicial</button>
-      <div class="course-head"><div><span class="eyebrow"><span class="dot"></span> FORMAÇÃO EM LÓGICA FORMAL</span><h1>Curso Guiado</h1><p>Aprenda → observe uma resolução → pratique com ajuda → resolva sozinho → demonstre domínio.</p></div><button type="button" id="courseMapButton" class="button">Mapa das unidades</button></div>
+      <div class="course-head"><div><span class="eyebrow"><span class="dot"></span> FORMAÇÃO EM LÓGICA FORMAL</span><h1>Curso Guiado</h1><p>Aprenda → pratique → demonstre aprovação inicial → consolide o conhecimento em duas revisões espaçadas.</p></div><button type="button" id="courseMapButton" class="button">Mapa das unidades</button></div>
       <div class="course-next" id="courseNext" aria-label="Etapa recomendada no curso">
         <div><strong id="courseNextTitle">Próxima etapa</strong><p id="courseNextDescription"></p></div>
         <button class="button primary" id="courseNextButton" type="button">Ir para a próxima etapa →</button>
@@ -102,7 +102,10 @@
       <div class="venn-guide-content"><p><strong>Três círculos:</strong> S é o sujeito, M é o termo médio e P é o predicado. Existem oito regiões, incluindo a região fora dos três círculos.</p><p><strong>Hachurar uma região</strong> significa que ela precisa estar vazia pelas premissas; <strong>X</strong> significa que pelo menos um indivíduo existe ali. Um <strong>X na linha entre duas regiões</strong> indica que a terceira categoria permanece desconhecida. Dois marcadores X representam duas exigências existenciais que podem ser satisfeitas pelo mesmo indivíduo.</p><div class="venn-guide-grid"><div><b>Todos os S são P</b><code>∀x(S(x) → P(x))</code><span>Hachure toda a parte de S que está fora de P.</span></div><div><b>Nenhum S é P</b><code>∀x(S(x) → ¬P(x))</code><span>Hachure a interseção S ∩ P.</span></div><div><b>Alguns S são P</b><code>∃x(S(x) ∧ P(x))</code><span>Insira X em S ∩ P. Se M estiver indeterminado, posicione X na fronteira entre suas duas partes.</span></div><div><b>Alguns S não são P</b><code>∃x(S(x) ∧ ¬P(x))</code><span>Insira X na parte de S fora de P, respeitando outras regiões vazias.</span></div></div><p><strong>Ordem para resolver:</strong> traduza as premissas; hachure regiões exigidas pelas universais; marque existências; avalie se a conclusão é obrigatória; depois teste modelos concretos. Premissas universais admitem conjuntos vazios.</p></div>
     </details>
   </main>
-  <footer class="shell footer"><span>LogicLab · Curso guiado de lógica formal · Site estático modular · Progresso local</span><button id="resetButton" type="button">Apagar progresso salvo</button></footer>
+  <footer class="shell footer">
+    <div class="footer-progress"><span>LogicLab · Curso guiado de lógica formal · Progresso salvo neste navegador.</span><span class="footer-progress-help">Exporte um arquivo para transferir seu histórico para outro dispositivo. A importação substitui os dados locais após confirmação.</span></div>
+    <div class="footer-progress-actions"><button id="exportProgressButton" type="button" class="button small">Exportar progresso ↓</button><button id="importProgressButton" type="button" class="button small">Importar progresso ↑</button><input id="importProgressFile" type="file" accept=".json,application/json" class="visually-hidden" aria-label="Selecionar arquivo de backup do LogicLab" tabindex="-1"><button id="resetButton" type="button">Apagar progresso salvo</button></div>
+  </footer>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script type="module" src="./src/app.js"></script>
 </body>
