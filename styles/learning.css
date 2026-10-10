@@ -146,3 +146,11 @@
   .shell{padding-left:12px;padding-right:12px}
   .learning-next h2{font-size:19px}
 }
+
+/* Ciclo 3: rascunhos e recuperação de trabalho. */
+.learning-next-actions{display:flex;flex-direction:column;gap:8px;flex:0 0 auto;align-items:stretch}
+.learning-next-actions .button{min-height:44px}
+.draft-status{margin:12px 24px;color:var(--muted);font-size:12px;line-height:1.4}
+[hidden]{display:none!important}
+@media(max-width:700px){.learning-next-actions{width:100%}.learning-next-actions .button{width:100%}}
+@media(max-width:520px){.draft-status{margin:12px 15px}}
