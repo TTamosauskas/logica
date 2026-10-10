@@ -1,6 +1,7 @@
 import { MODULES } from './content/modules.js';
 import { LEARNING_STAGES, getPracticeGroups, getNextLearningStep } from './core/learning-path.js';
 import { routeFromHash } from './core/navigation.js';
+import { performanceSummary } from './core/performance.js';
 import { EXERCISE_DRAFTS_KEY, EXAM_DRAFT_KEY, DRAFT_VERSION, hasPendingWork, readExerciseDrafts, readExamDraft, mostRecentUnfinished } from './core/draft-store.js';
 import { SYMBOLS, rng, pick, v, not, bin, A, O, X, I, B, t, evalAst, fmt, pretty, sig, varsOf, relevantNames, truthRows, varColumns, stepNodes, formulaColumns, build } from './core/logic.js';
 import { tokens, parseFormula, equivalentFormula } from './core/parser.js';
@@ -957,7 +958,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     area.innerHTML='<button type="button" class="button primary" data-feedback-action="next">Próximo desafio →</button>';
   }
   function renderExercise(){if(!exercise)return;const ex=exercise;$('taskKicker').textContent=mode==='misto'?'TREINO MISTO · '+currentExerciseMode().name.toUpperCase():currentExerciseMode().name.toUpperCase();$('taskTitle').textContent=ex.title;$('taskInstruction').textContent=ex.instruction;$('lineCount').textContent=`· ${ex.envs.length} linhas`;$('exerciseIndex').textContent=`Rodada ${serial} · ${ex.vars.length} ${ex.vars.length===1?'variável':'variáveis'}`;
-    $('tableHeaderTitle').firstChild.textContent='Tabela-verdade ';$('lineCount').textContent=`· ${ex.envs.length} linhas`;renderTranslation();renderDeduction();document.querySelectorAll('.segment').forEach(b=>{const active=b.dataset.level===level;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});renderTable();renderChoice();renderFeedback();renderFeedbackActions();renderExerciseHelp();renderSidebar();renderCategorical();$('checkButton').disabled=ex.revealed||!!(ex.translation&&!ex.translation.unlocked)||!!(ex.cat&&!ex.cat.venn.verdictVerified);$('clearButton').disabled=ex.revealed;$('revealButton').disabled=ex.revealed;$('hintButton').disabled=false;renderSpecial();renderCourseExerciseBanner();$('undoClearButton').hidden=!undoClearState;saveExerciseDraft();}
+    $('tableHeaderTitle').firstChild.textContent='Tabela-verdade ';$('lineCount').textContent=`· ${ex.envs.length} linhas`;renderTranslation();renderDeduction();document.querySelectorAll('.segment').forEach(b=>{const active=b.dataset.level===level;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});renderTable();renderChoice();renderFeedback();renderFeedbackActions();renderExerciseHelp();renderSidebar();renderInlineHint();renderCategorical();$('checkButton').disabled=ex.revealed||!!(ex.translation&&!ex.translation.unlocked)||!!(ex.cat&&!ex.cat.venn.verdictVerified);$('clearButton').disabled=ex.revealed;$('revealButton').disabled=ex.revealed;$('hintButton').disabled=false;renderSpecial();renderCourseExerciseBanner();$('undoClearButton').hidden=!undoClearState;saveExerciseDraft();}
   function fieldKey(row,col){return row+'-'+col}
   function expected(ex,row,col){const cell=ex.cols[col];if(ex.mode==='categoricos'){const mask=ex.envs[row].__model;if(cell.key==='model')return modelLabel(mask);if(cell.key==='counter')return t(ex.cat.forms.slice(0,2).every(x=>catValue(x,mask))&&!catValue(ex.cat.forms[2],mask));return t(catValue(ex.cat.forms[cell.catIndex],mask))}return cell.assignmentIndex!==undefined?ex.metadata.items[ex.envs[row].__assignment[cell.assignmentIndex]]:t(evalAst(cell.node,ex.envs[row]))}
   function renderTable(){const ex=exercise;let str='<thead><tr>'+ex.cols.map((c,index)=>{
@@ -980,13 +981,84 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     }).join('')+'</tr></thead><tbody>';
     ex.envs.forEach((env,r)=>{str+='<tr>';ex.cols.forEach((col,c)=>{const exp=expected(ex,r,c);if(!col.editable){str+=`<td class="given ${ex.mode==='deducao'?'assignment':ex.mode==='categoricos'?'model-cell':''}" title="Valor conhecido">${escapeHTML(exp)}</td>`;return}const key=fieldKey(r,c),answer=ex.answers[key]||'',grade=ex.grade,checked=grade!==null&&!(ex.mode==='deducao'&&ex.metadata.contest),isCorrect=answer===exp;let cls='cell'+(answer?' filled':'');if(ex.revealed)cls+=' revealed';else if(checked)cls+=!answer?' empty-grade':isCorrect?' correct':' incorrect';const visible=ex.revealed?exp:answer||'<span class="cell-placeholder">·</span>';const expectedBadge=(checked&&(!isCorrect))?`<span class="expected" title="Resposta correta">${exp}</span>`:'';str+=`<td><button type="button" class="${cls}" data-r="${r}" data-c="${c}" ${ex.revealed?'disabled':''} aria-label="Linha ${r+1}, ${col.label}: ${ex.revealed?exp:answer||'vazio'}" title="Clique para alternar V, F e vazio. Também aceita teclas V, F e Delete.">${visible}${expectedBadge}</button></td>`});str+='</tr>'});str+='</tbody>';$('truthTable').innerHTML=str;renderCategoricalModelWorkbench()}
   function renderChoice(){const ex=exercise;if(!ex.choice){$('decisionArea').innerHTML='';return}const c=ex.choice;let buttons=c.options.map(option=>{const selected=ex.picked===option,cls='choice'+(selected?' selected':'')+(ex.revealed&&option===c.correct?' right':'')+(ex.grade&&selected?(selected&&option===c.correct?' right':' wrong'):'');return `<button class="${cls}" type="button" data-choice="${option}" ${ex.revealed?'disabled':''} aria-pressed="${selected}">${option}</button>`}).join('');$('decisionArea').innerHTML=`<section class="decision"><h3>${c.question}</h3><p>${ex.mode==='deducao'&&ex.metadata.contest?'No modo concurso, escolha sua resposta após analisar as pistas.':'Escolha uma resposta após completar a tabela.'}</p>${ex.mode==='deducao'?`<div class="deduction-options"><h3>Alternativas</h3>${ex.metadata.options.map(o=>`<p><b>${o.letter})</b>${escapeHTML(o.text)}</p>`).join('')}</div>`:''}<div class="choices" role="group" aria-label="${c.question}">${buttons}</div>${(ex.revealed||ex.grade)?`<p class="explanation"><strong>Resposta: ${c.correct}.</strong> ${c.explanation}</p>`:''}</section>`}
-  function renderFeedback(){const ex=exercise,place=$('feedbackArea');if(ex.revealed){let detail=counterexample(ex);place.innerHTML=`<div class="result-box success"><h3>Resolução apresentada</h3><p>${ex.resolution}</p>${detail?`<p>${detail}</p>`:''}<p>Selecione <strong>Próximo</strong> para gerar outro desafio.</p></div>`;return}if(!ex.grade){place.innerHTML='';return}const g=ex.grade,full=g.correct===g.total,missing=g.missing;let details=counterexample(ex);place.innerHTML=`<div class="result-box ${full?'success':'warn'}"><h3>${full?'Excelente! Você acertou tudo.':'Correção concluída: revise as marcações'}</h3><p><span class="result-metric">${g.correct} de ${g.total} respostas corretas (${pct(g.correct,g.total)})</span>${missing?` · ${missing} ${missing===1?'campo pendente':'campos pendentes'}`:''}.</p><p>${ex.resolution}</p>${details?`<p>${details}</p>`:''}<p>${ex.mode==='deducao'&&ex.metadata.contest?'No modo concurso, a pontuação avalia a alternativa. Você pode revisar a justificativa e consultar a tabela opcional.':'Verde indica acerto; vermelho indica divergência. O valor correto aparece junto às células a revisar. Você também pode alterar suas respostas e conferir novamente.'}</p></div>`}
+  function renderFeedback(){
+    const ex=exercise,place=$('feedbackArea');
+    if(ex.revealed){
+      const detail=counterexample(ex);
+      place.innerHTML=`<div class="result-box success"><h3>Resolução apresentada</h3><p>${ex.resolution}</p>${detail?`<p>${detail}</p>`:''}<p>Selecione <strong>Próximo</strong> para gerar outro desafio.</p></div>`;
+      return;
+    }
+    if(!ex.grade){place.innerHTML='';return}
+    const grade=ex.grade,allCorrect=grade.correct===grade.total;
+    const metrics=performanceSummary(grade,ex.firstGrade,modeStats(ex.mode));
+    const cards=[metrics.current,metrics.first,metrics.historical].filter(Boolean);
+    const report=`<div class="feedback-metrics" aria-label="Resultados da atividade e histórico">${cards.map(card=>`<div class="feedback-metric"><strong>${escapeHTML(card.label)}</strong><span>${escapeHTML(card.value)}</span><small>${escapeHTML(card.detail)}</small></div>`).join('')}</div>`;
+    const missing=grade.missing?`<p><strong>Ainda faltam ${grade.missing} ${grade.missing===1?'resposta':'respostas'}.</strong> Revise os campos destacados antes de continuar.</p>`:'';
+    const details=counterexample(ex);
+    const assisted=courseAttempt?.stage==='independent'&&courseAttempt.hintUsed
+      ?'<p class="feedback-assisted"><strong>Prática com ajuda:</strong> você consultou uma dica. Este resultado serve para estudar; para validar autonomia, inicie outro exercício sem consultar dicas.</p>':'';
+    place.innerHTML=`<div class="result-box ${allCorrect?'success':'warn'}"><h3>${allCorrect?'Correção concluída: respostas corretas':'Correção concluída: revise as marcações'}</h3>${report}${missing}${assisted}<p>${ex.resolution}</p>${details?`<p>${details}</p>`:''}<p>${ex.mode==='deducao'&&ex.metadata.contest?'No modo concurso, a correção avalia a alternativa. Consulte a justificativa e a tabela opcional.':'Verde indica acerto; vermelho indica divergência. Os valores esperados aparecem nas células a revisar. Você pode ajustar as respostas e corrigir novamente; o histórico continua registrando a primeira correção.'}</p></div>`;
+  }
   function counterexample(ex){if(ex.mode==='categoricos'&&ex.metadata.counterModel)return 'Contraexemplo: '+catCounter(ex.metadata.counterModel,ex.cat.terms)+'. Ambas as premissas são V e a conclusão F.';if((ex.mode==='argumentos'||ex.mode==='silogismos'||ex.mode==='traducao'&&ex.translation?.kind==='argument')&&ex.choice){const p=ex.metadata.premises,con=ex.metadata.conclusion,env=ex.envs.find(e=>p.every(n=>evalAst(n,e))&&!evalAst(con,e));if(env)return 'Contraexemplo: '+ex.vars.map(s=>s+'='+t(env[s])).join(', ')+'. As premissas são V e a conclusão é F.'}
     if(ex.mode==='equivalencias'&&ex.choice?.correct==='Diferentes'){const [a,b]=ex.roots,env=ex.envs.find(e=>evalAst(a,e)!==evalAst(b,e));if(env)return 'Linha decisiva: '+ex.vars.map(s=>s+'='+t(env[s])).join(', ')+'. A='+t(evalAst(a,env))+' e B='+t(evalAst(b,env))+'.'}return ''}
-  function renderSidebar(){const ex=exercise,m=currentExerciseMode();$('stepsPanel').innerHTML=m.steps.map((s,i)=>`<div><span class="side-num">${i+1}</span><span>${s}</span></div>`).join('');$('hintArea').innerHTML=ex.hintVisible?`<div class="hint-box"><strong>Dica:</strong> ${ex.hint}</div>`:'';const s=modeStats(ex.mode);$('modeProgress').innerHTML=`<div class="stat-value">${s.tries}</div><p>Exercícios corrigidos neste módulo</p><div class="stat-value" style="font-size:24px">${pct(s.correct,s.total)}</div><p>Acertos na primeira tentativa</p>`}
+  function renderSidebar(){
+    const ex=exercise,m=currentExerciseMode();
+    $('stepsPanel').innerHTML=m.steps.map((step,i)=>`<div><span class="side-num">${i+1}</span><span>${escapeHTML(step)}</span></div>`).join('');
+    $('hintArea').innerHTML='<p class="hint-location">As dicas aparecem junto ao enunciado, antes das respostas.</p>';
+    const stat=modeStats(ex.mode);
+    $('modeProgress').innerHTML=`<div class="stat-value">${stat.tries}</div><p>Exercícios corrigidos neste módulo (primeira tentativa)</p><div class="stat-value" style="font-size:24px">${pct(stat.correct,stat.total)}</div><p>Taxa de acerto na primeira correção</p>`;
+  }
+  function renderInlineHint(){
+    const area=$('inlineHint'),decision=$('independentHintDecision');
+    decision.hidden=true;
+    const visible=!!exercise?.hintVisible;
+    area.hidden=!visible;
+    area.innerHTML=visible?`<strong>Dica para este exercício</strong><p>${escapeHTML(exercise.hint)}</p>`:'';
+    $('hintButton').setAttribute('aria-expanded',String(visible));
+    $('hintButton').textContent=visible?'Ocultar dica':'✧ Dica';
+  }
+  function focusInlineHint(){
+    const panel=$('inlineHint');
+    panel.scrollIntoView({behavior:'smooth',block:'center'});
+    panel.focus({preventScroll:true});
+  }
+  function requestHint(){
+    if(!exercise)return;
+    // Depois da correção, o acesso à dica é somente revisão.
+    if(exercise.grade||exercise.revealed){
+      exercise.hintVisible=!exercise.hintVisible;
+      renderInlineHint();saveExerciseDraft();
+      if(exercise.hintVisible)focusInlineHint();
+      return;
+    }
+    if(courseAttempt?.stage==='independent'&&!courseAttempt.hintUsed&&!exercise.hintVisible){
+      const decision=$('independentHintDecision');
+      decision.hidden=false;
+      $('hintButton').setAttribute('aria-expanded','true');
+      decision.scrollIntoView({behavior:'smooth',block:'center'});
+      $('hintDecisionTitle').focus({preventScroll:true});
+      return;
+    }
+    exercise.hintVisible=!exercise.hintVisible;
+    if(exercise.hintVisible&&courseAttempt)courseAttempt.hintUsed=true;
+    renderInlineHint();renderCourseExerciseBanner();saveExerciseDraft();
+    if(exercise.hintVisible)focusInlineHint();
+  }
+  function handleHintDecision(event){
+    const action=event.target.closest('[data-hint-action]')?.dataset.hintAction;
+    if(!action)return;
+    $('independentHintDecision').hidden=true;
+    if(action==='show'){
+      courseAttempt.hintUsed=true;exercise.hintVisible=true;
+      renderInlineHint();renderCourseExerciseBanner();saveExerciseDraft();
+      focusInlineHint();return;
+    }
+    $('hintButton').setAttribute('aria-expanded','false');
+    $('hintButton').focus({preventScroll:true});
+  }
   function setAnswer(r,c,value){if(!exercise||exercise.revealed)return;const key=fieldKey(r,c),current=exercise.answers[key]||'';const next=value===undefined?(current===''?'V':current==='V'?'F':''):value;if(next)exercise.answers[key]=next;else delete exercise.answers[key];exercise.grade=null;renderTable();renderFeedback();renderFeedbackActions();renderChoice();saveExerciseDraft()}
   function setChoice(option){if(!exercise||exercise.revealed)return;exercise.picked=option;exercise.grade=null;renderChoice();renderTable();renderFeedback();renderFeedbackActions();saveExerciseDraft()}
-  function gradeExercise(){if(!exercise||exercise.revealed)return;if(exercise.special){gradeSpecial();return;}if(exercise.translation&&!exercise.translation.unlocked){toast('Conclua a tradução primeiro.');return}if(exercise.cat&&(!exercise.cat.unlocked||!exercise.cat.venn.verdictVerified)){toast('Conclua a tradução e o Diagrama de Venn primeiro.');return}const ex=exercise;let correct=0,total=0,missing=0;if(!(ex.mode==='deducao'&&ex.metadata.contest))ex.envs.forEach((env,r)=>ex.cols.forEach((col,c)=>{if(!col.editable)return;const a=ex.answers[fieldKey(r,c)],exp=expected(ex,r,c);total++;if(!a)missing++;if(a===exp)correct++}));if(ex.choice){total++;if(ex.picked===ex.choice.correct)correct++;if(!ex.picked)missing++}if(ex.cat){for(const first of ex.cat.first){total++;if(first===true)correct++;if(first===null)missing++}const venn=ex.cat.venn;for(const first of [venn.firstShade,...Object.values(venn.firstWitness),venn.firstVerdict]){total++;if(first===true)correct++;if(first===null)missing++}}if(ex.translation){for(const first of ex.translation.first){total++;if(first===true)correct++;if(first===null)missing++}if(ex.translation.rule){total++;if(ex.translation.rule.first===true)correct++;if(ex.translation.rule.first===null)missing++}}ex.grade={correct,total,missing};if(!ex.gradedEver){ex.gradedEver=true;const s=stats.byMode[ex.mode]||{tries:0,perfect:0,correct:0,total:0};s.tries++;s.correct+=correct;s.total+=total;if(correct===total)s.perfect++;if(ex.translation){stats.translationTypes=stats.translationTypes||{};const id=ex.translation.templateId,ts=stats.translationTypes[id]||{tries:0,wins:0};ts.tries++;if(ex.translation.first.every(Boolean)&&(!ex.translation.rule||ex.translation.rule.first===true))ts.wins++;stats.translationTypes[id]=ts}if(ex.mode==='deducao'){stats.deductionLevels=stats.deductionLevels||{};const lev=ex.metadata.levelCode,ds=stats.deductionLevels[lev]||{tries:0,correct:0};ds.tries++;if(correct===total)ds.correct++;stats.deductionLevels[lev]=ds}stats.byMode[ex.mode]=s;stats.tries++;stats.correct+=correct;stats.total+=total;if(correct===total)stats.perfect++;save()}recordGuidedAttempt();renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'})}
+  function gradeExercise(){if(!exercise||exercise.revealed)return;if(exercise.special){gradeSpecial();return;}if(exercise.translation&&!exercise.translation.unlocked){toast('Conclua a tradução primeiro.');return}if(exercise.cat&&(!exercise.cat.unlocked||!exercise.cat.venn.verdictVerified)){toast('Conclua a tradução e o Diagrama de Venn primeiro.');return}const ex=exercise;let correct=0,total=0,missing=0;if(!(ex.mode==='deducao'&&ex.metadata.contest))ex.envs.forEach((env,r)=>ex.cols.forEach((col,c)=>{if(!col.editable)return;const a=ex.answers[fieldKey(r,c)],exp=expected(ex,r,c);total++;if(!a)missing++;if(a===exp)correct++}));if(ex.choice){total++;if(ex.picked===ex.choice.correct)correct++;if(!ex.picked)missing++}if(ex.cat){for(const first of ex.cat.first){total++;if(first===true)correct++;if(first===null)missing++}const venn=ex.cat.venn;for(const first of [venn.firstShade,...Object.values(venn.firstWitness),venn.firstVerdict]){total++;if(first===true)correct++;if(first===null)missing++}}if(ex.translation){for(const first of ex.translation.first){total++;if(first===true)correct++;if(first===null)missing++}if(ex.translation.rule){total++;if(ex.translation.rule.first===true)correct++;if(ex.translation.rule.first===null)missing++}}ex.grade={correct,total,missing};if(!ex.gradedEver){ex.firstGrade={...ex.grade};ex.gradedEver=true;const s=stats.byMode[ex.mode]||{tries:0,perfect:0,correct:0,total:0};s.tries++;s.correct+=correct;s.total+=total;if(correct===total)s.perfect++;if(ex.translation){stats.translationTypes=stats.translationTypes||{};const id=ex.translation.templateId,ts=stats.translationTypes[id]||{tries:0,wins:0};ts.tries++;if(ex.translation.first.every(Boolean)&&(!ex.translation.rule||ex.translation.rule.first===true))ts.wins++;stats.translationTypes[id]=ts}if(ex.mode==='deducao'){stats.deductionLevels=stats.deductionLevels||{};const lev=ex.metadata.levelCode,ds=stats.deductionLevels[lev]||{tries:0,correct:0};ds.tries++;if(correct===total)ds.correct++;stats.deductionLevels[lev]=ds}stats.byMode[ex.mode]=s;stats.tries++;stats.correct+=correct;stats.total+=total;if(correct===total)stats.perfect++;save()}recordGuidedAttempt();renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'})}
   function reveal(){if(!exercise||!confirmDiscard('Revelar a resolução'))return;if(courseAttempt)courseAttempt.hintUsed=true;exercise.revealed=true;exercise.grade=null;renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'})}
   function clear(){if(!exercise||exercise.revealed)return;
     undoClearState=JSON.parse(JSON.stringify(exercise));
@@ -1068,7 +1140,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(e.target.closest('#validateVennVerdict'))validateVennVerdict();
   });
   $('vennArea').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('[data-venn-region]')){e.preventDefault();e.target.click()}});
-  $('specialArea').addEventListener('change',onSpecialChange);$('checkButton').addEventListener('click',gradeExercise);$('hintButton').addEventListener('click',()=>{if(courseAttempt)courseAttempt.hintUsed=true;exercise.hintVisible=!exercise.hintVisible;renderSidebar()});$('clearButton').addEventListener('click',clear);$('undoClearButton').addEventListener('click',undoClear);$('revealButton').addEventListener('click',reveal);$('newButton').addEventListener('click',()=>nextExercise());$('newTopButton').addEventListener('click',()=>nextExercise());
+  $('specialArea').addEventListener('change',onSpecialChange);$('checkButton').addEventListener('click',gradeExercise);$('hintButton').addEventListener('click',requestHint);$('independentHintDecision').addEventListener('click',handleHintDecision);$('clearButton').addEventListener('click',clear);$('undoClearButton').addEventListener('click',undoClear);$('revealButton').addEventListener('click',reveal);$('newButton').addEventListener('click',()=>nextExercise());$('newTopButton').addEventListener('click',()=>nextExercise());
   $('backButton').addEventListener('click',()=>courseAttempt?openCourse(true,courseAttempt.id):goHome());$('topHome').addEventListener('click',()=>goHome());$('brand').addEventListener('click',e=>{e.preventDefault();goHome()});$('howButton').addEventListener('click',showGuide);$('topGuide').addEventListener('click',showGuide);$('themeButton').addEventListener('click',toggleTheme);$('resetButton').addEventListener('click',resetProgress);
   $('deductionArea').addEventListener('click',e=>{if(e.target.closest('#toggleDeductionTable')&&exercise?.mode==='deducao'){exercise.metadata.tableOpened=!exercise.metadata.tableOpened;renderDeduction();}});
   $('deductionArea').addEventListener('input',e=>{if(e.target.id==='deductionScratch'&&exercise?.mode==='deducao')exercise.metadata.scratch=e.target.value});
@@ -1125,7 +1197,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     else if(s.type==='semanticworld')s.items.forEach((item,i)=>{total++;const v=s.values[i];if(v===undefined||v==='')missing++;if(v===item.value)correct++});
     else if(s.type==='proof')s.steps.forEach((step,i)=>{for(const [key,want] of [[i+'-formula',pretty(step.target)],[i+'-rule',step.rule]]){total++;const have=s.values[key];if(have===undefined||have==='')missing++;if(have===want)correct++}});
     else s.questions.forEach((q,i)=>{total++;const have=s.values[i];if(have===undefined||have==='')missing++;if(have===String(q.correct))correct++});
-    ex.grade={correct,total,missing};if(!ex.gradedEver){ex.gradedEver=true;const data=stats.byMode[ex.mode]||{tries:0,perfect:0,correct:0,total:0};data.tries++;data.correct+=correct;data.total+=total;if(correct===total)data.perfect++;stats.byMode[ex.mode]=data;stats.tries++;stats.correct+=correct;stats.total+=total;if(correct===total)stats.perfect++;save()}recordGuidedAttempt();renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'});
+    ex.grade={correct,total,missing};if(!ex.gradedEver){ex.firstGrade={...ex.grade};ex.gradedEver=true;const data=stats.byMode[ex.mode]||{tries:0,perfect:0,correct:0,total:0};data.tries++;data.correct+=correct;data.total+=total;if(correct===total)data.perfect++;stats.byMode[ex.mode]=data;stats.tries++;stats.correct+=correct;stats.total+=total;if(correct===total)stats.perfect++;save()}recordGuidedAttempt();renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'});
   }
   function loadCourseState(){try{const parsed=JSON.parse(localStorage.getItem(COURSE_KEY));if(parsed&&parsed.lessons&&parsed.final)return parsed}catch(e){}return {lessons:{},final:{}}}
   let courseState=loadCourseState(),courseActive=null,courseAttempt=null,lessonFeedback=null,finalExamSession=null;
@@ -1155,10 +1227,20 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     courseAttempt={id,stage,hintUsed:false,recorded:false};level=stage==='guided'?'easy':'medium';
     openMode(id,true,true);renderCourseExerciseBanner();
   }
-  function renderCourseExerciseBanner(){const banner=$('courseExerciseBanner');if(!courseAttempt){banner.classList.add('hide');return}banner.classList.remove('hide');banner.innerHTML=`<strong>Curso Guiado · ${courseAttempt.stage==='guided'?'Prática com ajuda':'Prática independente'}</strong><div>${courseAttempt.stage==='guided'?'Corrija a tentativa para registrar sua prática.':'Meta: ao menos 80% na primeira correção, com autonomia.'}</div><button type="button" class="button small" data-course-back="1">← Voltar à aula</button>`;}
+  function renderCourseExerciseBanner(){
+    const banner=$('courseExerciseBanner');
+    if(!courseAttempt){banner.classList.add('hide');return}
+    banner.classList.remove('hide');
+    const independent=courseAttempt.stage==='independent';
+    const used=independent&&courseAttempt.hintUsed;
+    const instructions=independent
+      ?(used?'Treino com ajuda: esta tentativa não valida autonomia. Inicie outro exercício sem dica para registrar seu desempenho independente.':'Meta: ao menos 80% na primeira correção, sem campos pendentes e sem consultar dicas. Se abrir uma dica, esta tentativa se torna prática assistida.')
+      :'Prática assistida: consulte as dicas e corrija para registrar esta etapa.';
+    banner.innerHTML=`<strong>Curso Guiado · ${used?'Treino com ajuda':independent?'Prática independente':'Prática com ajuda'}</strong><div>${instructions}</div><button type="button" class="button small" data-course-back="1">← Voltar à aula</button>`;
+  }
   function recordGuidedAttempt(){if(!courseAttempt||courseAttempt.recorded||!exercise?.grade||exercise.mode!==courseAttempt.id)return;courseAttempt.recorded=true;const p=courseProgress(courseAttempt.id),rate=exercise.grade.total?exercise.grade.correct/exercise.grade.total:0;let didPass=false;
     if(courseAttempt.stage==='guided'&&rate>=.5&&exercise.grade.missing<=exercise.grade.total*.25){p.guided=true;didPass=true}else if(courseAttempt.stage==='independent'&&rate>=.8&&exercise.grade.missing===0&&!courseAttempt.hintUsed){p.independent=true;didPass=true}
-    saveCourseState();const comment=didPass?'Etapa registrada. Volte à aula para continuar.':`Resultado ${Math.round(rate*100)}%. Faça outro exercício para atingir a meta desta etapa, preenchendo as respostas necessárias.`;toast(comment);}
+    saveCourseState();const comment=didPass?'Etapa registrada. Volte à aula para continuar.':courseAttempt.stage==='independent'&&courseAttempt.hintUsed?'Esta tentativa foi prática com ajuda. Para concluir a etapa independente, faça um novo exercício sem dica.':`Resultado ${Math.round(rate*100)}%. Faça outro exercício para atingir a meta desta etapa, preenchendo as respostas necessárias.`;toast(comment);}
   function courseClick(e){const btn=e.target.closest('[data-caction]');if(!btn)return;const action=btn.dataset.caction,id=btn.dataset.id;
     if(action==='map'){openCourse(true);return}if(action==='lesson'){openCourse(true,id);return}if(action==='practice-free'){
       const previous=savedDrafts[courseActive];
