@@ -45,6 +45,15 @@
         <article class="panel main-panel">
           <div class="task-head"><span class="task-kicker" id="taskKicker">EXERCÍCIO</span><h2 id="taskTitle"></h2><p id="taskInstruction"></p></div>
           <details class="exercise-help" id="exerciseHelp"><summary>Consultar regras e passos deste exercício</summary><div class="exercise-help-content" id="exerciseHelpContent"></div></details>
+          <section class="inline-hint" id="inlineHint" tabindex="-1" aria-label="Dica contextual" hidden></section>
+          <section class="hint-decision" id="independentHintDecision" aria-labelledby="hintDecisionTitle" hidden>
+            <h3 id="hintDecisionTitle" tabindex="-1">Deseja consultar uma dica?</h3>
+            <p>Na prática independente, a consulta transforma esta tentativa em treino com ajuda. Você poderá continuar resolvendo, mas precisará de um novo exercício sem dica para demonstrar autonomia.</p>
+            <div class="hint-decision-actions">
+              <button type="button" class="button primary" data-hint-action="keep">Continuar sem dica</button>
+              <button type="button" class="button" data-hint-action="show">Usar dica e praticar com ajuda</button>
+            </div>
+          </section>
           <div id="deductionArea" class="deduction-area hide" aria-label="Enunciado e pistas do desafio de dedução"></div>
           <div id="translationArea" class="translation-area hide" aria-label="Tradução para lógica simbólica"></div>
           <div id="categoricalArea" class="translation-area categorical-area hide" aria-label="Tradução categórica com quantificadores"></div>
@@ -53,7 +62,7 @@
           <div class="table-scroll" id="tableScrollWrap" role="region" aria-label="Tabela-verdade, role horizontalmente se necessário" tabindex="0"><table id="truthTable" class="truth-table"></table></div>
           <div class="table-legend" id="tableLegendBar"><span><span class="legend-dot"></span> Para preencher</span><span><span class="legend-dot green"></span> Correto</span><span><span class="legend-dot red"></span> Revisar</span></div></div>
           <div id="decisionArea"></div><section id="specialArea" class="special-area hide" aria-label="Atividade de formação avançada"></section><div id="courseExerciseBanner" class="course-exercise-banner hide"></div>
-          <div class="task-actions"><button class="button primary" id="checkButton" type="button">✓ Corrigir tabela</button><button class="button" id="hintButton" type="button">✧ Dica</button><button class="button" id="clearButton" type="button">Limpar</button><button class="button" id="undoClearButton" type="button" hidden>↶ Desfazer limpeza</button><button class="button" id="revealButton" type="button">Ver resolução</button><button class="button" id="newButton" type="button">↻ Próximo</button></div>
+          <div class="task-actions"><button class="button primary" id="checkButton" type="button">✓ Corrigir tabela</button><button class="button" id="hintButton" type="button" aria-controls="inlineHint independentHintDecision" aria-expanded="false">✧ Dica</button><button class="button" id="clearButton" type="button">Limpar</button><button class="button" id="undoClearButton" type="button" hidden>↶ Desfazer limpeza</button><button class="button" id="revealButton" type="button">Ver resolução</button><button class="button" id="newButton" type="button">↻ Próximo</button></div>
           <p id="draftStatus" class="draft-status" role="status" aria-live="polite">Rascunho salvo neste navegador</p><div id="feedbackArea" role="status" aria-live="polite"></div><div id="feedbackNextActions" class="feedback-next" aria-label="Próximo passo após a correção"></div>
         </article>
         <aside class="sidebar"><div class="panel side-panel"><div class="side-head"><h3>Como resolver</h3><span aria-hidden="true">✦</span></div><div class="side-list" id="stepsPanel"></div><div id="hintArea" aria-live="polite"></div></div><div class="panel side-panel"><div class="side-head"><h3>Seu progresso</h3><span aria-hidden="true">◎</span></div><div id="modeProgress"></div><p class="side-footer">O desempenho é salvo neste navegador. A pontuação registra a primeira correção de cada exercício.</p></div></aside>
