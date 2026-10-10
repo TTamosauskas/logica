@@ -221,6 +221,58 @@ try{
   assert.deepEqual(accessErrors,[]);
   await a11y.close();
 
+
+  // Ciclo 6: histórico aprovado continua válido, mas consolidação exige revisões espaçadas.
+  const progressContext=await browser.newContext({viewport:{width:375,height:812},deviceScaleFactor:1,isMobile:true,hasTouch:true,acceptDownloads:true});
+  const progressPage=await progressContext.newPage();
+  const progressErrors=[];
+  progressPage.on('pageerror',error=>progressErrors.push(error.message));
+  await progressPage.goto(root,{waitUntil:'networkidle'});
+  await progressPage.evaluate(()=>{
+    const now=Date.now();
+    localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({
+      lessons:{fundamentos:{read:true,example:true,guided:true,independent:true,mastered:true,best:1,
+        review:{approvedAt:now-3*86400000,completed:0,dueAt:now-86400000,consolidated:false,failures:0}}},final:{}
+    }));
+  });
+  await progressPage.reload({waitUntil:'networkidle'});
+  assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 17 avaliações aprovadas · 0 consolidados/);
+  assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO RECOMENDADA/);
+  await progressPage.locator('#continueButton').click();
+  assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
+  await progressPage.locator('[data-caction="review"]').click();
+  assert.match(await progressPage.locator('#courseExerciseBanner').innerText(),/Revisão espaçada/);
+  await progressPage.locator('#hintButton').click();
+  assert.equal(await progressPage.locator('#independentHintDecision').isVisible(),true);
+  await progressPage.locator('[data-hint-action="show"]').click();
+  await progressPage.locator('#checkButton').click();
+  assert.match(await progressPage.locator('#feedbackArea').innerText(),/Prática com ajuda/);
+  const stateAfter=await progressPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons.fundamentos.review);
+  assert.equal(stateAfter.completed,0);
+  assert.equal(stateAfter.consolidated,false);
+
+  // Backup local pode sair do navegador e ser restaurado após confirmação.
+  await progressPage.locator('#brand').click();
+  const downloadPromise=progressPage.waitForEvent('download');
+  await progressPage.locator('#exportProgressButton').click();
+  const download=await downloadPromise;
+  assert.match(download.suggestedFilename(),/logiclab-progresso-\d{4}-\d{2}-\d{2}\.json/);
+  const {readFileSync}=await import('node:fs');
+  const backup=JSON.parse(readFileSync(await download.path(),'utf8'));
+  assert.equal(backup.format,'logiclab-backup');
+  assert.equal(JSON.parse(backup.data.logiclab_curso_formal_v2).lessons.fundamentos.mastered,true);
+  await progressPage.evaluate(()=>localStorage.removeItem('logiclab_curso_formal_v2'));
+  progressPage.on('dialog',dialog=>dialog.accept());
+  await Promise.all([
+    progressPage.waitForEvent('load'),
+    progressPage.locator('#importProgressFile').setInputFiles({name:'progresso.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))})
+  ]);
+  const restored=await progressPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons.fundamentos);
+  assert.equal(restored.mastered,true);
+  assert.equal(restored.review.completed,0);
+  assert.deepEqual(progressErrors,[]);
+  await progressContext.close();
+
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
   await context.close();
 }catch(error){

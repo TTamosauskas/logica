@@ -1,6 +1,8 @@
 import { MODULES } from './content/modules.js';
 import { LEARNING_STAGES, getPracticeGroups, getNextLearningStep } from './core/learning-path.js';
 import { routeFromHash } from './core/navigation.js';
+import { reviewStatus,beginReviewTracking,recordReview,reviewQueue,consolidatedCount,studyRecommendation } from './core/reviews.js';
+import { createBackup,importBackup,PORTABLE_KEYS } from './core/progress-portability.js';
 import { performanceSummary } from './core/performance.js';
 import { EXERCISE_DRAFTS_KEY, EXAM_DRAFT_KEY, DRAFT_VERSION, hasPendingWork, readExerciseDrafts, readExamDraft, mostRecentUnfinished } from './core/draft-store.js';
 import { SYMBOLS, rng, pick, v, not, bin, A, O, X, I, B, t, evalAst, fmt, pretty, sig, varsOf, relevantNames, truthRows, varColumns, stepNodes, formulaColumns, build } from './core/logic.js';
@@ -804,15 +806,19 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function nextLesson(){return getNextLearningStep(COURSE_UNITS,courseState.lessons)}
   function updateNextLearningCards(){
     const draft=mostRecentUnfinished(savedDrafts,savedExam());
-    const next=nextLesson(),lesson=MODULES.find(m=>m.id===next.id);
-    const detail=lesson?`${next.unitTitle} · Etapa ${LEARNING_STAGES.findIndex(s=>s.key===next.stage)+1}/5: ${next.label}.`:'Todos os temas do percurso foram concluídos. Revise os conteúdos ou explore a avaliação integrada.';
+    const next=nextLesson(),recommendation=studyRecommendation(COURSE_UNITS,courseState.lessons),
+      reviewLesson=recommendation.kind==='review'?MODULES.find(m=>m.id===recommendation.id):null,
+      lesson=reviewLesson||MODULES.find(m=>m.id===next.id);
+    const detail=reviewLesson?`Revisão disponível de ${recommendation.count} ${recommendation.count===1?'tema':'temas'}. Faça um novo exercício sem dica para consolidar o aprendizado.`
+      :lesson?`${next.unitTitle} · Etapa ${LEARNING_STAGES.findIndex(s=>s.key===next.stage)+1}/5: ${next.label}.`
+      :'Todas as avaliações iniciais foram concluídas. Consulte o mapa para acompanhar as revisões programadas.';
     const draftModule=draft?.type==='exercise'?MODULES.find(m=>m.id===draft.mode):null;
-    $('continueLabel').textContent=draft?'RETOMAR ATIVIDADE SALVA':'PRÓXIMA ETAPA RECOMENDADA';
+    $('continueLabel').textContent=draft?'RETOMAR ATIVIDADE SALVA':reviewLesson?'REVISÃO RECOMENDADA':'PRÓXIMA ETAPA RECOMENDADA';
     $('nextLessonButton').hidden=!draft;
     $('continueTitle').textContent=draft?(draft.type==='exam'?'Avaliação final em andamento':draftModule?.name||'Atividade em andamento'):(lesson?lesson.name:'Percurso concluído');
     $('continueDescription').textContent=draft?(draft.type==='exam'?'Suas respostas da avaliação estão salvas neste navegador.':'Continue a questão que você estava resolvendo, com suas respostas preservadas.'):detail;
-    $('continueButton').textContent=draft?(draft.type==='exam'?'Continuar avaliação →':'Retomar exercício →'):(lesson?(next.stage==='read'&&next.completed===0?'Começar pela primeira aula →':'Abrir esta etapa →'):'Ver meu percurso →');
-    $('courseNextTitle').textContent=lesson?`Próximo passo: ${lesson.name}`:'Percurso concluído';
+    $('continueButton').textContent=draft?(draft.type==='exam'?'Continuar avaliação →':'Retomar exercício →'):(reviewLesson?'Abrir revisão →':lesson?(next.stage==='read'&&next.completed===0?'Começar pela primeira aula →':'Abrir esta etapa →'):'Ver meu percurso →');
+    $('courseNextTitle').textContent=reviewLesson?`Revisão disponível: ${reviewLesson.name}`:lesson?`Próximo passo: ${lesson.name}`:'Avaliações iniciais concluídas';
     $('courseNextDescription').textContent=detail;
     $('courseNextButton').textContent=lesson?'Ir para esta aula →':'Ver mapa do curso →';
   }
@@ -822,7 +828,11 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(draft?.type==='exercise'){openMode(draft.mode);return}
     openRecommendedLesson();
   }
-  function openRecommendedLesson(){const next=nextLesson();openCourse(true,next.id)}
+  function openRecommendedLesson(){
+    const urgent=reviewQueue(COURSE_UNITS,courseState.lessons);
+    if(urgent.length){openCourse(true,urgent[0].id);return}
+    const next=nextLesson();openCourse(true,next.id)
+  }
   function renderHome(){updateCourseHome();updateNextLearningCards();const tried=Object.entries(stats.byMode).filter(([id,x])=>id!=='misto'&&x.tries>0).length;$('overview').innerHTML=`<div class="stat"><div class="stat-value">${stats.tries}</div><div class="stat-caption">Exercícios corrigidos</div></div><div class="stat"><div class="stat-value">${pct(stats.correct,stats.total)}</div><div class="stat-caption">Acertos na primeira tentativa</div></div><div class="stat"><div class="stat-value">${tried}<span style="font-size:15px;color:var(--faint)"> / ${MODULES.length-1}</span></div><div class="stat-caption">Módulos praticados</div></div>`;
     $('modeGrid').innerHTML=practiceGroups.map(group=>{
       const attempts=group.modules.filter(m=>modeStats(m.id).tries>0).length;
@@ -834,7 +844,16 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       const expanded=expandedPracticeSections.has(group.id)?' open':'';
       return `<details class="practice-group" data-practice-section="${group.id}"${expanded}><summary><span class="practice-group-heading"><strong>${escapeHTML(group.title)}</strong><small>${escapeHTML(group.note)}</small></span><span class="practice-group-count">${attempts}/${group.modules.length} praticados</span></summary><div class="mode-grid">${cards}</div></details>`;
     }).join('')}
-  function selectMixed(){const choices=MODULES.filter(m=>m.id!=='misto');const weighted=choices.flatMap(m=>{const s=modeStats(m.id);const accuracy=s.total?s.correct/s.total:0;const w=s.tries===0?5:Math.max(1,Math.ceil(1+5*(1-accuracy)));return Array.from({length:w},()=>m.id)});return pick(weighted)}
+  function selectMixed(){
+    const due=new Set(reviewQueue(COURSE_UNITS,courseState.lessons).map(item=>item.id));
+    const choices=MODULES.filter(m=>m.id!=='misto');
+    const weighted=choices.flatMap(m=>{
+      const stat=modeStats(m.id),accuracy=stat.total?stat.correct/stat.total:0;
+      const weight=(stat.tries===0?5:Math.max(1,Math.ceil(1+5*(1-accuracy))))+(due.has(m.id)?7:0);
+      return Array.from({length:weight},()=>m.id)
+    });
+    return pick(weighted)
+  }
   function renderLevelButtons(){const extended=mode==='deducao',items=extended?[['easy','1 · Básico'],['medium','2 · Falsidades'],['hard','3 · Conectivos'],['expert','4 · Concurso'],['exam','5 · Autônomo']]:[['easy','Fácil'],['medium','Médio'],['hard','Difícil']];$('levelSegments').classList.toggle('levels-five',extended);$('levelSegments').innerHTML=items.map(([id,label])=>`<button class="segment" data-level="${id}" type="button" aria-pressed="${level===id}">${label}</button>`).join('');}
   function nextExercise(force=false){
     if(!GENERATORS[mode]&&mode!=='misto')return;
@@ -970,7 +989,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(!ex||(!ex.grade&&!ex.revealed)){area.innerHTML='';return}
     if(courseAttempt){
       const progress=courseProgress(courseAttempt.id);
-      const passed=courseAttempt.stage==='guided'?progress.guided:progress.independent;
+      const passed=courseAttempt.stage==='review'?courseAttempt.reviewPassed:courseAttempt.stage==='guided'?progress.guided:progress.independent;
       area.innerHTML=passed
         ?'<button type="button" class="button primary" data-feedback-action="course">Continuar minha aula →</button>'
         :'<button type="button" class="button primary" data-feedback-action="next">Tentar outro exercício →</button><button type="button" class="button" data-feedback-action="course">Voltar à aula</button>';
@@ -1016,7 +1035,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     const report=`<div class="feedback-metrics" aria-label="Resultados da atividade e histórico">${cards.map(card=>`<div class="feedback-metric"><strong>${escapeHTML(card.label)}</strong><span>${escapeHTML(card.value)}</span><small>${escapeHTML(card.detail)}</small></div>`).join('')}</div>`;
     const missing=grade.missing?`<p><strong>Ainda faltam ${grade.missing} ${grade.missing===1?'resposta':'respostas'}.</strong> Revise os campos destacados antes de continuar.</p>`:'';
     const details=counterexample(ex);
-    const assisted=courseAttempt?.stage==='independent'&&courseAttempt.hintUsed
+    const assisted=['independent','review'].includes(courseAttempt?.stage)&&courseAttempt.hintUsed
       ?'<p class="feedback-assisted"><strong>Prática com ajuda:</strong> você consultou uma dica. Este resultado serve para estudar; para validar autonomia, inicie outro exercício sem consultar dicas.</p>':'';
     place.innerHTML=`<div class="result-box ${allCorrect?'success':'warn'}"><h3>${allCorrect?'Correção concluída: respostas corretas':'Correção concluída: revise as marcações'}</h3>${report}${missing}${assisted}<p>${ex.resolution}</p>${details?`<p>${details}</p>`:''}<p>${ex.mode==='deducao'&&ex.metadata.contest?'No modo concurso, a correção avalia a alternativa. Consulte a justificativa e a tabela opcional.':'Verde indica acerto; vermelho indica divergência. Os valores esperados aparecem nas células a revisar. Você pode ajustar as respostas e corrigir novamente; o histórico continua registrando a primeira correção.'}</p></div>`;
   }
@@ -1052,7 +1071,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       if(exercise.hintVisible)focusInlineHint();
       return;
     }
-    if(courseAttempt?.stage==='independent'&&!courseAttempt.hintUsed&&!exercise.hintVisible){
+    if(['independent','review'].includes(courseAttempt?.stage)&&!courseAttempt.hintUsed&&!exercise.hintVisible){
       const decision=$('independentHintDecision');
       decision.hidden=false;
       $('hintButton').setAttribute('aria-expanded','true');
@@ -1087,6 +1106,36 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function undoClear(){
     if(!undoClearState)return;
     exercise=undoClearState;undoClearState=null;renderExercise();toast('Respostas restauradas.');
+  }
+  function exportProgress(){
+    // Consolida a atividade aberta antes de criar a cópia, que permanece no dispositivo.
+    saveExerciseDraft();saveCourseState();
+    const payload=JSON.stringify(createBackup(localStorage),null,2);
+    const blob=new Blob([payload],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='logiclab-progresso-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+    toast('Backup criado: guarde o arquivo em local seguro.');
+  }
+  async function importProgressFile(event){
+    const file=event.target.files?.[0];event.target.value='';
+    if(!file)return;
+    if(file.size>2*1024*1024){alert('Arquivo maior que 2 MB. Verifique o backup.');return}
+    try{
+      const payload=JSON.parse(await file.text());
+      // Validar antes de pedir autorização; importar substitui somente as chaves gerenciadas.
+      const known=PORTABLE_KEYS;
+      if(!payload?.data||!Object.keys(payload.data).every(key=>known.includes(key)))throw Error('Arquivo incompatível.');
+      if(!confirm('Importar este backup substituirá o progresso e os rascunhos deste navegador. Deseja continuar?'))return;
+      const count=importBackup(localStorage,payload);
+      alert('Backup importado ('+count+' categorias). A página será recarregada para mostrar o progresso.');
+      location.reload();
+    }catch(error){
+      alert('Não foi possível importar o backup: '+error.message);
+    }
   }
   function resetProgress(){if(!confirm('Apagar todos os resultados e estatísticas deste navegador, incluindo rascunhos e avaliação em andamento?'))return;
     savedDrafts={};undoClearState=null;finalExamSession=null;
@@ -1223,45 +1272,108 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function loadCourseState(){try{const parsed=JSON.parse(localStorage.getItem(COURSE_KEY));if(parsed&&parsed.lessons&&parsed.final)return parsed}catch(e){}return {lessons:{},final:{}}}
   let courseState=loadCourseState(),courseActive=null,courseAttempt=null,lessonFeedback=null,finalExamSession=null;
   function saveCourseState(){try{localStorage.setItem(COURSE_KEY,JSON.stringify(courseState))}catch(e){}}
+  // Migração não destrutiva: as conquistas antigas continuam como avaliações aprovadas.
+  // Novas revisões começam a contar somente depois da publicação desta versão.
+  let reviewMigration=false;
+  for(const unit of COURSE_UNITS)for(const id of unit.ids){
+    const progress=courseState.lessons[id];
+    if(progress&&beginReviewTracking(progress)){reviewMigration=true}
+  }
+  if(reviewMigration)saveCourseState();
+  const reviewDue=()=>reviewQueue(COURSE_UNITS,courseState.lessons);
+  const reviewLabel=progress=>{
+    const state=reviewStatus(progress);
+    if(state.status==='consolidated')return 'Domínio consolidado';
+    if(state.status==='due')return `Revisão ${state.completed+1}/2 disponível`;
+    if(state.status==='scheduled')return `Revisão ${state.completed+1}/2 em ${new Date(state.dueAt).toLocaleDateString('pt-BR')}`;
+    return progress?.independent?'Avaliação inicial pendente':progress?.read?'Em andamento':'Começar';
+  };
   function courseProgress(id){if(!courseState.lessons[id])courseState.lessons[id]={read:false,example:false,guided:false,independent:false,mastered:false,best:0};return courseState.lessons[id]}
   function courseTotal(){return COURSE_UNITS.reduce((n,u)=>n+u.ids.length,0)}
-  function courseMastered(){return COURSE_UNITS.reduce((n,u)=>n+u.ids.filter(id=>courseProgress(id).mastered).length,0)}
-  function updateCourseHome(){if(!$('courseHomeSummary'))return;const count=courseMastered();$('courseHomeSummary').textContent=`${count} de ${courseTotal()} temas dominados`;$('courseHomeMeter').style.width=(100*count/courseTotal()).toFixed(1)+'%'}
-  function renderCourseMap(){const count=courseMastered();const finalBest=courseState.final.best||0;let html=`<div class="course-unit"><div class="course-tile-row"><div><span class="eyebrow">MAPA DE COMPETÊNCIAS</span><h2>${count} de ${courseTotal()} temas dominados</h2><p>Progresso por conteúdo: leitura, exemplo, prática assistida, prática independente e avaliação. Melhor prova final: ${finalBest ? finalBest+'/12' : 'ainda por realizar'}.</p></div><button type="button" class="button primary" data-caction="exam-open">Avaliação final integrada →</button></div><div class="course-meter" style="width:100%;margin-top:12px"><span style="width:${100*count/courseTotal()}%"></span></div></div>`;
-    COURSE_UNITS.forEach((u,index)=>{const done=u.ids.filter(id=>courseProgress(id).mastered).length;html+=`<section class="course-unit"><div class="course-unit-top"><span class="eyebrow">UNIDADE ${index+1}</span><span class="course-unit-progress">${done}/${u.ids.length} dominados</span></div><h2>${escapeHTML(u.title)}</h2><p>${escapeHTML(u.note)}</p><div class="course-unit-lessons">${u.ids.map(id=>{const lesson=MODULES.find(m=>m.id===id),p=courseProgress(id);const status=p.mastered?'✓ Dominado':p.independent?'Avaliação pendente':p.read?'Em andamento':'Começar';return `<button type="button" class="course-unit-item" data-caction="lesson" data-id="${id}"><span class="course-status">${lesson.no}</span><span><strong>${escapeHTML(lesson.name)}</strong><small>${status} · melhor avaliação ${p.best?Math.round(p.best*100)+'%':'—'}</small></span></button>`}).join('')}</div></section>`});
+  function courseMastered(){return consolidatedCount(COURSE_UNITS,courseState.lessons)}
+  function courseApproved(){return COURSE_UNITS.reduce((n,u)=>n+u.ids.filter(id=>courseProgress(id).mastered).length,0)}
+  function updateCourseHome(){
+    if(!$('courseHomeSummary'))return;
+    const consolidated=courseMastered(),approved=courseApproved(),due=reviewDue().length;
+    $('courseHomeSummary').textContent=`${approved} de ${courseTotal()} avaliações aprovadas · ${consolidated} consolidados${due?' · '+due+' revisões disponíveis':''}`;
+    $('courseHomeMeter').style.width=(100*consolidated/courseTotal()).toFixed(1)+'%'
+  }
+  function renderCourseMap(){
+    const consolidated=courseMastered(),approved=courseApproved(),due=reviewDue();
+    const finalBest=courseState.final.best||0;
+    let html=`<div class="course-unit"><div class="course-tile-row"><div><span class="eyebrow">MAPA DE APRENDIZAGEM</span><h2>${approved} avaliações aprovadas · ${consolidated} temas consolidados</h2><p>Conclusão de aula, aprovação na avaliação imediata e domínio consolidado são etapas diferentes. O último exige duas revisões independentes, após intervalos de 1 e 7 dias. Melhor avaliação integrada: ${finalBest?finalBest+'/12':'ainda não realizada'}.</p></div><button type="button" class="button primary" data-caction="exam-open">Avaliação final integrada →</button></div><div class="course-meter" style="width:100%;margin-top:12px"><span style="width:${100*consolidated/courseTotal()}%"></span></div></div>`;
+    if(due.length){
+      html+=`<section class="course-unit course-reviews"><h2>Revisões disponíveis (${due.length})</h2><p>Refaça um exercício do tema sem consultar dicas. Cada aprovação conta como uma revisão espaçada.</p><div class="course-review-list">${due.map(item=>`<button class="button" type="button" data-caction="lesson" data-id="${item.id}">${escapeHTML(MODULES.find(m=>m.id===item.id).name)} · revisão ${item.state.completed+1}/2 →</button>`).join('')}</div></section>`;
+    }
+    COURSE_UNITS.forEach((unit,index)=>{
+      const consolidatedUnit=unit.ids.filter(id=>reviewStatus(courseProgress(id)).consolidated).length;
+      html+=`<section class="course-unit"><div class="course-unit-top"><span class="eyebrow">UNIDADE ${index+1}</span><span class="course-unit-progress">${consolidatedUnit}/${unit.ids.length} consolidados</span></div><h2>${escapeHTML(unit.title)}</h2><p>${escapeHTML(unit.note)}</p><div class="course-unit-lessons">${unit.ids.map(id=>{
+        const lesson=MODULES.find(m=>m.id===id),progress=courseProgress(id),status=progress.mastered?reviewLabel(progress):reviewLabel(progress);
+        return `<button type="button" class="course-unit-item" data-caction="lesson" data-id="${id}"><span class="course-status">${lesson.no}</span><span><strong>${escapeHTML(lesson.name)}</strong><small>${escapeHTML(progress.mastered&&!reviewStatus(progress).consolidated?'Avaliação aprovada · '+status:status)} · melhor avaliação ${progress.best?Math.round(progress.best*100)+'%':'—'}</small></span></button>`;
+      }).join('')}</div></section>`;
+    });
     $('courseMap').innerHTML=html;
   }
   function openCourse(updateHash=true,id=null){courseAttempt=null;courseActive=id&&LESSONS[id]?id:null;lessonFeedback=null;$('homeView').classList.add('hide');$('workView').classList.add('hide');$('courseView').classList.remove('hide');$('courseExam').classList.add('hide');if(updateHash)setRouteHash(courseActive?'aula-'+courseActive:'curso');renderCourse();scrollTo({top:0,behavior:'instant'})}
   function renderCourse(){updateNextLearningCards();$('courseNext').classList.remove('hide');renderCourseMap();$('courseMap').classList.toggle('hide',!!courseActive);$('courseLesson').classList.toggle('hide',!courseActive);$('courseMapButton').classList.toggle('hide',!courseActive);$('courseExam').classList.add('hide');if(courseActive)renderCourseLesson();}
   function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
-    const flags=[p.read,p.example,p.guided,p.independent,p.mastered],labels=['1. Compreender','2. Observar','3. Praticar com ajuda','4. Resolver sozinho','5. Demonstrar domínio'];let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><div class="course-lesson-flow">${labels.map((l,i)=>`<span class="${flags[i]?'done':''}">${flags[i]?'✓ ':''}${l}</span>`).join('')}</div><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
+    const flags=[p.read,p.example,p.guided,p.independent,p.mastered],labels=['1. Compreender','2. Observar','3. Praticar com ajuda','4. Resolver sozinho','5. Aprovar avaliação inicial'];let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><div class="course-lesson-flow">${labels.map((l,i)=>`<span class="${flags[i]?'done':''}">${flags[i]?'✓ ':''}${l}</span>`).join('')}</div><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
     html+=`<section class="course-lesson-panel"><h3>1. Compreender</h3><p>${escapeHTML(lesson.theory)}</p><div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Aula lida':'Concluí a leitura →'}</button></div></section>`;
     if(p.read&&THEORY_CARDS[id]){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Teoremas e demonstrações comentadas</h3><p>Abra cada teorema. Identifique suas hipóteses, acompanhe os passos da prova e observe onde o resultado se aplica.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
     if(p.read){html+=`<section class="course-lesson-panel"><h3>2. Observar um exemplo resolvido</h3><div class="course-example"><strong>${escapeHTML(lesson.example)}</strong><ol>${lesson.steps.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol></div><div class="course-lesson-actions"><button type="button" class="button ${p.example?'':'primary'}" data-caction="example">${p.example?'✓ Exemplo estudado':'Entendi a resolução →'}</button></div></section>`}
     if(p.example){html+=`<section class="course-lesson-panel"><h3>3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
     if(p.guided){html+=`<section class="course-lesson-panel"><h3>4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
-    if(p.independent){html+=`<section class="course-lesson-panel"><h3>5. Demonstrar domínio</h3><p>Responda às três perguntas de compreensão. Atingindo três acertos, o tema fica dominado; com dois acertos, você pode revisar e tentar novamente.</p><div class="course-assessment">${lesson.quiz.slice(0,3).map((q,i)=>`<div class="course-question"><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((option,j)=>`<label class="course-option"><input type="radio" name="courseq-${i}" value="${j}"><span>${escapeHTML(option)}</span></label>`).join('')}</div>`).join('')}</div>${lessonFeedback&&lessonFeedback.id===id?`<div class="course-course-result ${lessonFeedback.score<3?'warn':''}" tabindex="-1" role="status"><strong>${lessonFeedback.score}/3 acertos.</strong> ${lessonFeedback.score===3?'Domínio demonstrado!':'Revise as explicações e faça outra tentativa.'}${lessonFeedback.details.map(x=>`<p>${escapeHTML(x)}</p>`).join('')}</div>`:''}<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="lesson-quiz">Corrigir avaliação</button></div></section>`}
+    if(p.independent){html+=`<section class="course-lesson-panel"><h3>5. Aprovar a avaliação inicial</h3><p>Responda às três perguntas de compreensão. Três acertos aprovam a avaliação inicial; o domínio consolidado será registrado após duas revisões espaçadas independentes.</p><div class="course-assessment">${lesson.quiz.slice(0,3).map((q,i)=>`<div class="course-question"><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((option,j)=>`<label class="course-option"><input type="radio" name="courseq-${i}" value="${j}"><span>${escapeHTML(option)}</span></label>`).join('')}</div>`).join('')}</div>${lessonFeedback&&lessonFeedback.id===id?`<div class="course-course-result ${lessonFeedback.score<3?'warn':''}" tabindex="-1" role="status"><strong>${lessonFeedback.score}/3 acertos.</strong> ${lessonFeedback.score===3?'Avaliação inicial aprovada!':'Revise as explicações e faça outra tentativa.'}${lessonFeedback.details.map(x=>`<p>${escapeHTML(x)}</p>`).join('')}</div>`:''}<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="lesson-quiz">Corrigir avaliação</button></div></section>`}
+    if(p.mastered){
+      const state=reviewStatus(p);
+      html+=`<section class="course-lesson-panel course-review-panel"><h3>6. Consolidar com revisões espaçadas</h3><p>Você aprovou a avaliação inicial. Domínio consolidado exige duas novas tentativas independentes, corrigidas com pelo menos 80% e sem dicas: uma após 1 dia e outra após mais 7 dias.</p>`;
+      if(state.status==='consolidated')html+='<p class="review-good"><strong>Domínio consolidado.</strong> Duas revisões espaçadas concluídas com autonomia.</p>';
+      else if(state.status==='due')html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível.</strong> Um novo exercício será gerado para você.</p><div class="course-lesson-actions"><button type="button" class="button primary" data-caction="review">Fazer revisão independente →</button></div>`;
+      else html+=`<p><strong>Revisão ${state.completed+1} de 2 programada para ${new Date(state.dueAt).toLocaleDateString('pt-BR')}.</strong> Continue praticando livremente até a data recomendada.</p>`;
+      html+='</section>';
+    }
     $('courseLesson').innerHTML=html;updateNextLearningCards();
   }
   function beginCourseExercise(id,stage){
+    if(stage==='review'&&reviewStatus(courseProgress(id)).status!=='due'){toast('Esta revisão ainda não está disponível. Consulte o calendário do tema.');return}
     if(hasPendingWork(savedDrafts[id]?.exercise)&&!confirm('Este tema possui um exercício salvo. Iniciar a etapa do curso criará um novo desafio. Deseja continuar?'))return;
-    courseAttempt={id,stage,hintUsed:false,recorded:false};level=stage==='guided'?'easy':'medium';
+    courseAttempt={id,stage,hintUsed:false,recorded:false,reviewPassed:false};level=stage==='guided'?'easy':stage==='review'?'hard':'medium';
     openMode(id,true,true);renderCourseExerciseBanner();
   }
   function renderCourseExerciseBanner(){
     const banner=$('courseExerciseBanner');
     if(!courseAttempt){banner.classList.add('hide');return}
     banner.classList.remove('hide');
-    const independent=courseAttempt.stage==='independent';
-    const used=independent&&courseAttempt.hintUsed;
+    const stage=courseAttempt.stage,isReview=stage==='review',
+      independent=stage==='independent'||isReview,used=independent&&courseAttempt.hintUsed;
     const instructions=independent
-      ?(used?'Treino com ajuda: esta tentativa não valida autonomia. Inicie outro exercício sem dica para registrar seu desempenho independente.':'Meta: ao menos 80% na primeira correção, sem campos pendentes e sem consultar dicas. Se abrir uma dica, esta tentativa se torna prática assistida.')
+      ?used?'Treino com ajuda: esta tentativa não valida autonomia nem consolidação. Faça outro exercício sem dica.'
+        :isReview?'Revisão espaçada: resolva um novo desafio com ao menos 80% na primeira correção, sem campos pendentes nem dicas.'
+        :'Meta: ao menos 80% na primeira correção, sem campos pendentes e sem consultar dicas. Se abrir uma dica, esta tentativa se torna prática assistida.'
       :'Prática assistida: consulte as dicas e corrija para registrar esta etapa.';
-    banner.innerHTML=`<strong>Curso Guiado · ${used?'Treino com ajuda':independent?'Prática independente':'Prática com ajuda'}</strong><div>${instructions}</div><button type="button" class="button small" data-course-back="1">← Voltar à aula</button>`;
+    banner.innerHTML=`<strong>Curso Guiado · ${used?'Treino com ajuda':isReview?'Revisão independente':independent?'Prática independente':'Prática com ajuda'}</strong><div>${instructions}</div><button type="button" class="button small" data-course-back="1">← Voltar à aula</button>`;
   }
-  function recordGuidedAttempt(){if(!courseAttempt||courseAttempt.recorded||!exercise?.grade||exercise.mode!==courseAttempt.id)return;courseAttempt.recorded=true;const p=courseProgress(courseAttempt.id),rate=exercise.grade.total?exercise.grade.correct/exercise.grade.total:0;let didPass=false;
-    if(courseAttempt.stage==='guided'&&rate>=.5&&exercise.grade.missing<=exercise.grade.total*.25){p.guided=true;didPass=true}else if(courseAttempt.stage==='independent'&&rate>=.8&&exercise.grade.missing===0&&!courseAttempt.hintUsed){p.independent=true;didPass=true}
-    saveCourseState();const comment=didPass?'Etapa registrada. Volte à aula para continuar.':courseAttempt.stage==='independent'&&courseAttempt.hintUsed?'Esta tentativa foi prática com ajuda. Para concluir a etapa independente, faça um novo exercício sem dica.':`Resultado ${Math.round(rate*100)}%. Faça outro exercício para atingir a meta desta etapa, preenchendo as respostas necessárias.`;toast(comment);}
+  function recordGuidedAttempt(){
+    if(!courseAttempt||courseAttempt.recorded||!exercise?.grade||exercise.mode!==courseAttempt.id)return;
+    courseAttempt.recorded=true;
+    const progress=courseProgress(courseAttempt.id),grade=exercise.grade;
+    const rate=grade.total?grade.correct/grade.total:0;
+    if(courseAttempt.stage==='review'){
+      const result=recordReview(progress,{correct:grade.correct,total:grade.total,missing:grade.missing,usedHint:courseAttempt.hintUsed});
+      courseAttempt.reviewPassed=result.passed||false;
+      saveCourseState();
+      toast(result.passed?(result.state.consolidated?'Domínio consolidado! Duas revisões espaçadas concluídas.':'Revisão 1/2 concluída! A próxima ficará disponível em sete dias.'):'Revisão ainda pendente. Faça outro exercício sem dica e com pelo menos 80% de acertos.');
+      return;
+    }
+    let didPass=false;
+    if(courseAttempt.stage==='guided'&&rate>=.5&&grade.missing<=grade.total*.25){progress.guided=true;didPass=true}
+    else if(courseAttempt.stage==='independent'&&rate>=.8&&grade.missing===0&&!courseAttempt.hintUsed){progress.independent=true;didPass=true}
+    saveCourseState();
+    const message=didPass?'Etapa registrada. Volte à aula para continuar.'
+      :courseAttempt.stage==='independent'&&courseAttempt.hintUsed?'Esta tentativa foi prática com ajuda. Para concluir a etapa independente, faça um novo exercício sem dica.'
+      :`Resultado ${Math.round(rate*100)}%. Faça outro exercício para atingir a meta desta etapa, preenchendo as respostas necessárias.`;
+    toast(message);
+  }
   function courseClick(e){const btn=e.target.closest('[data-caction]');if(!btn)return;const action=btn.dataset.caction,id=btn.dataset.id;
     if(action==='map'){openCourse(true);return}if(action==='lesson'){openCourse(true,id);return}if(action==='practice-free'){
       const previous=savedDrafts[courseActive];
@@ -1270,8 +1382,8 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     }
     if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="example"]')?.focus({preventScroll:true});return}
     if(action==='example'){courseProgress(courseActive).example=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="guided"]')?.focus({preventScroll:true});return}
-    if(action==='guided'||action==='independent'){beginCourseExercise(courseActive,action);return}
-    if(action==='lesson-quiz'){const q=LESSONS[courseActive].quiz.slice(0,3),selected=q.map((_,i)=>$('courseLesson').querySelector(`input[name="courseq-${i}"]:checked`)?.value);if(selected.some(x=>x===undefined)){toast('Marque uma alternativa em cada pergunta.');return}const score=q.reduce((acc,item,i)=>acc+(Number(selected[i])===item.correct?1:0),0),p=courseProgress(courseActive);p.best=Math.max(p.best,score/3);if(score===3)p.mastered=true;saveCourseState();lessonFeedback={id:courseActive,score,details:q.map((item,i)=>`${i+1}. ${Number(selected[i])===item.correct?'Correto.':'Revisar.'} ${item.why}`)};renderCourseLesson();$('courseLesson').querySelector('.course-course-result')?.focus({preventScroll:true});return}
+    if(action==='guided'||action==='independent'||action==='review'){beginCourseExercise(courseActive,action);return}
+    if(action==='lesson-quiz'){const q=LESSONS[courseActive].quiz.slice(0,3),selected=q.map((_,i)=>$('courseLesson').querySelector(`input[name="courseq-${i}"]:checked`)?.value);if(selected.some(x=>x===undefined)){toast('Marque uma alternativa em cada pergunta.');return}const score=q.reduce((acc,item,i)=>acc+(Number(selected[i])===item.correct?1:0),0),p=courseProgress(courseActive);p.best=Math.max(p.best,score/3);if(score===3){p.mastered=true;beginReviewTracking(p)}saveCourseState();lessonFeedback={id:courseActive,score,details:q.map((item,i)=>`${i+1}. ${Number(selected[i])===item.correct?'Correto.':'Revisar.'} ${item.why}`)};renderCourseLesson();$('courseLesson').querySelector('.course-course-result')?.focus({preventScroll:true});return}
     if(action==='exam-open'){openFinalExam();return}
     if(action==='exam-submit'){gradeFinalExam();return}
     if(action==='exam-new'){openFinalExam(true,true);return}
@@ -1300,7 +1412,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(updateHash)setRouteHash('avaliacao-final');
     saveExamDraft();renderFinalExam();
   }
-  function renderFinalExam(){const ses=finalExamSession;let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Um problema de cada área — e mais seis desafios</h2><p>Doze questões que cruzam conteúdos das seis unidades. Meta de domínio: 10 de 12 acertos. Você pode refazer quantas vezes desejar.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section><section class="course-lesson-panel"><div class="course-assessment">${ses.questions.map((q,i)=>`<div class="course-question"><small>${escapeHTML(MODULES.find(m=>m.id===q.id).name)}</small><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((a,j)=>`<label class="course-option"><input type="radio" name="finalq-${i}" value="${j}" ${(ses.result?.answers?.[i]??ses.answers?.[i])===String(j)?'checked':''} ${ses.result?'disabled':''}><span>${escapeHTML(a)}</span></label>`).join('')}${ses.result?`<div class="course-question-explanation">${ses.result.answers[i]===String(q.correct)?'✓ Correto.':'Revisar.'} ${escapeHTML(q.why)}</div>`:''}</div>`).join('')}</div>${ses.result?`<div class="course-course-result ${ses.result.score<10?'warn':''}"><strong>${ses.result.score} de 12 acertos (${Math.round(100*ses.result.score/12)}%).</strong> ${ses.result.score>=10?'Avaliação integrada concluída com domínio.':'Estude os conceitos apontados e faça outra tentativa.'}</div><button type="button" class="button primary" data-caction="exam-new">Nova avaliação ↻</button>`:`<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="exam-submit">Corrigir avaliação final</button></div>`}</section>`;$('courseExam').innerHTML=html;}
+  function renderFinalExam(){const ses=finalExamSession;let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Um problema de cada área — e mais seis desafios</h2><p>Doze questões que cruzam conteúdos das seis unidades. Meta de domínio: 10 de 12 acertos. Você pode refazer quantas vezes desejar.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section><section class="course-lesson-panel"><div class="course-assessment">${ses.questions.map((q,i)=>`<div class="course-question"><small>${escapeHTML(MODULES.find(m=>m.id===q.id).name)}</small><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((a,j)=>`<label class="course-option"><input type="radio" name="finalq-${i}" value="${j}" ${(ses.result?.answers?.[i]??ses.answers?.[i])===String(j)?'checked':''} ${ses.result?'disabled':''}><span>${escapeHTML(a)}</span></label>`).join('')}${ses.result?`<div class="course-question-explanation">${ses.result.answers[i]===String(q.correct)?'✓ Correto.':'Revisar.'} ${escapeHTML(q.why)}</div>`:''}</div>`).join('')}</div>${ses.result?`<div class="course-course-result ${ses.result.score<10?'warn':''}"><strong>${ses.result.score} de 12 acertos (${Math.round(100*ses.result.score/12)}%).</strong> ${ses.result.score>=10?'Avaliação integrada aprovada.':'Estude os conceitos apontados e faça outra tentativa.'}</div><button type="button" class="button primary" data-caction="exam-new">Nova avaliação ↻</button>`:`<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="exam-submit">Corrigir avaliação final</button></div>`}</section>`;$('courseExam').innerHTML=html;}
   function gradeFinalExam(){const ses=finalExamSession,answers=ses.questions.map((_,i)=>$('courseExam').querySelector(`input[name="finalq-${i}"]:checked`)?.value);if(answers.some(x=>x===undefined)){toast('Responda às 12 questões antes de corrigir.');return}const score=ses.questions.reduce((acc,q,i)=>acc+(answers[i]===String(q.correct)?1:0),0);ses.result={answers,score};ses.answers=answers;saveExamDraft();courseState.final.attempts=(courseState.final.attempts||0)+1;courseState.final.best=Math.max(courseState.final.best||0,score);saveCourseState();renderFinalExam();}
 
   $('courseExam').addEventListener('change',e=>{
@@ -1317,9 +1429,12 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   }
   addEventListener('pagehide',()=>{saveExerciseDraft();saveExamDraft()});
   $('feedbackNextActions').addEventListener('click',e=>{const b=e.target.closest('[data-feedback-action]');if(!b)return;if(b.dataset.feedbackAction==='course')openCourse(true,courseAttempt?.id);else nextExercise()});
+  $('exportProgressButton').addEventListener('click',exportProgress);
+  $('importProgressButton').addEventListener('click',()=>$('importProgressFile').click());
+  $('importProgressFile').addEventListener('change',importProgressFile);
   $('continueButton').addEventListener('click',resumeLearning);
   $('nextLessonButton').addEventListener('click',openRecommendedLesson);
-  $('courseNextButton').addEventListener('click',resumeLearning);
+  $('courseNextButton').addEventListener('click',openRecommendedLesson);
   $('heroStartButton').addEventListener('click',()=>openCourse());
   $('heroPracticeButton').addEventListener('click',()=>{const section=$('practiceSection');section.scrollIntoView({behavior:'smooth',block:'start'});section.focus({preventScroll:true})});
   $('topCourse').addEventListener('click',()=>openCourse());$('startCourseButton').addEventListener('click',()=>openCourse());$('courseHomeBack').addEventListener('click',()=>goHome());$('courseMapButton').addEventListener('click',()=>openCourse());$('courseMap').addEventListener('click',courseClick);$('courseLesson').addEventListener('click',courseClick);$('courseExam').addEventListener('click',courseClick);

@@ -179,3 +179,16 @@
   .feedback-metric{padding:10px 12px}
   .feedback-metric>span{font-size:21px}
 }
+
+/* Ciclo 6: etapas de aprendizagem e backup legível, sem exigir conta. */
+.course-reviews{border-color:var(--border-hi);background:linear-gradient(120deg,var(--accent-bg),transparent),var(--panel)}
+.course-review-list{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.course-review-list .button{min-height:44px;white-space:normal;text-align:left}
+.course-review-panel{border-left:3px solid var(--accent)}
+.review-good{border:1px solid var(--success);background:var(--success-bg);border-radius:10px;padding:12px 14px}
+.footer-progress{display:flex;flex-direction:column;gap:5px;max-width:480px}
+.footer-progress-help{font-size:11px;line-height:1.6;color:var(--muted)}
+.footer-progress-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.footer-progress-actions .button{min-height:44px}
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+@media(max-width:700px){.footer-progress-actions{width:100%}.footer-progress-actions .button{flex:1;white-space:normal}.course-review-list{flex-direction:column}}
