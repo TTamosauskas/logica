@@ -18,7 +18,7 @@ export function formatReviewDate(timestamp){
 export function nextCourseMessage(overview,initialStep,moduleName){
   const next=overview.due[0];
   if(next)return {kind:'due',id:next.id,title:moduleName(next.id),description:`Há ${overview.due.length} ${overview.due.length===1?'revisão disponível':'revisões disponíveis'}. Resolva um novo exercício independente para consolidar.`,button:'Abrir revisão →'};
-  if(initialStep.id)return {kind:'lesson',id:initialStep.id,title:moduleName(initialStep.id),description:`${initialStep.unitTitle} · Etapa de estudo: ${initialStep.label}.`,button:'Ir para esta etapa →'};
+  if(initialStep.id){const stages=['read','example','guided','independent','mastered'],number=stages.indexOf(initialStep.stage)+1;return {kind:'lesson',id:initialStep.id,title:moduleName(initialStep.id),description:`${initialStep.unitTitle} · Etapa ${number>0?number:'?'}/5: ${initialStep.label}.`,button:'Ir para esta etapa →'}}
   if(overview.allConsolidated)return {kind:'complete',id:null,title:'Formação consolidada',description:'Todas as avaliações iniciais e revisões espaçadas foram concluídas. Continue praticando para manter o conhecimento.',button:'Ver meu percurso →'};
   if(overview.upcoming.length){
     const soon=overview.upcoming[0];
