@@ -4,6 +4,7 @@ import { routeFromHash } from './core/navigation.js';
 import { reviewStatus,beginReviewTracking,recordReview,reviewQueue,consolidatedCount,studyRecommendation } from './core/reviews.js';
 import { createBackup,importBackup,PORTABLE_KEYS } from './core/progress-portability.js';
 import { performanceSummary } from './core/performance.js';
+import { courseScreenContext, exerciseScreenContext } from './core/screen-guidance.js';
 import { learningOverview, nextCourseMessage, formatReviewDate, attemptDecision, examWeakAreas } from './core/learning-feedback.js';
 import { EXERCISE_DRAFTS_KEY, EXAM_DRAFT_KEY, DRAFT_VERSION, hasPendingWork, readExerciseDrafts, readExamDraft, mostRecentUnfinished } from './core/draft-store.js';
 import { SYMBOLS, rng, pick, v, not, bin, A, O, X, I, B, t, evalAst, fmt, pretty, sig, varsOf, relevantNames, truthRows, varColumns, stepNodes, formulaColumns, build } from './core/logic.js';
@@ -992,7 +993,11 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     }
     area.innerHTML='<button type="button" class="button primary" data-feedback-action="next">Próximo desafio →</button>';
   }
-  function renderExercise(){if(!exercise)return;const ex=exercise;$('taskKicker').textContent=mode==='misto'?'TREINO MISTO · '+currentExerciseMode().name.toUpperCase():currentExerciseMode().name.toUpperCase();$('taskTitle').textContent=ex.title;$('taskInstruction').textContent=ex.instruction;$('lineCount').textContent=`· ${ex.envs.length} linhas`;$('exerciseIndex').textContent=`Rodada ${serial} · ${ex.vars.length} ${ex.vars.length===1?'variável':'variáveis'}`;
+  function renderExercise(){if(!exercise)return;const ex=exercise;
+    const orientation=exerciseScreenContext({moduleName:currentMode().name,stage:courseAttempt?.stage,graded:!!ex.grade,revealed:!!ex.revealed});
+    $('workLocation').textContent=orientation.location;
+    $('workDescription').textContent=orientation.description;
+    $('taskKicker').textContent=mode==='misto'?'TREINO MISTO · '+currentExerciseMode().name.toUpperCase():currentExerciseMode().name.toUpperCase();$('taskTitle').textContent=ex.title;$('taskInstruction').textContent=ex.instruction;$('lineCount').textContent=`· ${ex.envs.length} linhas`;$('exerciseIndex').textContent=`Rodada ${serial} · ${ex.vars.length} ${ex.vars.length===1?'variável':'variáveis'}`;
     $('tableHeaderTitle').firstChild.textContent='Tabela-verdade ';$('lineCount').textContent=`· ${ex.envs.length} linhas`;renderTranslation();renderDeduction();document.querySelectorAll('.segment').forEach(b=>{const active=b.dataset.level===level;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});renderTable();renderChoice();renderFeedback();renderFeedbackActions();renderExerciseHelp();renderSidebar();renderInlineHint();renderCategorical();$('checkButton').disabled=ex.revealed||!!(ex.translation&&!ex.translation.unlocked)||!!(ex.cat&&!ex.cat.venn.verdictVerified);$('clearButton').disabled=ex.revealed;$('revealButton').disabled=ex.revealed;$('hintButton').disabled=false;renderSpecial();renderCourseExerciseBanner();$('undoClearButton').hidden=!undoClearState;saveExerciseDraft();}
   function fieldKey(row,col){return row+'-'+col}
   function expected(ex,row,col){const cell=ex.cols[col];if(ex.mode==='categoricos'){const mask=ex.envs[row].__model;if(cell.key==='model')return modelLabel(mask);if(cell.key==='counter')return t(ex.cat.forms.slice(0,2).every(x=>catValue(x,mask))&&!catValue(ex.cat.forms[2],mask));return t(catValue(ex.cat.forms[cell.catIndex],mask))}return cell.assignmentIndex!==undefined?ex.metadata.items[ex.envs[row].__assignment[cell.assignmentIndex]]:t(evalAst(cell.node,ex.envs[row]))}
@@ -1313,7 +1318,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function renderCourseMap(){
     const v=learningOverview(COURSE_UNITS,courseState.lessons);
     const finalBest=courseState.final.best||0;
-    let html=`<div class="course-unit"><div class="course-tile-row"><div><span class="eyebrow">MAPA DE APRENDIZAGEM</span><h2>${v.approved} avaliações aprovadas · ${v.consolidated} temas consolidados</h2><p>Uma avaliação aprovada registra o aprendizado inicial. Duas revisões independentes posteriores consolidam o tema. Melhor prova integrada: ${finalBest?finalBest+'/12':'ainda não realizada'}.</p></div><button type="button" class="button primary" data-caction="exam-open">Avaliação final integrada →</button></div><div class="learning-progress-pair" aria-label="Progresso por etapa"><div><strong>Aprovação inicial: ${v.approved}/${v.total}</strong><div class="course-meter" role="progressbar" aria-label="Avaliações iniciais aprovadas" aria-valuemin="0" aria-valuemax="${v.total}" aria-valuenow="${v.approved}"><span style="width:${100*v.approved/v.total}%"></span></div></div><div><strong>Domínio consolidado: ${v.consolidated}/${v.total}</strong><div class="course-meter consolidated" role="progressbar" aria-label="Domínio consolidado" aria-valuemin="0" aria-valuemax="${v.total}" aria-valuenow="${v.consolidated}"><span style="width:${100*v.consolidated/v.total}%"></span></div></div></div></div>`;
+    let html=`<div class="course-unit"><div class="course-tile-row"><div><span class="eyebrow">MAPA DE APRENDIZAGEM</span><h2>${v.approved} avaliações aprovadas · ${v.consolidated} temas consolidados</h2><p>Uma avaliação aprovada registra o aprendizado inicial. Duas revisões independentes posteriores consolidam o tema. Melhor prova integrada: ${finalBest?finalBest+'/12':'ainda não realizada'}.</p></div><button type="button" class="button" data-caction="exam-open">Avaliação final integrada →</button></div><div class="learning-progress-pair" aria-label="Progresso por etapa"><div><strong>Aprovação inicial: ${v.approved}/${v.total}</strong><div class="course-meter" role="progressbar" aria-label="Avaliações iniciais aprovadas" aria-valuemin="0" aria-valuemax="${v.total}" aria-valuenow="${v.approved}"><span style="width:${100*v.approved/v.total}%"></span></div></div><div><strong>Domínio consolidado: ${v.consolidated}/${v.total}</strong><div class="course-meter consolidated" role="progressbar" aria-label="Domínio consolidado" aria-valuemin="0" aria-valuemax="${v.total}" aria-valuenow="${v.consolidated}"><span style="width:${100*v.consolidated/v.total}%"></span></div></div></div></div>`;
     if(v.due.length){
       html+=`<section class="course-unit course-reviews"><h2>Revisões disponíveis (${v.due.length})</h2><p>Resolva um novo exercício do tema sem consultar dicas. Cada revisão precisa de 80% na primeira correção.</p><div class="course-review-list">${v.due.map(item=>`<button class="button" type="button" data-caction="lesson" data-id="${item.id}">${escapeHTML(MODULES.find(m=>m.id===item.id).name)} · revisão ${item.state.completed+1}/2 →</button>`).join('')}</div></section>`;
     }
@@ -1330,7 +1335,15 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     $('courseMap').innerHTML=html;
   }
   function openCourse(updateHash=true,id=null){courseAttempt=null;courseActive=id&&LESSONS[id]?id:null;lessonFeedback=null;$('homeView').classList.add('hide');$('workView').classList.add('hide');$('courseView').classList.remove('hide');$('courseExam').classList.add('hide');if(updateHash)setRouteHash(courseActive?'aula-'+courseActive:'curso');renderCourse();scrollTo({top:0,behavior:'instant'})}
-  function renderCourse(){renderCourseMap();$('courseMap').classList.toggle('hide',!!courseActive);$('courseLesson').classList.toggle('hide',!courseActive);$('courseMapButton').classList.toggle('hide',!courseActive);$('courseExam').classList.add('hide');if(courseActive)renderCourseLesson();}
+  function renderCourse(){
+    updateCourseContext(courseActive?'lesson':'map');
+    renderCourseMap();$('courseMap').classList.toggle('hide',!!courseActive);$('courseLesson').classList.toggle('hide',!courseActive);$('courseMapButton').classList.toggle('hide',!courseActive);$('courseExam').classList.add('hide');if(courseActive)renderCourseLesson();}
+  function updateCourseContext(view){
+    const lesson=courseActive?MODULES.find(m=>m.id===courseActive):null;
+    const context=courseScreenContext(view,lesson);
+    $('courseLocation').textContent=context.location;
+    $('courseDescription').textContent=context.description;
+  }
   function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
     const flags=[p.read,p.example,p.guided,p.independent,p.mastered],labels=['1. Compreender','2. Observar','3. Praticar com ajuda','4. Resolver sozinho','5. Aprovar avaliação inicial'];let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><div class="course-lesson-flow">${labels.map((l,i)=>`<span class="${flags[i]?'done':''}">${flags[i]?'✓ ':''}${l}</span>`).join('')}</div><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
     html+=`<section class="course-lesson-panel"><h3>1. Compreender</h3><p>${escapeHTML(lesson.theory)}</p><div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Aula lida':'Concluí a leitura →'}</button></div></section>`;
@@ -1430,6 +1443,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     saveExamDraft();renderFinalExam();
   }
   function renderFinalExam(){
+    updateCourseContext('exam');
     const ses=finalExamSession;
     let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Um problema de cada área — e mais seis desafios</h2><p>Doze questões que cruzam conteúdos das seis unidades. <strong>Critério de aprovação: 10 de 12 acertos.</strong> A aprovação da prova integrada não substitui as revisões espaçadas dos temas.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section>`;
     html+=`<section class="course-lesson-panel"><div class="course-assessment">${ses.questions.map((q,i)=>`<div class="course-question"><small>${escapeHTML(MODULES.find(m=>m.id===q.id).name)}</small><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((a,j)=>`<label class="course-option"><input type="radio" name="finalq-${i}" value="${j}" ${(ses.result?.answers?.[i]??ses.answers?.[i])===String(j)?'checked':''} ${ses.result?'disabled':''}><span>${escapeHTML(a)}</span></label>`).join('')}${ses.result?`<div class="course-question-explanation">${ses.result.answers[i]===String(q.correct)?'✓ Correto.':'Revisar.'} ${escapeHTML(q.why)}</div>`:''}</div>`).join('')}</div>`;
