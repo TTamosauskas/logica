@@ -154,3 +154,28 @@
 [hidden]{display:none!important}
 @media(max-width:700px){.learning-next-actions{width:100%}.learning-next-actions .button{width:100%}}
 @media(max-width:520px){.draft-status{margin:12px 15px}}
+
+/* Ciclo 4: dicas no contexto e feedback pedagógico explícito. */
+.inline-hint,.hint-decision{margin:14px 24px 6px;border:1px solid var(--border-hi);border-radius:12px;padding:15px 17px;line-height:1.6;font-size:14px;background:var(--panel2)}
+.inline-hint{border-left:4px solid var(--accent);background:var(--accent-bg)}
+.inline-hint:focus-visible,.hint-decision h3:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.inline-hint strong,.hint-decision h3{display:block;margin:0 0 6px;font-size:15px;color:var(--text)}
+.inline-hint p,.hint-decision p{margin:6px 0;color:var(--text);line-height:1.65}
+.hint-decision-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.hint-decision-actions .button{min-height:44px;white-space:normal}
+.hint-location{font-size:12px;line-height:1.6;color:var(--muted);margin:12px 0 0}
+.feedback-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:13px 0 14px}
+.feedback-metric{display:flex;flex-direction:column;gap:4px;min-width:0;border:1px solid var(--border);border-radius:10px;padding:11px;background:var(--panel)}
+.feedback-metric strong{font-size:12px;line-height:1.45;color:var(--muted)}
+.feedback-metric>span{font-size:23px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+.feedback-metric small{font-size:11px;line-height:1.4;color:var(--muted)}
+.feedback-assisted{border-left:3px solid var(--warning);padding:10px 12px;background:var(--warning-bg);border-radius:6px}
+@media(max-width:780px){.feedback-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){
+  .inline-hint,.hint-decision{margin:12px 15px 5px;padding:14px}
+  .hint-decision-actions{flex-direction:column}
+  .hint-decision-actions .button{width:100%}
+  .feedback-metrics{grid-template-columns:1fr}
+  .feedback-metric{padding:10px 12px}
+  .feedback-metric>span{font-size:21px}
+}
