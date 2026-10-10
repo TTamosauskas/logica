@@ -30,7 +30,7 @@ export function attemptDecision(stage,firstGrade,usedHint=false){
   if(!firstGrade||!Number.isFinite(firstGrade.total)||firstGrade.total<=0)return {passed:false,reason:'Sem primeira correção registrada.'};
   const rate=firstGrade.correct/firstGrade.total;
   const guided=stage==='guided';
-  const minimum=guided?.5:.8;
+  const minimum=guided ? 0.5 : 0.8;
   const pendingLimit=guided?firstGrade.total*.25:0;
   const passed=rate>=minimum&&firstGrade.missing<=pendingLimit&&(guided||!usedHint);
   const pct=Math.round(rate*100);
