@@ -19,3 +19,12 @@ jobs:
         run: node --check src/app.js
       - name: Executar testes
         run: npm test
+      - name: Preparar Chromium
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+      - name: Instalar driver do teste visual
+        run: npm install --no-save playwright-core
+      - name: Validar fluxos móveis no navegador
+        run: node tests/ux-smoke.mjs
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}

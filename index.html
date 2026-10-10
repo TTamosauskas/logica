@@ -27,11 +27,15 @@
         <div><span class="eyebrow"><span class="dot"></span> CURSO DE LÓGICA FORMAL</span><h1>Aprenda a pensar.<br><span class="gradient-text">E a demonstrar.</span></h1><p>Um percurso de lógica formal com aulas, demonstrações, exercícios interativos, diagramas, quantificadores e avaliação de domínio. Estude na ordem guiada ou explore livremente os desafios.</p><div class="hero-actions"><button class="button primary" id="heroStartButton" type="button">Começar do zero →</button><button class="button" id="heroPracticeButton" type="button">Praticar um assunto ↓</button></div></div>
         <div class="hero-visual" aria-hidden="true"><div class="mini-top">VISUALIZE A LÓGICA</div><div class="mini-equation">(p ∧ q) → p</div><table class="mini-table"><thead><tr><th>p</th><th>q</th><th>p ∧ q</th><th>→ p</th></tr></thead><tbody><tr><td>V</td><td>V</td><td>V</td><td>V</td></tr><tr><td>V</td><td>F</td><td>F</td><td>V</td></tr><tr><td>F</td><td>V</td><td>F</td><td>V</td></tr><tr><td>F</td><td>F</td><td>F</td><td>V</td></tr></tbody></table></div>
       </div>
+      <section class="learning-next" id="continueLearning" aria-label="Próxima etapa recomendada">
+        <div class="learning-next-copy"><span class="eyebrow">CONTINUE DE ONDE PAROU</span><h2 id="continueTitle">Sua próxima etapa</h2><p id="continueDescription"></p></div>
+        <button type="button" class="button primary" id="continueButton">Retomar curso →</button>
+      </section>
       <div class="overview" id="overview" aria-label="Meu progresso"></div>
       <section class="course-promo" aria-label="Curso guiado de lógica formal"><div><span class="eyebrow">CURSO COMPLETO DE LÓGICA FORMAL</span><h2>Aprenda em uma sequência que faz sentido.</h2><p>Seis unidades, aulas com exemplos resolvidos, exercícios assistidos, prática independente e avaliações. Seu avanço fica salvo neste navegador.</p><div class="course-promo-progress"><span id="courseHomeSummary">Seu percurso começa aqui</span><div class="course-meter"><span id="courseHomeMeter"></span></div></div></div><button id="startCourseButton" type="button" class="button primary">Iniciar Curso Guiado →</button></section>
       <div class="section-heading" id="practiceSection" tabindex="-1"><div><span class="inline-label">PRÁTICA LIVRE</span><h2>Escolha um assunto para praticar</h2><p>Exercícios independentes do curso guiado. Escolha um tema e pratique no seu ritmo.</p></div></div>
-      <div class="mode-grid" id="modeGrid"></div>
-      <div class="bottom-note"><p><strong>Como funciona?</strong> Selecione um módulo, clique nas células vazias para alternar entre V e F e use “Corrigir”. Cada nova rodada traz um desafio.</p><button class="button small" id="howButton" type="button">Consultar operadores ↗</button></div>
+      <div class="practice-groups" id="modeGrid" aria-label="Assuntos organizados por unidade"></div>
+      <div class="bottom-note"><p><strong>Como funciona a prática livre?</strong> Abra uma unidade e escolha um assunto. Cada desafio apresenta instruções próprias, uma dica e a correção comentada. Em tabelas-verdade, toque nas células para alternar V e F.</p><button class="button small" id="howButton" type="button">Consultar operadores ↗</button></div>
     </section>
     <section id="workView" class="hide" aria-label="Área de exercícios">
       <button class="back" id="backButton" type="button">← Voltar aos módulos</button>
@@ -59,6 +63,10 @@
     <section id="courseView" class="hide" aria-label="Curso Guiado de Lógica Formal">
       <button class="back" id="courseHomeBack" type="button">← Página inicial</button>
       <div class="course-head"><div><span class="eyebrow"><span class="dot"></span> FORMAÇÃO EM LÓGICA FORMAL</span><h1>Curso Guiado</h1><p>Aprenda → observe uma resolução → pratique com ajuda → resolva sozinho → demonstre domínio.</p></div><button type="button" id="courseMapButton" class="button">Mapa das unidades</button></div>
+      <div class="course-next" id="courseNext" aria-label="Etapa recomendada no curso">
+        <div><strong id="courseNextTitle">Próxima etapa</strong><p id="courseNextDescription"></p></div>
+        <button class="button primary" id="courseNextButton" type="button">Ir para a próxima etapa →</button>
+      </div>
       <div id="courseMap" class="course-map"></div>
       <div id="courseLesson" class="course-lesson hide"></div>
       <div id="courseExam" class="course-exam hide"></div>

@@ -1,4 +1,5 @@
 import { MODULES } from './content/modules.js';
+import { LEARNING_STAGES, getPracticeGroups, getNextLearningStep } from './core/learning-path.js';
 import { routeFromHash } from './core/navigation.js';
 import { SYMBOLS, rng, pick, v, not, bin, A, O, X, I, B, t, evalAst, fmt, pretty, sig, varsOf, relevantNames, truthRows, varColumns, stepNodes, formulaColumns, build } from './core/logic.js';
 import { tokens, parseFormula, equivalentFormula } from './core/parser.js';
@@ -746,8 +747,40 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function modeStats(id){return stats.byMode[id]||{tries:0,perfect:0,correct:0,total:0}}
   function pct(correct,total){return total?Math.round(100*correct/total)+'%':'—'}
   function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3200)}
-  function renderHome(){updateCourseHome();const tried=Object.entries(stats.byMode).filter(([id,x])=>id!=='misto'&&x.tries>0).length;$('overview').innerHTML=`<div class="stat"><div class="stat-value">${stats.tries}</div><div class="stat-caption">Exercícios corrigidos</div></div><div class="stat"><div class="stat-value">${pct(stats.correct,stats.total)}</div><div class="stat-caption">Acertos na primeira tentativa</div></div><div class="stat"><div class="stat-value">${tried}<span style="font-size:15px;color:var(--faint)"> / ${MODULES.length-1}</span></div><div class="stat-caption">Módulos praticados</div></div>`;
-    $('modeGrid').innerHTML=MODULES.map(m=>{const s=modeStats(m.id),info=s.tries?`${s.tries} ${s.tries===1?'rodada':'rodadas'} · ${pct(s.correct,s.total)} de acertos`:'Pronto para começar';return `<button type="button" class="mode-card ${m.id==='misto'?'mixed':''}" data-open="${m.id}"><div class="card-top"><span class="mode-icon">${m.icon}</span><span class="mode-num">${m.no}</span></div><h3>${m.name}</h3><p>${m.desc}</p><div class="card-foot"><span>${m.id==='misto'?'Revisão adaptativa':info}</span><span class="go" aria-hidden="true">↗</span></div></button>`}).join('')}
+  const PRACTICE_SECTIONS_KEY='logiclab_practice_sections_v1';
+  function loadPracticeSections(){
+    try{
+      const value=JSON.parse(localStorage.getItem(PRACTICE_SECTIONS_KEY));
+      return new Set(Array.isArray(value)?value.map(String):['0']);
+    }catch{return new Set(['0'])}
+  }
+  const expandedPracticeSections=loadPracticeSections();
+  const practiceGroups=getPracticeGroups(COURSE_UNITS,MODULES);
+  function nextLesson(){return getNextLearningStep(COURSE_UNITS,courseState.lessons)}
+  function updateNextLearningCards(){
+    const next=nextLesson(),lesson=MODULES.find(m=>m.id===next.id);
+    const detail=lesson?`${next.unitTitle} · Etapa ${LEARNING_STAGES.findIndex(s=>s.key===next.stage)+1}/5: ${next.label}.`:'Todos os temas do percurso foram concluídos. Revise os conteúdos ou explore a avaliação integrada.';
+    $('continueTitle').textContent=lesson?lesson.name:'Percurso concluído';
+    $('continueDescription').textContent=detail;
+    $('continueButton').textContent=lesson?(next.stage==='read'&&next.completed===0?'Começar pela primeira aula →':'Retomar esta etapa →'):'Ver meu percurso →';
+    $('courseNextTitle').textContent=lesson?`Próximo passo: ${lesson.name}`:'Percurso concluído';
+    $('courseNextDescription').textContent=detail;
+    $('courseNextButton').textContent=lesson?'Ir para esta aula →':'Ver mapa do curso →';
+  }
+  function resumeLearning(){
+    const next=nextLesson();openCourse(true,next.id);
+  }
+  function renderHome(){updateCourseHome();updateNextLearningCards();const tried=Object.entries(stats.byMode).filter(([id,x])=>id!=='misto'&&x.tries>0).length;$('overview').innerHTML=`<div class="stat"><div class="stat-value">${stats.tries}</div><div class="stat-caption">Exercícios corrigidos</div></div><div class="stat"><div class="stat-value">${pct(stats.correct,stats.total)}</div><div class="stat-caption">Acertos na primeira tentativa</div></div><div class="stat"><div class="stat-value">${tried}<span style="font-size:15px;color:var(--faint)"> / ${MODULES.length-1}</span></div><div class="stat-caption">Módulos praticados</div></div>`;
+    $('modeGrid').innerHTML=practiceGroups.map(group=>{
+      const attempts=group.modules.filter(m=>modeStats(m.id).tries>0).length;
+      const cards=group.modules.map(m=>{
+        const stat=modeStats(m.id);
+        const info=stat.tries?`${stat.tries} ${stat.tries===1?'rodada':'rodadas'} · ${pct(stat.correct,stat.total)} de acertos`:'Pronto para começar';
+        return `<button type="button" class="mode-card ${m.id==='misto'?'mixed':''}" data-open="${m.id}"><div class="card-top"><span class="mode-icon">${escapeHTML(m.icon)}</span><span class="mode-num">${escapeHTML(m.no)}</span></div><strong class="mode-title">${escapeHTML(m.name)}</strong><p>${escapeHTML(m.desc)}</p><div class="card-foot"><span>${m.id==='misto'?'Revisão adaptativa':info}</span><span class="go" aria-hidden="true">↗</span></div></button>`;
+      }).join('');
+      const expanded=expandedPracticeSections.has(group.id)?' open':'';
+      return `<details class="practice-group" data-practice-section="${group.id}"${expanded}><summary><span class="practice-group-heading"><strong>${escapeHTML(group.title)}</strong><small>${escapeHTML(group.note)}</small></span><span class="practice-group-count">${attempts}/${group.modules.length} praticados</span></summary><div class="mode-grid">${cards}</div></details>`;
+    }).join('')}
   function selectMixed(){const choices=MODULES.filter(m=>m.id!=='misto');const weighted=choices.flatMap(m=>{const s=modeStats(m.id);const accuracy=s.total?s.correct/s.total:0;const w=s.tries===0?5:Math.max(1,Math.ceil(1+5*(1-accuracy)));return Array.from({length:w},()=>m.id)});return pick(weighted)}
   function renderLevelButtons(){const extended=mode==='deducao',items=extended?[['easy','1 · Básico'],['medium','2 · Falsidades'],['hard','3 · Conectivos'],['expert','4 · Concurso'],['exam','5 · Autônomo']]:[['easy','Fácil'],['medium','Médio'],['hard','Difícil']];$('levelSegments').classList.toggle('levels-five',extended);$('levelSegments').innerHTML=items.map(([id,label])=>`<button class="segment" data-level="${id}" type="button" aria-pressed="${level===id}">${label}</button>`).join('');}
   function nextExercise(){if(!GENERATORS[mode]&&mode!=='misto')return;if(courseAttempt&&serial>0){courseAttempt.recorded=false;courseAttempt.hintUsed=false}let next,signature;for(let attempt=0;attempt<12;attempt++){const selectedMode=mode==='misto'?selectMixed():mode;const currentLevel=selectedMode==='deducao'&&mode==='misto'&&level==='hard'?pick(['hard','expert','exam']):level;next=GENERATORS[selectedMode](currentLevel,selectedMode);signature=next.metadata?.signature||selectedMode+'|'+next.roots.map(sig).join('|')+'|'+next.vars.join(',');if(signature!==lastSignature)break}lastSignature=signature;exercise=next;serial++;renderExercise();}
@@ -895,6 +928,12 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function toggleTheme(){const light=document.documentElement.dataset.theme==='light';document.documentElement.dataset.theme=light?'dark':'light';$('themeButton').textContent=light?'☀  Tema':'☾  Tema';try{localStorage.setItem(THEME_KEY,light?'dark':'light')}catch(e){}}
   function initTheme(){let current='dark';try{current=localStorage.getItem(THEME_KEY)||'dark'}catch(e){}document.documentElement.dataset.theme=current;$('themeButton').textContent=current==='light'?'☾  Tema':'☀  Tema'}
   $('modeGrid').addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(btn)openMode(btn.dataset.open)});
+  $('modeGrid').addEventListener('toggle',e=>{
+    const section=e.target.closest('[data-practice-section]');if(!section)return;
+    if(section.open)expandedPracticeSections.add(section.dataset.practiceSection);
+    else expandedPracticeSections.delete(section.dataset.practiceSection);
+    try{localStorage.setItem(PRACTICE_SECTIONS_KEY,JSON.stringify([...expandedPracticeSections]))}catch{}
+  },true);
   $('levelSegments').addEventListener('click',e=>{const btn=e.target.closest('[data-level]');if(btn&&level!==btn.dataset.level){level=btn.dataset.level;lastSignature='';nextExercise()}});
   $('categoricalModelWorkbench').addEventListener('click',e=>{
     const ex=exercise;if(ex?.mode!=='categoricos'||!(ex.cat.venn.verdictVerified||ex.revealed))return;
@@ -1017,7 +1056,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     $('courseMap').innerHTML=html;
   }
   function openCourse(updateHash=true,id=null){courseAttempt=null;courseActive=id&&LESSONS[id]?id:null;lessonFeedback=null;$('homeView').classList.add('hide');$('workView').classList.add('hide');$('courseView').classList.remove('hide');$('courseExam').classList.add('hide');if(updateHash)setRouteHash(courseActive?'aula-'+courseActive:'curso');renderCourse();scrollTo({top:0,behavior:'instant'})}
-  function renderCourse(){renderCourseMap();$('courseMap').classList.toggle('hide',!!courseActive);$('courseLesson').classList.toggle('hide',!courseActive);$('courseMapButton').classList.toggle('hide',!courseActive);$('courseExam').classList.add('hide');if(courseActive)renderCourseLesson();}
+  function renderCourse(){updateNextLearningCards();$('courseNext').classList.remove('hide');renderCourseMap();$('courseMap').classList.toggle('hide',!!courseActive);$('courseLesson').classList.toggle('hide',!courseActive);$('courseMapButton').classList.toggle('hide',!courseActive);$('courseExam').classList.add('hide');if(courseActive)renderCourseLesson();}
   function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
     const flags=[p.read,p.example,p.guided,p.independent,p.mastered],labels=['1. Compreender','2. Observar','3. Praticar com ajuda','4. Resolver sozinho','5. Demonstrar domínio'];let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><div class="course-lesson-flow">${labels.map((l,i)=>`<span class="${flags[i]?'done':''}">${flags[i]?'✓ ':''}${l}</span>`).join('')}</div><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
     html+=`<section class="course-lesson-panel"><h3>1. Compreender</h3><p>${escapeHTML(lesson.theory)}</p><div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Aula lida':'Concluí a leitura →'}</button></div></section>`;
@@ -1026,7 +1065,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(p.example){html+=`<section class="course-lesson-panel"><h3>3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
     if(p.guided){html+=`<section class="course-lesson-panel"><h3>4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
     if(p.independent){html+=`<section class="course-lesson-panel"><h3>5. Demonstrar domínio</h3><p>Responda às três perguntas de compreensão. Atingindo três acertos, o tema fica dominado; com dois acertos, você pode revisar e tentar novamente.</p><div class="course-assessment">${lesson.quiz.slice(0,3).map((q,i)=>`<div class="course-question"><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((option,j)=>`<label class="course-option"><input type="radio" name="courseq-${i}" value="${j}"><span>${escapeHTML(option)}</span></label>`).join('')}</div>`).join('')}</div>${lessonFeedback&&lessonFeedback.id===id?`<div class="course-course-result ${lessonFeedback.score<3?'warn':''}"><strong>${lessonFeedback.score}/3 acertos.</strong> ${lessonFeedback.score===3?'Domínio demonstrado!':'Revise as explicações e faça outra tentativa.'}${lessonFeedback.details.map(x=>`<p>${escapeHTML(x)}</p>`).join('')}</div>`:''}<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="lesson-quiz">Corrigir avaliação</button></div></section>`}
-    $('courseLesson').innerHTML=html;
+    $('courseLesson').innerHTML=html;updateNextLearningCards();
   }
   function beginCourseExercise(id,stage){courseAttempt={id,stage,hintUsed:false,recorded:false};level=stage==='guided'?'easy':'medium';openMode(id);renderCourseExerciseBanner();}
   function renderCourseExerciseBanner(){const banner=$('courseExerciseBanner');if(!courseAttempt){banner.classList.add('hide');return}banner.classList.remove('hide');banner.innerHTML=`<strong>Curso Guiado · ${courseAttempt.stage==='guided'?'Prática com ajuda':'Prática independente'}</strong><div>${courseAttempt.stage==='guided'?'Corrija a tentativa para registrar sua prática.':'Meta: ao menos 80% na primeira correção, com autonomia.'}</div><button type="button" class="button small" data-course-back="1">← Voltar à aula</button>`;}
@@ -1044,11 +1083,13 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(action==='exam-new'){openFinalExam();return}
   }
   $('workView').addEventListener('click',e=>{if(e.target.closest('[data-course-back]'))openCourse(true,courseAttempt?.id)});
-  function openFinalExam(){courseActive=null;renderCourse();$('courseMap').classList.add('hide');$('courseLesson').classList.add('hide');$('courseExam').classList.remove('hide');let questions=[];const ids=new Set();COURSE_UNITS.forEach(unit=>{const id=pick(unit.ids);ids.add(id);questions.push({...pick(LESSONS[id].quiz),id})});shuffle(COURSE_UNITS.flatMap(u=>u.ids.filter(id=>!ids.has(id)))).slice(0,6).forEach(id=>questions.push({...pick(LESSONS[id].quiz),id}));finalExamSession={questions:shuffle(questions),result:null};renderFinalExam();}
+  function openFinalExam(){courseActive=null;renderCourse();$('courseNext').classList.add('hide');$('courseMap').classList.add('hide');$('courseLesson').classList.add('hide');$('courseExam').classList.remove('hide');let questions=[];const ids=new Set();COURSE_UNITS.forEach(unit=>{const id=pick(unit.ids);ids.add(id);questions.push({...pick(LESSONS[id].quiz),id})});shuffle(COURSE_UNITS.flatMap(u=>u.ids.filter(id=>!ids.has(id)))).slice(0,6).forEach(id=>questions.push({...pick(LESSONS[id].quiz),id}));finalExamSession={questions:shuffle(questions),result:null};renderFinalExam();}
   function renderFinalExam(){const ses=finalExamSession;let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Um problema de cada área — e mais seis desafios</h2><p>Doze questões que cruzam conteúdos das seis unidades. Meta de domínio: 10 de 12 acertos. Você pode refazer quantas vezes desejar.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section><section class="course-lesson-panel"><div class="course-assessment">${ses.questions.map((q,i)=>`<div class="course-question"><small>${escapeHTML(MODULES.find(m=>m.id===q.id).name)}</small><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((a,j)=>`<label class="course-option"><input type="radio" name="finalq-${i}" value="${j}" ${ses.result?.answers[i]===String(j)?'checked':''} ${ses.result?'disabled':''}><span>${escapeHTML(a)}</span></label>`).join('')}${ses.result?`<div class="course-question-explanation">${ses.result.answers[i]===String(q.correct)?'✓ Correto.':'Revisar.'} ${escapeHTML(q.why)}</div>`:''}</div>`).join('')}</div>${ses.result?`<div class="course-course-result ${ses.result.score<10?'warn':''}"><strong>${ses.result.score} de 12 acertos (${Math.round(100*ses.result.score/12)}%).</strong> ${ses.result.score>=10?'Avaliação integrada concluída com domínio.':'Estude os conceitos apontados e faça outra tentativa.'}</div><button type="button" class="button primary" data-caction="exam-new">Nova avaliação ↻</button>`:`<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="exam-submit">Corrigir avaliação final</button></div>`}</section>`;$('courseExam').innerHTML=html;}
   function gradeFinalExam(){const ses=finalExamSession,answers=ses.questions.map((_,i)=>$('courseExam').querySelector(`input[name="finalq-${i}"]:checked`)?.value);if(answers.some(x=>x===undefined)){toast('Responda às 12 questões antes de corrigir.');return}const score=ses.questions.reduce((acc,q,i)=>acc+(answers[i]===String(q.correct)?1:0),0);ses.result={answers,score};courseState.final.attempts=(courseState.final.attempts||0)+1;courseState.final.best=Math.max(courseState.final.best||0,score);saveCourseState();renderFinalExam();}
 
   $('feedbackNextActions').addEventListener('click',e=>{const b=e.target.closest('[data-feedback-action]');if(!b)return;if(b.dataset.feedbackAction==='course')openCourse(true,courseAttempt?.id);else nextExercise()});
+  $('continueButton').addEventListener('click',resumeLearning);
+  $('courseNextButton').addEventListener('click',resumeLearning);
   $('heroStartButton').addEventListener('click',()=>openCourse());
   $('heroPracticeButton').addEventListener('click',()=>{const section=$('practiceSection');section.scrollIntoView({behavior:'smooth',block:'start'});section.focus({preventScroll:true})});
   $('topCourse').addEventListener('click',()=>openCourse());$('startCourseButton').addEventListener('click',()=>openCourse());$('courseHomeBack').addEventListener('click',()=>goHome());$('courseMapButton').addEventListener('click',()=>openCourse());$('courseMap').addEventListener('click',courseClick);$('courseLesson').addEventListener('click',courseClick);$('courseExam').addEventListener('click',courseClick);
