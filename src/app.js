@@ -836,7 +836,12 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function renderExerciseHelp(){
     const ex=exercise,m=currentExerciseMode();
     const steps=(m.steps||[]).map(step=>'<li>'+escapeHTML(step)+'</li>').join('');
-    const reference='<div class="exercise-help-operators"><strong>Regras essenciais:</strong> ¬ inverte V/F; ∧ exige ambos V; ∨ exige pelo menos um V; → é F somente em V→F; ↔ é V quando os valores coincidem.</div>';
+    const rules=ex.mode==='categoricos'||ex.mode==='predicados2'
+      ?'∀ exige que a regra valha para todos; ∃ exige pelo menos um exemplo. No Venn, hachuras indicam regiões vazias e X indica existência.'
+      :ex.mode==='provas'||ex.mode==='arvores'
+        ?'Uma demonstração aplica regras de inferência a premissas anteriores; um ramo aberto pode indicar um contraexemplo.'
+        :'¬ inverte V/F; ∧ exige ambos V; ∨ exige pelo menos um V; → é F somente em V→F; ↔ é V quando os valores coincidem.';
+    const reference='<div class="exercise-help-operators"><strong>Regras essenciais:</strong> '+rules+'</div>';
     $('exerciseHelpContent').innerHTML='<p><strong>Como resolver '+escapeHTML(m.name)+':</strong></p><ol>'+steps+'</ol>'+reference;
   }
   function renderFeedbackActions(){
