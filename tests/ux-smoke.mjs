@@ -252,7 +252,7 @@ try{
   assert.equal(stateAfter.consolidated,false);
 
   // Backup local pode sair do navegador e ser restaurado após confirmação.
-  await progressPage.locator('#topHome').click({force:true});
+  await progressPage.locator('#brand').click();
   const downloadPromise=progressPage.waitForEvent('download');
   await progressPage.locator('#exportProgressButton').click();
   const download=await downloadPromise;
@@ -263,8 +263,10 @@ try{
   assert.equal(JSON.parse(backup.data.logiclab_curso_formal_v2).lessons.fundamentos.mastered,true);
   await progressPage.evaluate(()=>localStorage.removeItem('logiclab_curso_formal_v2'));
   progressPage.on('dialog',dialog=>dialog.accept());
-  await progressPage.locator('#importProgressFile').setInputFiles({name:'progresso.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
-  await progressPage.waitForLoadState('networkidle');
+  await Promise.all([
+    progressPage.waitForEvent('load'),
+    progressPage.locator('#importProgressFile').setInputFiles({name:'progresso.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))})
+  ]);
   const restored=await progressPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons.fundamentos);
   assert.equal(restored.mastered,true);
   assert.equal(restored.review.completed,0);
