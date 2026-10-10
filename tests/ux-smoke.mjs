@@ -409,7 +409,8 @@ try{
     await journey.locator('#backButton').click();
     assert.match(await journey.locator('#courseLocation').innerText(),/AULA/);
 
-    await journey.goto(root+'#fundamentos',{waitUntil:'networkidle'});
+    // Outro tema evita confundir a tentativa guiada salva com uma prática livre.
+    await journey.goto(root+'#operadores',{waitUntil:'networkidle'});
     assert.match(await journey.locator('#workLocation').innerText(),/PRÁTICA LIVRE/);
     assert.match(await journey.locator('#workDescription').innerText(),/módulos/);
     assert.match(await journey.locator('#backButton').innerText(),/Voltar aos módulos/);
