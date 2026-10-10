@@ -857,7 +857,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(!GENERATORS[mode]&&mode!=='misto')return;
     if(!force&&!confirmDiscard('Iniciar outro desafio'))return;
     undoClearState=null;
-    if(courseAttempt&&serial>0){courseAttempt.recorded=false;courseAttempt.hintUsed=false}
+    if(courseAttempt&&serial>0){courseAttempt.recorded=false;courseAttempt.hintUsed=false;courseAttempt.passed=false;courseAttempt.decisionReason=''}
     let next,signature;
     for(let attempt=0;attempt<12;attempt++){
       const selectedMode=mode==='misto'?selectMixed():mode;
@@ -987,7 +987,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(!ex||(!ex.grade&&!ex.revealed)){area.innerHTML='';return}
     if(courseAttempt){
       const progress=courseProgress(courseAttempt.id);
-      const passed=courseAttempt.stage==='review'?courseAttempt.reviewPassed:courseAttempt.stage==='guided'?progress.guided:progress.independent;
+      const passed=courseAttempt.recorded?courseAttempt.passed===true:courseAttempt.stage==='review'?courseAttempt.reviewPassed:courseAttempt.stage==='guided'?progress.guided:progress.independent;
       area.innerHTML=passed
         ?'<button type="button" class="button primary" data-feedback-action="course">Continuar minha aula →</button>'
         :'<button type="button" class="button primary" data-feedback-action="next">Tentar outro exercício →</button><button type="button" class="button" data-feedback-action="course">Voltar à aula</button>';
@@ -1033,9 +1033,12 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     const report=`<div class="feedback-metrics" aria-label="Resultados da atividade e histórico">${cards.map(card=>`<div class="feedback-metric"><strong>${escapeHTML(card.label)}</strong><span>${escapeHTML(card.value)}</span><small>${escapeHTML(card.detail)}</small></div>`).join('')}</div>`;
     const missing=grade.missing?`<p><strong>Ainda faltam ${grade.missing} ${grade.missing===1?'resposta':'respostas'}.</strong> Revise os campos destacados antes de continuar.</p>`:'';
     const details=counterexample(ex);
+    const outcome=courseAttempt?.recorded&&['guided','independent','review'].includes(courseAttempt.stage)
+      ?`<div class="attempt-outcome ${courseAttempt.passed?'passed':'pending'}" role="status"><strong>${courseAttempt.passed?'✓ Etapa validada':'Etapa ainda pendente'}</strong><p>${escapeHTML(courseAttempt.decisionReason||'A validação considera apenas a primeira correção, não as alterações posteriores.')}</p>${!courseAttempt.passed?'<p>Você pode revisar esta questão; para validar a etapa, comece uma nova tentativa.</p>':''}</div>`
+      :'';
     const assisted=['independent','review'].includes(courseAttempt?.stage)&&courseAttempt.hintUsed
       ?'<p class="feedback-assisted"><strong>Prática com ajuda:</strong> você consultou uma dica. Este resultado serve para estudar; para validar autonomia, inicie outro exercício sem consultar dicas.</p>':'';
-    place.innerHTML=`<div class="result-box ${allCorrect?'success':'warn'}"><h3>${allCorrect?'Correção concluída: respostas corretas':'Correção concluída: revise as marcações'}</h3>${report}${missing}${assisted}<p>${ex.resolution}</p>${details?`<p>${details}</p>`:''}<p>${ex.mode==='deducao'&&ex.metadata.contest?'No modo concurso, a correção avalia a alternativa. Consulte a justificativa e a tabela opcional.':'Verde indica acerto; vermelho indica divergência. Os valores esperados aparecem nas células a revisar. Você pode ajustar as respostas e corrigir novamente; o histórico continua registrando a primeira correção.'}</p></div>`;
+    place.innerHTML=`<div class="result-box ${allCorrect?'success':'warn'}"><h3>${allCorrect?'Correção concluída: respostas corretas':'Correção concluída: revise as marcações'}</h3>${outcome}${report}${missing}${assisted}<p>${ex.resolution}</p>${details?`<p>${details}</p>`:''}<p>${ex.mode==='deducao'&&ex.metadata.contest?'No modo concurso, a correção avalia a alternativa. Consulte a justificativa e a tabela opcional.':'Verde indica acerto; vermelho indica divergência. Os valores esperados aparecem nas células a revisar. Você pode ajustar as respostas e corrigir novamente; o histórico continua registrando a primeira correção.'}</p></div>`;
   }
   function counterexample(ex){if(ex.mode==='categoricos'&&ex.metadata.counterModel)return 'Contraexemplo: '+catCounter(ex.metadata.counterModel,ex.cat.terms)+'. Ambas as premissas são V e a conclusão F.';if((ex.mode==='argumentos'||ex.mode==='silogismos'||ex.mode==='traducao'&&ex.translation?.kind==='argument')&&ex.choice){const p=ex.metadata.premises,con=ex.metadata.conclusion,env=ex.envs.find(e=>p.every(n=>evalAst(n,e))&&!evalAst(con,e));if(env)return 'Contraexemplo: '+ex.vars.map(s=>s+'='+t(env[s])).join(', ')+'. As premissas são V e a conclusão é F.'}
     if(ex.mode==='equivalencias'&&ex.choice?.correct==='Diferentes'){const [a,b]=ex.roots,env=ex.envs.find(e=>evalAst(a,e)!==evalAst(b,e));if(env)return 'Linha decisiva: '+ex.vars.map(s=>s+'='+t(env[s])).join(', ')+'. A='+t(evalAst(a,env))+' e B='+t(evalAst(b,env))+'.'}return ''}
@@ -1369,23 +1372,26 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function recordGuidedAttempt(){
     if(!courseAttempt||courseAttempt.recorded||!exercise?.grade||exercise.mode!==courseAttempt.id)return;
     courseAttempt.recorded=true;
-    const progress=courseProgress(courseAttempt.id),grade=exercise.grade;
-    const rate=grade.total?grade.correct/grade.total:0;
+    const progress=courseProgress(courseAttempt.id),grade=exercise.firstGrade||exercise.grade;
+    const decision=attemptDecision(courseAttempt.stage,grade,courseAttempt.hintUsed);
     if(courseAttempt.stage==='review'){
       const result=recordReview(progress,{correct:grade.correct,total:grade.total,missing:grade.missing,usedHint:courseAttempt.hintUsed});
-      courseAttempt.reviewPassed=result.passed||false;
+      courseAttempt.reviewPassed=!!result.passed;
+      courseAttempt.passed=!!result.passed;
+      courseAttempt.decisionReason=result.passed
+        ?result.state.consolidated?'Domínio consolidado após duas revisões espaçadas.':'Revisão aprovada na primeira correção; a próxima será liberada na data indicada no curso.'
+        :decision.reason;
       saveCourseState();
-      toast(result.passed?(result.state.consolidated?'Domínio consolidado! Duas revisões espaçadas concluídas.':'Revisão 1/2 concluída! A próxima ficará disponível em sete dias.'):'Revisão ainda pendente. Faça outro exercício sem dica e com pelo menos 80% de acertos.');
+      toast(result.passed?'Revisão registrada. Consulte sua próxima etapa no curso.':'Revisão não validada. Faça outro exercício sem dicas.');
       return;
     }
-    let didPass=false;
-    if(courseAttempt.stage==='guided'&&rate>=.5&&grade.missing<=grade.total*.25){progress.guided=true;didPass=true}
-    else if(courseAttempt.stage==='independent'&&rate>=.8&&grade.missing===0&&!courseAttempt.hintUsed){progress.independent=true;didPass=true}
+    const didPass=decision.passed;
+    courseAttempt.passed=didPass;
+    courseAttempt.decisionReason=decision.reason;
+    if(courseAttempt.stage==='guided'&&didPass)progress.guided=true;
+    else if(courseAttempt.stage==='independent'&&didPass)progress.independent=true;
     saveCourseState();
-    const message=didPass?'Etapa registrada. Volte à aula para continuar.'
-      :courseAttempt.stage==='independent'&&courseAttempt.hintUsed?'Esta tentativa foi prática com ajuda. Para concluir a etapa independente, faça um novo exercício sem dica.'
-      :`Resultado ${Math.round(rate*100)}%. Faça outro exercício para atingir a meta desta etapa, preenchendo as respostas necessárias.`;
-    toast(message);
+    toast(didPass?'Etapa validada na primeira correção. Volte à aula para avançar.':decision.reason);
   }
   function courseClick(e){const btn=e.target.closest('[data-caction]');if(!btn)return;const action=btn.dataset.caction,id=btn.dataset.id;
     if(action==='map'){openCourse(true);return}if(action==='lesson'){openCourse(true,id);return}if(action==='practice-free'){
