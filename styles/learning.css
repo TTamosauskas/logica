@@ -39,3 +39,26 @@
 .advanced-theorem summary{cursor:pointer;line-height:1.45;font-weight:700;font-size:14px}.advanced-theorem p{font-size:13px;line-height:1.65;margin:12px 0}.advanced-theorem ol{padding-left:20px}.advanced-theorem li{font-size:13px;line-height:1.65;margin:7px 0}.advanced-theorem small{display:block;color:var(--muted);font-size:12px;line-height:1.6;margin-top:9px}
 @media(max-width:640px){.sem-model-grid{grid-template-columns:1fr}.sem-world{padding:10px}.sem-trace{gap:4px}.sem-tick{padding:9px 2px}.advanced-card{padding:14px}}
 
+/* UX ciclo 1: escolhas iniciais, ajuda em contexto e continuidade da atividade. */
+.hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:11px;margin-top:23px}
+.hero-actions .button{min-height:44px}
+.section-heading:focus-visible{outline:3px solid var(--teal);outline-offset:6px;border-radius:6px}
+.exercise-help{margin:18px 24px 2px;border:1px solid var(--border-hi);border-radius:12px;background:var(--input)}
+.exercise-help summary{padding:13px 16px;color:var(--text);font-size:13px;font-weight:750;cursor:pointer}
+.exercise-help summary:hover{color:var(--accent)}
+.exercise-help[open] summary{border-bottom:1px solid var(--border)}
+.exercise-help-content{padding:15px 17px;color:var(--muted);font-size:13px;line-height:1.65}
+.exercise-help-content p{margin:0 0 10px}
+.exercise-help-content ol{padding-left:20px;margin:8px 0 13px}
+.exercise-help-content li{margin:0 0 5px}
+.exercise-help-content strong{color:var(--text)}
+.exercise-help-operators{padding:12px 13px;border-radius:9px;background:var(--panel2)}
+.feedback-next{display:flex;gap:9px;flex-wrap:wrap;margin:0 24px 20px}
+.feedback-next .button{min-height:44px}
+@media(max-width:520px){
+  .hero-actions{flex-direction:column;align-items:stretch}
+  .hero-actions .button{width:100%}
+  .exercise-help{margin:15px 15px 2px}
+  .feedback-next{margin:0 15px 18px}
+  .feedback-next .button{width:100%}
+}
