@@ -321,6 +321,7 @@ try{
       lessons:{fundamentos:{read:true,example:true,guided:true,independent:false,mastered:false,best:0}},final:{}
     }));
   });
+  await scoringPage.reload({waitUntil:'networkidle'});
   await scoringPage.goto(root+'#aula-fundamentos',{waitUntil:'networkidle'});
   await scoringPage.locator('[data-caction="independent"]').click();
   await scoringPage.locator('#checkButton').click();
