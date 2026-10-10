@@ -33,7 +33,17 @@
         <div class="learning-next-actions"><button type="button" class="button primary" id="continueButton">Retomar curso →</button><button type="button" class="button" id="nextLessonButton" hidden>Próxima etapa recomendada →</button></div>
       </section>
       <div class="overview" id="overview" aria-label="Meu progresso"></div>
-      <section class="course-promo" aria-label="Curso guiado de lógica formal"><div><span class="eyebrow">CURSO COMPLETO DE LÓGICA FORMAL</span><h2>Aprenda em uma sequência que faz sentido.</h2><p>Seis unidades, aulas com exemplos resolvidos, exercícios assistidos, prática independente e avaliações. Seu avanço fica salvo neste navegador.</p><div class="course-promo-progress"><span id="courseHomeSummary">Seu percurso começa aqui</span><div class="course-meter"><span id="courseHomeMeter"></span></div></div></div><button id="startCourseButton" type="button" class="button">Ver mapa das unidades →</button></section>
+      <section class="course-promo" aria-label="Curso guiado de lógica formal"><div><span class="eyebrow">CURSO COMPLETO DE LÓGICA FORMAL</span><h2>Aprenda em uma sequência que faz sentido.</h2><p>Seis unidades, aulas com exemplos resolvidos, exercícios assistidos, prática independente e avaliações. Seu avanço fica salvo neste navegador.</p><div class="course-promo-progress" aria-label="Etapas do progresso pedagógico">
+  <div class="learning-progress-item">
+    <div class="learning-progress-heading"><span id="courseHomeApprovedLabel">Avaliações iniciais aprovadas: 0 de 17</span><span id="courseHomeApprovedPct">0%</span></div>
+    <div class="course-meter" role="progressbar" id="courseHomeApprovedBar" aria-label="Avaliações iniciais aprovadas" aria-valuemin="0" aria-valuemax="17" aria-valuenow="0"><span id="courseHomeApprovedMeter"></span></div>
+  </div>
+  <div class="learning-progress-item">
+    <div class="learning-progress-heading"><span id="courseHomeConsolidatedLabel">Domínio consolidado: 0 de 17</span><span id="courseHomeConsolidatedPct">0%</span></div>
+    <div class="course-meter" role="progressbar" id="courseHomeConsolidatedBar" aria-label="Temas consolidados em duas revisões espaçadas" aria-valuemin="0" aria-valuemax="17" aria-valuenow="0"><span id="courseHomeConsolidatedMeter"></span></div>
+  </div>
+  <p id="courseHomeSummary">Aprovação inicial e consolidação são etapas diferentes.</p>
+</div></div><button id="startCourseButton" type="button" class="button">Ver mapa das unidades →</button></section>
       <div class="section-heading" id="practiceSection" tabindex="-1"><div><span class="inline-label">PRÁTICA LIVRE</span><h2>Escolha um assunto para praticar</h2><p>Exercícios independentes do curso guiado. Escolha um tema e pratique no seu ritmo.</p></div></div>
       <div class="practice-groups" id="modeGrid" aria-label="Assuntos organizados por unidade"></div>
       <div class="bottom-note"><p><strong>Como funciona a prática livre?</strong> Abra uma unidade e escolha um assunto. Cada desafio apresenta instruções próprias, uma dica e a correção comentada. Em tabelas-verdade, toque nas células para alternar V e F.</p><button class="button small" id="howButton" type="button">Consultar operadores ↗</button></div>

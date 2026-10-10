@@ -237,7 +237,7 @@ try{
   });
   await progressPage.reload({waitUntil:'networkidle'});
   assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 17 avaliações aprovadas · 0 consolidados/);
-  assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO RECOMENDADA/);
+  assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO DISPONÍVEL/);
   await progressPage.locator('#continueButton').click();
   assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
   await progressPage.locator('[data-caction="review"]').click();
@@ -272,6 +272,69 @@ try{
   assert.equal(restored.review.completed,0);
   assert.deepEqual(progressErrors,[]);
   await progressContext.close();
+
+
+  // Ciclo 7: aprovação inicial e consolidação aparecem em barras distintas.
+  const indicatorContext=await browser.newContext({viewport:{width:375,height:812},isMobile:true,hasTouch:true});
+  const indicatorPage=await indicatorContext.newPage();
+  const indicatorErrors=[];
+  indicatorPage.on('pageerror',error=>indicatorErrors.push(error.message));
+  await indicatorPage.goto(root,{waitUntil:'networkidle'});
+  await indicatorPage.evaluate(()=>{
+    const ids=['fundamentos','operadores','traducao','falacias','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','predicados2','metateoria','modais'];
+    const dueAt=Date.now()+86400000;
+    const lessons=Object.fromEntries(ids.map(id=>[id,{read:true,example:true,guided:true,independent:true,mastered:true,best:1,review:{completed:0,dueAt,consolidated:false}}]));
+    localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({lessons,final:{}}));
+  });
+  await indicatorPage.reload({waitUntil:'networkidle'});
+  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'17');
+  assert.equal(await indicatorPage.locator('#courseHomeConsolidatedBar').getAttribute('aria-valuenow'),'0');
+  assert.match(await indicatorPage.locator('#continueTitle').innerText(),/Consolidação em andamento/);
+  assert.match(await indicatorPage.locator('#continueDescription').innerText(),/Próxima revisão/);
+  await indicatorPage.locator('#continueButton').click();
+  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),17);
+  assert.match(await indicatorPage.locator('.course-review-schedule-item').first().innerText(),/\d\d:\d\d/);
+  await indicatorPage.locator('#courseMap [data-caction="exam-open"]').click();
+  const examDraft=await indicatorPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
+  for(let i=0;i<examDraft.questions.length;i++){
+    const item=examDraft.questions[i];
+    const wrong=(item.correct+1)%item.options.length;
+    await indicatorPage.locator(`input[name="finalq-${i}"][value="${wrong}"]`).check();
+  }
+  await indicatorPage.locator('[data-caction="exam-submit"]').click();
+  assert.match(await indicatorPage.locator('#courseExam .course-course-result').innerText(),/Avaliação integrada pendente/);
+  assert.equal(await indicatorPage.locator('.exam-study-plan [data-caction="lesson"]').count()>0,true);
+  await indicatorPage.locator('.exam-study-plan [data-caction="lesson"]').first().click();
+  assert.equal(await indicatorPage.locator('#courseLesson').isVisible(),true);
+  assert.match(indicatorPage.url(),/#aula-/);
+  assert.deepEqual(indicatorErrors,[]);
+  await indicatorContext.close();
+
+  // Ciclo 7: melhorar a correção não substitui a primeira tentativa na validação da etapa.
+  const scoringContext=await browser.newContext({viewport:{width:375,height:812},isMobile:true,hasTouch:true});
+  const scoringPage=await scoringContext.newPage();
+  const scoringErrors=[];
+  scoringPage.on('pageerror',error=>scoringErrors.push(error.message));
+  await scoringPage.goto(root,{waitUntil:'networkidle'});
+  await scoringPage.evaluate(()=>{
+    localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({
+      lessons:{fundamentos:{read:true,example:true,guided:true,independent:false,mastered:false,best:0}},final:{}
+    }));
+  });
+  await scoringPage.reload({waitUntil:'networkidle'});
+  await scoringPage.goto(root+'#aula-fundamentos',{waitUntil:'networkidle'});
+  await scoringPage.locator('[data-caction="independent"]').click();
+  await scoringPage.locator('#checkButton').click();
+  assert.match(await scoringPage.locator('.attempt-outcome').innerText(),/Etapa ainda pendente/);
+  assert.match(await scoringPage.locator('.feedback-metric').nth(1).innerText(),/0%/);
+  const expectedValue=(await scoringPage.locator('#truthTable .cell .expected').first().innerText()).trim();
+  await scoringPage.locator('#truthTable button.cell').first().click();
+  if(expectedValue==='F')await scoringPage.locator('#truthTable button.cell').first().click();
+  await scoringPage.locator('#checkButton').click();
+  assert.match(await scoringPage.locator('.attempt-outcome').innerText(),/Etapa ainda pendente/);
+  assert.match(await scoringPage.locator('.feedback-metric').nth(1).innerText(),/0%/);
+  assert.deepEqual(scoringErrors,[]);
+  await scoringContext.close();
 
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
   await context.close();

@@ -192,3 +192,31 @@
 .footer-progress-actions .button{min-height:44px}
 .visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 @media(max-width:700px){.footer-progress-actions{width:100%}.footer-progress-actions .button{flex:1;white-space:normal}.course-review-list{flex-direction:column}}
+
+/* Ciclo 7: diferenciação visível dos resultados sem redundância de indicadores. */
+.course-promo-progress{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 18px;align-items:start;max-width:720px}
+.course-promo-progress .learning-progress-item{min-width:0;display:flex;flex-direction:column;gap:7px}
+.learning-progress-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;line-height:1.5;font-size:12px;color:var(--text)}
+.learning-progress-heading span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.course-promo-progress .course-meter,.learning-progress-pair .course-meter{width:100%;min-width:0}
+.course-promo-progress #courseHomeSummary{grid-column:1 / -1;max-width:none;font-size:12px}
+.course-promo-progress #courseHomeApprovedMeter,.learning-progress-pair>div:first-child .course-meter span{background:var(--accent)}
+.course-promo-progress #courseHomeConsolidatedMeter,.learning-progress-pair .course-meter.consolidated span{background:var(--teal)}
+.learning-progress-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:16px}
+.learning-progress-pair>div{min-width:0;display:flex;flex-direction:column;gap:8px}
+.learning-progress-pair strong{font-size:13px}
+.course-review-schedule{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.course-review-schedule-item{display:flex;flex-direction:column;gap:5px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--panel2)}
+.course-review-schedule-item strong{font-size:13px}
+.course-review-schedule-item span{font-size:12px;color:var(--muted)}
+.attempt-outcome{padding:12px 14px;margin:12px 0 14px;border-left:4px solid var(--warning);background:var(--warning-bg);border-radius:8px}
+.attempt-outcome.passed{border-color:var(--teal);background:var(--success-bg)}
+.attempt-outcome strong{font-size:15px;color:var(--text)}
+.attempt-outcome p{margin:5px 0 0;font-size:13px;line-height:1.55}
+.exam-study-plan{margin:17px 0;padding:15px;border:1px solid var(--border-hi);border-radius:12px;background:var(--panel2)}
+.exam-study-plan h3{font-size:17px;margin:0 0 8px}
+.exam-study-plan p{font-size:13px;color:var(--muted);line-height:1.6}
+.exam-study-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.exam-study-links .button{min-height:44px;white-space:normal}
+.exam-all-correct{color:var(--text);font-size:13px}
+@media(max-width:700px){.course-promo-progress,.learning-progress-pair,.course-review-schedule{grid-template-columns:1fr}.exam-study-links{flex-direction:column}.exam-study-links .button{width:100%}}
