@@ -1307,9 +1307,11 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       bar.setAttribute('aria-valuemax',String(v.total));
       bar.setAttribute('aria-valuenow',String(value));
     }
-    $('courseHomeSummary').textContent=v.due.length?`${v.due.length} revisões disponíveis agora.`
-      :v.upcoming.length?`Próxima revisão: ${MODULES.find(m=>m.id===v.upcoming[0].id)?.name||'Tema'} em ${formatReviewDate(v.upcoming[0].state.dueAt)}.`
-      :v.allConsolidated?'Todos os temas consolidados.':'Aprovação inicial e consolidação são conquistas diferentes.';
+    const summary=`${v.approved} de ${v.total} avaliações aprovadas · ${v.consolidated} consolidados.`;
+    const followUp=v.due.length?` ${v.due.length} ${v.due.length===1?'revisão disponível':'revisões disponíveis'} agora.`
+      :v.upcoming.length?` Próxima revisão: ${MODULES.find(m=>m.id===v.upcoming[0].id)?.name||'Tema'} em ${formatReviewDate(v.upcoming[0].state.dueAt)}.`
+      :v.allConsolidated?' Todos os temas consolidados.':' Aprovação inicial e consolidação são conquistas diferentes.';
+    $('courseHomeSummary').textContent=summary+followUp;
   }
   function renderCourseMap(){
     const v=learningOverview(COURSE_UNITS,courseState.lessons);
