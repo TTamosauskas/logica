@@ -838,7 +838,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       courseAttempt=previous.courseAttempt||null;undoClearState=previous.undo||null;
       exercise=previous.exercise;
     }else{
-      if(!courseAttempt)courseAttempt=null;
+      if(!courseAttempt||courseAttempt.id!==id)courseAttempt=null;
       if(id!=='deducao'&&!['easy','medium','hard'].includes(level))level='easy';
       serial=0;lastSignature='';exercise=null;undoClearState=null;
     }
