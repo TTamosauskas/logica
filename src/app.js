@@ -1107,6 +1107,36 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(!undoClearState)return;
     exercise=undoClearState;undoClearState=null;renderExercise();toast('Respostas restauradas.');
   }
+  function exportProgress(){
+    // Consolida a atividade aberta antes de criar a cópia, que permanece no dispositivo.
+    saveExerciseDraft();saveCourseState();
+    const payload=JSON.stringify(createBackup(localStorage),null,2);
+    const blob=new Blob([payload],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='logiclab-progresso-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+    toast('Backup criado: guarde o arquivo em local seguro.');
+  }
+  async function importProgressFile(event){
+    const file=event.target.files?.[0];event.target.value='';
+    if(!file)return;
+    if(file.size>2*1024*1024){alert('Arquivo maior que 2 MB. Verifique o backup.');return}
+    try{
+      const payload=JSON.parse(await file.text());
+      // Validar antes de pedir autorização; importar substitui somente as chaves gerenciadas.
+      const known=PORTABLE_KEYS;
+      if(!payload?.data||!Object.keys(payload.data).every(key=>known.includes(key)))throw Error('Arquivo incompatível.');
+      if(!confirm('Importar este backup substituirá o progresso e os rascunhos deste navegador. Deseja continuar?'))return;
+      const count=importBackup(localStorage,payload);
+      alert('Backup importado ('+count+' categorias). A página será recarregada para mostrar o progresso.');
+      location.reload();
+    }catch(error){
+      alert('Não foi possível importar o backup: '+error.message);
+    }
+  }
   function resetProgress(){if(!confirm('Apagar todos os resultados e estatísticas deste navegador, incluindo rascunhos e avaliação em andamento?'))return;
     savedDrafts={};undoClearState=null;finalExamSession=null;
     try{localStorage.removeItem(EXERCISE_DRAFTS_KEY);localStorage.removeItem(EXAM_DRAFT_KEY)}catch{}
@@ -1399,6 +1429,9 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   }
   addEventListener('pagehide',()=>{saveExerciseDraft();saveExamDraft()});
   $('feedbackNextActions').addEventListener('click',e=>{const b=e.target.closest('[data-feedback-action]');if(!b)return;if(b.dataset.feedbackAction==='course')openCourse(true,courseAttempt?.id);else nextExercise()});
+  $('exportProgressButton').addEventListener('click',exportProgress);
+  $('importProgressButton').addEventListener('click',()=>$('importProgressFile').click());
+  $('importProgressFile').addEventListener('change',importProgressFile);
   $('continueButton').addEventListener('click',resumeLearning);
   $('nextLessonButton').addEventListener('click',openRecommendedLesson);
   $('courseNextButton').addEventListener('click',openRecommendedLesson);
