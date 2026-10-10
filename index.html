@@ -24,12 +24,12 @@
   <main class="shell">
     <section id="homeView" aria-label="Página inicial">
       <div class="hero">
-        <div><span class="eyebrow"><span class="dot"></span> CURSO DE LÓGICA FORMAL</span><h1>Aprenda a pensar.<br><span class="gradient-text">E a demonstrar.</span></h1><p>Um percurso de lógica formal com aulas, demonstrações, exercícios interativos, diagramas, quantificadores e avaliação de domínio. Estude na ordem guiada ou explore livremente os desafios.</p></div>
+        <div><span class="eyebrow"><span class="dot"></span> CURSO DE LÓGICA FORMAL</span><h1>Aprenda a pensar.<br><span class="gradient-text">E a demonstrar.</span></h1><p>Um percurso de lógica formal com aulas, demonstrações, exercícios interativos, diagramas, quantificadores e avaliação de domínio. Estude na ordem guiada ou explore livremente os desafios.</p><div class="hero-actions"><button class="button primary" id="heroStartButton" type="button">Começar do zero →</button><button class="button" id="heroPracticeButton" type="button">Praticar um assunto ↓</button></div></div>
         <div class="hero-visual" aria-hidden="true"><div class="mini-top">VISUALIZE A LÓGICA</div><div class="mini-equation">(p ∧ q) → p</div><table class="mini-table"><thead><tr><th>p</th><th>q</th><th>p ∧ q</th><th>→ p</th></tr></thead><tbody><tr><td>V</td><td>V</td><td>V</td><td>V</td></tr><tr><td>V</td><td>F</td><td>F</td><td>V</td></tr><tr><td>F</td><td>V</td><td>F</td><td>V</td></tr><tr><td>F</td><td>F</td><td>F</td><td>V</td></tr></tbody></table></div>
       </div>
       <div class="overview" id="overview" aria-label="Meu progresso"></div>
       <section class="course-promo" aria-label="Curso guiado de lógica formal"><div><span class="eyebrow">CURSO COMPLETO DE LÓGICA FORMAL</span><h2>Aprenda em uma sequência que faz sentido.</h2><p>Seis unidades, aulas com exemplos resolvidos, exercícios assistidos, prática independente e avaliações. Seu avanço fica salvo neste navegador.</p><div class="course-promo-progress"><span id="courseHomeSummary">Seu percurso começa aqui</span><div class="course-meter"><span id="courseHomeMeter"></span></div></div></div><button id="startCourseButton" type="button" class="button primary">Iniciar Curso Guiado →</button></section>
-      <div class="section-heading"><div><span class="inline-label">TRILHA DE APRENDIZAGEM</span><h2>Escolha seu desafio</h2><p>Módulos práticos do básico aos fundamentos avançados, com revisão misturada.</p></div></div>
+      <div class="section-heading" id="practiceSection" tabindex="-1"><div><span class="inline-label">PRÁTICA LIVRE</span><h2>Escolha um assunto para praticar</h2><p>Exercícios independentes do curso guiado. Escolha um tema e pratique no seu ritmo.</p></div></div>
       <div class="mode-grid" id="modeGrid"></div>
       <div class="bottom-note"><p><strong>Como funciona?</strong> Selecione um módulo, clique nas células vazias para alternar entre V e F e use “Corrigir”. Cada nova rodada traz um desafio.</p><button class="button small" id="howButton" type="button">Consultar operadores ↗</button></div>
     </section>
@@ -40,6 +40,7 @@
       <div class="work-grid">
         <article class="panel main-panel">
           <div class="task-head"><span class="task-kicker" id="taskKicker">EXERCÍCIO</span><h2 id="taskTitle"></h2><p id="taskInstruction"></p></div>
+          <details class="exercise-help" id="exerciseHelp"><summary>Consultar regras e passos deste exercício</summary><div class="exercise-help-content" id="exerciseHelpContent"></div></details>
           <div id="deductionArea" class="deduction-area hide" aria-label="Enunciado e pistas do desafio de dedução"></div>
           <div id="translationArea" class="translation-area hide" aria-label="Tradução para lógica simbólica"></div>
           <div id="categoricalArea" class="translation-area categorical-area hide" aria-label="Tradução categórica com quantificadores"></div>
