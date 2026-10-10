@@ -64,7 +64,7 @@
 }
 
 /* UX ciclo 2: continuidade visível, prática progressiva e leitura confortável no celular. */
-.learning-next,.course-next{
+.learning-next{
   border:1px solid var(--border-hi);
   border-radius:18px;
   background:var(--panel);
@@ -76,11 +76,10 @@
   margin:0 0 24px
 }
 .learning-next{background:linear-gradient(120deg,var(--accent-bg),transparent),var(--panel)}
-.learning-next-copy,.course-next>div{min-width:0}
+.learning-next-copy{min-width:0}
 .learning-next h2{font-size:21px;line-height:1.3;margin:6px 0}
-.learning-next p,.course-next p{color:var(--muted);font-size:14px;line-height:1.55;margin:3px 0 0}
-.learning-next>.button,.course-next>.button{flex:none;min-height:44px;white-space:normal;text-align:center}
-.course-next strong{font-size:16px}
+.learning-next p{color:var(--muted);font-size:14px;line-height:1.55;margin:3px 0 0}
+.learning-next>.button{flex:none;min-height:44px;white-space:normal;text-align:center}
 .practice-groups{display:grid;gap:14px}
 .practice-group{border:1px solid var(--border);background:var(--panel);border-radius:16px;overflow:hidden}
 .practice-group[open]{border-color:var(--border-hi)}
@@ -107,8 +106,8 @@
 .task-actions .button,.course-unit-item{min-height:44px}
 .course-option{min-height:44px}
 @media(max-width:700px){
-  .learning-next,.course-next{padding:17px;flex-direction:column;align-items:stretch;gap:12px}
-  .learning-next>.button,.course-next>.button{width:100%}
+  .learning-next{padding:17px;flex-direction:column;align-items:stretch;gap:12px}
+  .learning-next>.button{width:100%}
   .course-lesson-panel p{font-size:14px}
   .course-unit-item small,.course-lesson-flow span{font-size:12px}
   .course-question .course-option{font-size:14px;padding:12px}
