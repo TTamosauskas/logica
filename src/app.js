@@ -567,6 +567,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       html+=`<div class="venn-task-card"><div class="venn-progress">Premissa ${active.index+1} · Exercício visual ${phase+1} de ${tasks.length}</div><span class="venn-step-label">${how}</span><div class="venn-statement">“${escapeHTML(cat.texts[active.index])}”</div><p class="venn-instruction">${escapeHTML(vennTaskPrompt(f,cat.terms))}</p></div>`;
     }else html+='<div class="venn-task-card"><span class="venn-step-label">DIAGRAMA COMPLETO</span><div class="venn-statement">As duas premissas já estão representadas.</div><p class="venn-instruction">Agora examine o desenho e avalie se a conclusão é obrigatória.</p></div>';
     html+=`<div class="venn-simple-board"><div class="venn-diagram"><p class="venn-diagram-guide">${active?.kind==='shade'?'Toque nos números dentro dos círculos para marcar ou desmarcar uma região.':'Observe as regiões marcadas no desenho.'}</p>${vennSvg(shade,witnesses)}${vennTermsLegend(cat.terms)}<div class="venn-legend"><span><span class="stripe-sample"></span> Impossível</span><span><span class="x-sample">X</span> Existe alguém</span></div></div>`;
+    html+='<div class="venn-simple-tools">';
     // Alternativa nativa, sincronizada ao mesmo estado do desenho.
     if(active?.kind==='shade'){
       const selected=vennUnion(v.shaded,v.workingShade);
@@ -574,7 +575,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       html+=Array.from({length:8},(_,n)=>`<button type="button" class="venn-text-region ${selected.includes(n)?'selected':''}" data-venn-region-text="${n}" aria-pressed="${selected.includes(n)}" aria-label="Região ${n+1}: ${escapeHTML(vennPlainRegion(n,cat.terms))}${v.shaded.includes(n)?' Já marcada na premissa anterior.':''}">${n+1}. ${escapeHTML(vennRegName(n))}${selected.includes(n)?' · Marcada':''}</button>`).join('');
       html+='</div></div>';
     }
-    html+='<div class="venn-simple-tools">';
+
     if(active?.kind==='shade'){
       const selected=v.workingShade||[],already=v.shaded||[];
       html+=`<div class="venn-selected-list"><strong>Regiões que você marcou nesta frase:</strong><div>${selected.length?selected.map(p=>`Região ${p+1}`).join(', '):'Toque em uma região numerada no desenho.'}</div>${already.length?`<div style="margin-top:6px;color:var(--muted)">Já marcadas em outra premissa: ${already.map(p=>p+1).join(', ')}.</div>`:''}</div>`;
