@@ -4,7 +4,7 @@ export const LEARNING_STAGES=[
   {key:'example',label:'Observar um exemplo resolvido'},
   {key:'guided',label:'Praticar com ajuda'},
   {key:'independent',label:'Resolver com autonomia'},
-  {key:'mastered',label:'Demonstrar domínio'}
+  {key:'mastered',label:'Aprovar avaliação inicial'}
 ];
 
 /** Respeita a ordem do curso e mantém temas de revisão fora do percurso principal. */
@@ -35,5 +35,5 @@ export function getNextLearningStep(units,progress={}){
       return {id,stage:stage.key,label:stage.label,unitTitle:unit.title,completed,total};
     }
   }
-  return {id:null,stage:null,label:'Curso concluído',unitTitle:'',completed,total};
+  return {id:null,stage:null,label:'Avaliações iniciais concluídas',unitTitle:'',completed,total};
 }
