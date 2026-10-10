@@ -1283,7 +1283,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     const state=reviewStatus(progress);
     if(state.status==='consolidated')return 'Domínio consolidado';
     if(state.status==='due')return `Revisão ${state.completed+1}/2 disponível`;
-    if(state.status==='scheduled')return `Revisão ${state.completed+1}/2 em ${new Date(state.dueAt).toLocaleDateString('pt-BR')}`;
+    if(state.status==='scheduled')return `Revisão ${state.completed+1}/2 em ${formatReviewDate(state.dueAt)}`;
     return progress?.independent?'Avaliação inicial pendente':progress?.read?'Em andamento':'Começar';
   };
   function courseProgress(id){if(!courseState.lessons[id])courseState.lessons[id]={read:false,example:false,guided:false,independent:false,mastered:false,best:0};return courseState.lessons[id]}
@@ -1292,21 +1292,36 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function courseApproved(){return COURSE_UNITS.reduce((n,u)=>n+u.ids.filter(id=>courseProgress(id).mastered).length,0)}
   function updateCourseHome(){
     if(!$('courseHomeSummary'))return;
-    const consolidated=courseMastered(),approved=courseApproved(),due=reviewDue().length;
-    $('courseHomeSummary').textContent=`${approved} de ${courseTotal()} avaliações aprovadas · ${consolidated} consolidados${due?' · '+due+' revisões disponíveis':''}`;
-    $('courseHomeMeter').style.width=(100*consolidated/courseTotal()).toFixed(1)+'%'
+    const v=learningOverview(COURSE_UNITS,courseState.lessons),pct=n=>Math.round(n*100/v.total)+'%';
+    $('courseHomeApprovedLabel').textContent=`Avaliações iniciais aprovadas: ${v.approved} de ${v.total}`;
+    $('courseHomeConsolidatedLabel').textContent=`Domínio consolidado: ${v.consolidated} de ${v.total}`;
+    $('courseHomeApprovedPct').textContent=pct(v.approved);
+    $('courseHomeConsolidatedPct').textContent=pct(v.consolidated);
+    $('courseHomeApprovedMeter').style.width=pct(v.approved);
+    $('courseHomeConsolidatedMeter').style.width=pct(v.consolidated);
+    for(const [kind,value] of [['Approved',v.approved],['Consolidated',v.consolidated]]){
+      const bar=$('courseHome'+kind+'Bar');
+      bar.setAttribute('aria-valuemax',String(v.total));
+      bar.setAttribute('aria-valuenow',String(value));
+    }
+    $('courseHomeSummary').textContent=v.due.length?`${v.due.length} revisões disponíveis agora.`
+      :v.upcoming.length?`Próxima revisão: ${MODULES.find(m=>m.id===v.upcoming[0].id)?.name||'Tema'} em ${formatReviewDate(v.upcoming[0].state.dueAt)}.`
+      :v.allConsolidated?'Todos os temas consolidados.':'Aprovação inicial e consolidação são conquistas diferentes.';
   }
   function renderCourseMap(){
-    const consolidated=courseMastered(),approved=courseApproved(),due=reviewDue();
+    const v=learningOverview(COURSE_UNITS,courseState.lessons);
     const finalBest=courseState.final.best||0;
-    let html=`<div class="course-unit"><div class="course-tile-row"><div><span class="eyebrow">MAPA DE APRENDIZAGEM</span><h2>${approved} avaliações aprovadas · ${consolidated} temas consolidados</h2><p>Conclusão de aula, aprovação na avaliação imediata e domínio consolidado são etapas diferentes. O último exige duas revisões independentes, após intervalos de 1 e 7 dias. Melhor avaliação integrada: ${finalBest?finalBest+'/12':'ainda não realizada'}.</p></div><button type="button" class="button primary" data-caction="exam-open">Avaliação final integrada →</button></div><div class="course-meter" style="width:100%;margin-top:12px"><span style="width:${100*consolidated/courseTotal()}%"></span></div></div>`;
-    if(due.length){
-      html+=`<section class="course-unit course-reviews"><h2>Revisões disponíveis (${due.length})</h2><p>Refaça um exercício do tema sem consultar dicas. Cada aprovação conta como uma revisão espaçada.</p><div class="course-review-list">${due.map(item=>`<button class="button" type="button" data-caction="lesson" data-id="${item.id}">${escapeHTML(MODULES.find(m=>m.id===item.id).name)} · revisão ${item.state.completed+1}/2 →</button>`).join('')}</div></section>`;
+    let html=`<div class="course-unit"><div class="course-tile-row"><div><span class="eyebrow">MAPA DE APRENDIZAGEM</span><h2>${v.approved} avaliações aprovadas · ${v.consolidated} temas consolidados</h2><p>Uma avaliação aprovada registra o aprendizado inicial. Duas revisões independentes posteriores consolidam o tema. Melhor prova integrada: ${finalBest?finalBest+'/12':'ainda não realizada'}.</p></div><button type="button" class="button primary" data-caction="exam-open">Avaliação final integrada →</button></div><div class="learning-progress-pair" aria-label="Progresso por etapa"><div><strong>Aprovação inicial: ${v.approved}/${v.total}</strong><div class="course-meter" role="progressbar" aria-label="Avaliações iniciais aprovadas" aria-valuemin="0" aria-valuemax="${v.total}" aria-valuenow="${v.approved}"><span style="width:${100*v.approved/v.total}%"></span></div></div><div><strong>Domínio consolidado: ${v.consolidated}/${v.total}</strong><div class="course-meter consolidated" role="progressbar" aria-label="Domínio consolidado" aria-valuemin="0" aria-valuemax="${v.total}" aria-valuenow="${v.consolidated}"><span style="width:${100*v.consolidated/v.total}%"></span></div></div></div></div>`;
+    if(v.due.length){
+      html+=`<section class="course-unit course-reviews"><h2>Revisões disponíveis (${v.due.length})</h2><p>Resolva um novo exercício do tema sem consultar dicas. Cada revisão precisa de 80% na primeira correção.</p><div class="course-review-list">${v.due.map(item=>`<button class="button" type="button" data-caction="lesson" data-id="${item.id}">${escapeHTML(MODULES.find(m=>m.id===item.id).name)} · revisão ${item.state.completed+1}/2 →</button>`).join('')}</div></section>`;
+    }
+    if(v.upcoming.length){
+      html+=`<section class="course-unit"><h2>Próximas revisões programadas (${v.upcoming.length})</h2><p>O horário abaixo indica quando cada revisão poderá ser iniciada. Continue estudando enquanto isso.</p><div class="course-review-schedule">${v.upcoming.map(item=>`<div class="course-review-schedule-item"><strong>${escapeHTML(MODULES.find(m=>m.id===item.id).name)}</strong><span>Revisão ${item.state.completed+1}/2 · ${formatReviewDate(item.state.dueAt)}</span></div>`).join('')}</div></section>`;
     }
     COURSE_UNITS.forEach((unit,index)=>{
-      const consolidatedUnit=unit.ids.filter(id=>reviewStatus(courseProgress(id)).consolidated).length;
-      html+=`<section class="course-unit"><div class="course-unit-top"><span class="eyebrow">UNIDADE ${index+1}</span><span class="course-unit-progress">${consolidatedUnit}/${unit.ids.length} consolidados</span></div><h2>${escapeHTML(unit.title)}</h2><p>${escapeHTML(unit.note)}</p><div class="course-unit-lessons">${unit.ids.map(id=>{
-        const lesson=MODULES.find(m=>m.id===id),progress=courseProgress(id),status=progress.mastered?reviewLabel(progress):reviewLabel(progress);
+      const done=unit.ids.filter(id=>reviewStatus(courseProgress(id)).consolidated).length;
+      html+=`<section class="course-unit"><div class="course-unit-top"><span class="eyebrow">UNIDADE ${index+1}</span><span class="course-unit-progress">${done}/${unit.ids.length} consolidados</span></div><h2>${escapeHTML(unit.title)}</h2><p>${escapeHTML(unit.note)}</p><div class="course-unit-lessons">${unit.ids.map(id=>{
+        const lesson=MODULES.find(m=>m.id===id),progress=courseProgress(id),status=reviewLabel(progress);
         return `<button type="button" class="course-unit-item" data-caction="lesson" data-id="${id}"><span class="course-status">${lesson.no}</span><span><strong>${escapeHTML(lesson.name)}</strong><small>${escapeHTML(progress.mastered&&!reviewStatus(progress).consolidated?'Avaliação aprovada · '+status:status)} · melhor avaliação ${progress.best?Math.round(progress.best*100)+'%':'—'}</small></span></button>`;
       }).join('')}</div></section>`;
     });
@@ -1327,7 +1342,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       html+=`<section class="course-lesson-panel course-review-panel"><h3>6. Consolidar com revisões espaçadas</h3><p>Você aprovou a avaliação inicial. Domínio consolidado exige duas novas tentativas independentes, corrigidas com pelo menos 80% e sem dicas: uma após 1 dia e outra após mais 7 dias.</p>`;
       if(state.status==='consolidated')html+='<p class="review-good"><strong>Domínio consolidado.</strong> Duas revisões espaçadas concluídas com autonomia.</p>';
       else if(state.status==='due')html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível.</strong> Um novo exercício será gerado para você.</p><div class="course-lesson-actions"><button type="button" class="button primary" data-caction="review">Fazer revisão independente →</button></div>`;
-      else html+=`<p><strong>Revisão ${state.completed+1} de 2 programada para ${new Date(state.dueAt).toLocaleDateString('pt-BR')}.</strong> Continue praticando livremente até a data recomendada.</p>`;
+      else html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível a partir de ${formatReviewDate(state.dueAt)}.</strong> Continue praticando livremente até a liberação.</p>`;
       html+='</section>';
     }
     $('courseLesson').innerHTML=html;updateNextLearningCards();
