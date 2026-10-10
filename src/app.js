@@ -1024,6 +1024,13 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   }
   function requestHint(){
     if(!exercise)return;
+    // Depois da correção, o acesso à dica é somente revisão.
+    if(exercise.grade||exercise.revealed){
+      exercise.hintVisible=!exercise.hintVisible;
+      renderInlineHint();saveExerciseDraft();
+      if(exercise.hintVisible)focusInlineHint();
+      return;
+    }
     if(courseAttempt?.stage==='independent'&&!courseAttempt.hintUsed&&!exercise.hintVisible){
       const decision=$('independentHintDecision');
       decision.hidden=false;
