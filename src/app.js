@@ -776,7 +776,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       const cards=group.modules.map(m=>{
         const stat=modeStats(m.id);
         const info=stat.tries?`${stat.tries} ${stat.tries===1?'rodada':'rodadas'} · ${pct(stat.correct,stat.total)} de acertos`:'Pronto para começar';
-        return `<button type="button" class="mode-card ${m.id==='misto'?'mixed':''}" data-open="${m.id}"><div class="card-top"><span class="mode-icon">${escapeHTML(m.icon)}</span><span class="mode-num">${escapeHTML(m.no)}</span></div><h4>${escapeHTML(m.name)}</h4><p>${escapeHTML(m.desc)}</p><div class="card-foot"><span>${m.id==='misto'?'Revisão adaptativa':info}</span><span class="go" aria-hidden="true">↗</span></div></button>`;
+        return `<button type="button" class="mode-card ${m.id==='misto'?'mixed':''}" data-open="${m.id}"><div class="card-top"><span class="mode-icon">${escapeHTML(m.icon)}</span><span class="mode-num">${escapeHTML(m.no)}</span></div><strong class="mode-title">${escapeHTML(m.name)}</strong><p>${escapeHTML(m.desc)}</p><div class="card-foot"><span>${m.id==='misto'?'Revisão adaptativa':info}</span><span class="go" aria-hidden="true">↗</span></div></button>`;
       }).join('');
       const expanded=expandedPracticeSections.has(group.id)?' open':'';
       return `<details class="practice-group" data-practice-section="${group.id}"${expanded}><summary><span class="practice-group-heading"><strong>${escapeHTML(group.title)}</strong><small>${escapeHTML(group.note)}</small></span><span class="practice-group-count">${attempts}/${group.modules.length} praticados</span></summary><div class="mode-grid">${cards}</div></details>`;
