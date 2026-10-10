@@ -833,7 +833,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(!MODULES.some(m=>m.id===id))return;
     const previous=!fresh?savedDrafts[id]:null;
     $('courseView').classList.add('hide');mode=id;
-    if(previous&&previous.exercise&&previous.exercise.mode===id){
+    if(previous&&previous.exercise&&(previous.exercise.mode===id||id==='misto')){
       level=previous.level||'easy';serial=previous.serial||1;lastSignature=previous.lastSignature||'';
       courseAttempt=previous.courseAttempt||null;undoClearState=previous.undo||null;
       exercise=previous.exercise;
@@ -984,8 +984,8 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function counterexample(ex){if(ex.mode==='categoricos'&&ex.metadata.counterModel)return 'Contraexemplo: '+catCounter(ex.metadata.counterModel,ex.cat.terms)+'. Ambas as premissas são V e a conclusão F.';if((ex.mode==='argumentos'||ex.mode==='silogismos'||ex.mode==='traducao'&&ex.translation?.kind==='argument')&&ex.choice){const p=ex.metadata.premises,con=ex.metadata.conclusion,env=ex.envs.find(e=>p.every(n=>evalAst(n,e))&&!evalAst(con,e));if(env)return 'Contraexemplo: '+ex.vars.map(s=>s+'='+t(env[s])).join(', ')+'. As premissas são V e a conclusão é F.'}
     if(ex.mode==='equivalencias'&&ex.choice?.correct==='Diferentes'){const [a,b]=ex.roots,env=ex.envs.find(e=>evalAst(a,e)!==evalAst(b,e));if(env)return 'Linha decisiva: '+ex.vars.map(s=>s+'='+t(env[s])).join(', ')+'. A='+t(evalAst(a,env))+' e B='+t(evalAst(b,env))+'.'}return ''}
   function renderSidebar(){const ex=exercise,m=currentExerciseMode();$('stepsPanel').innerHTML=m.steps.map((s,i)=>`<div><span class="side-num">${i+1}</span><span>${s}</span></div>`).join('');$('hintArea').innerHTML=ex.hintVisible?`<div class="hint-box"><strong>Dica:</strong> ${ex.hint}</div>`:'';const s=modeStats(ex.mode);$('modeProgress').innerHTML=`<div class="stat-value">${s.tries}</div><p>Exercícios corrigidos neste módulo</p><div class="stat-value" style="font-size:24px">${pct(s.correct,s.total)}</div><p>Acertos na primeira tentativa</p>`}
-  function setAnswer(r,c,value){if(!exercise||exercise.revealed)return;const key=fieldKey(r,c),current=exercise.answers[key]||'';const next=value===undefined?(current===''?'V':current==='V'?'F':''):value;if(next)exercise.answers[key]=next;else delete exercise.answers[key];exercise.grade=null;renderTable();renderFeedback();renderFeedbackActions();renderChoice()}
-  function setChoice(option){if(!exercise||exercise.revealed)return;exercise.picked=option;exercise.grade=null;renderChoice();renderTable();renderFeedback();renderFeedbackActions()}
+  function setAnswer(r,c,value){if(!exercise||exercise.revealed)return;const key=fieldKey(r,c),current=exercise.answers[key]||'';const next=value===undefined?(current===''?'V':current==='V'?'F':''):value;if(next)exercise.answers[key]=next;else delete exercise.answers[key];exercise.grade=null;renderTable();renderFeedback();renderFeedbackActions();renderChoice();saveExerciseDraft()}
+  function setChoice(option){if(!exercise||exercise.revealed)return;exercise.picked=option;exercise.grade=null;renderChoice();renderTable();renderFeedback();renderFeedbackActions();saveExerciseDraft()}
   function gradeExercise(){if(!exercise||exercise.revealed)return;if(exercise.special){gradeSpecial();return;}if(exercise.translation&&!exercise.translation.unlocked){toast('Conclua a tradução primeiro.');return}if(exercise.cat&&(!exercise.cat.unlocked||!exercise.cat.venn.verdictVerified)){toast('Conclua a tradução e o Diagrama de Venn primeiro.');return}const ex=exercise;let correct=0,total=0,missing=0;if(!(ex.mode==='deducao'&&ex.metadata.contest))ex.envs.forEach((env,r)=>ex.cols.forEach((col,c)=>{if(!col.editable)return;const a=ex.answers[fieldKey(r,c)],exp=expected(ex,r,c);total++;if(!a)missing++;if(a===exp)correct++}));if(ex.choice){total++;if(ex.picked===ex.choice.correct)correct++;if(!ex.picked)missing++}if(ex.cat){for(const first of ex.cat.first){total++;if(first===true)correct++;if(first===null)missing++}const venn=ex.cat.venn;for(const first of [venn.firstShade,...Object.values(venn.firstWitness),venn.firstVerdict]){total++;if(first===true)correct++;if(first===null)missing++}}if(ex.translation){for(const first of ex.translation.first){total++;if(first===true)correct++;if(first===null)missing++}if(ex.translation.rule){total++;if(ex.translation.rule.first===true)correct++;if(ex.translation.rule.first===null)missing++}}ex.grade={correct,total,missing};if(!ex.gradedEver){ex.gradedEver=true;const s=stats.byMode[ex.mode]||{tries:0,perfect:0,correct:0,total:0};s.tries++;s.correct+=correct;s.total+=total;if(correct===total)s.perfect++;if(ex.translation){stats.translationTypes=stats.translationTypes||{};const id=ex.translation.templateId,ts=stats.translationTypes[id]||{tries:0,wins:0};ts.tries++;if(ex.translation.first.every(Boolean)&&(!ex.translation.rule||ex.translation.rule.first===true))ts.wins++;stats.translationTypes[id]=ts}if(ex.mode==='deducao'){stats.deductionLevels=stats.deductionLevels||{};const lev=ex.metadata.levelCode,ds=stats.deductionLevels[lev]||{tries:0,correct:0};ds.tries++;if(correct===total)ds.correct++;stats.deductionLevels[lev]=ds}stats.byMode[ex.mode]=s;stats.tries++;stats.correct+=correct;stats.total+=total;if(correct===total)stats.perfect++;save()}recordGuidedAttempt();renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'})}
   function reveal(){if(!exercise||!confirmDiscard('Revelar a resolução'))return;if(courseAttempt)courseAttempt.hintUsed=true;exercise.revealed=true;exercise.grade=null;renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'})}
   function clear(){if(!exercise||exercise.revealed)return;
@@ -1002,7 +1002,15 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function showGuide(){if(!$('workView').classList.contains('hide')){const help=$('exerciseHelp');help.open=true;help.scrollIntoView({behavior:'smooth',block:'center'});return}const ref=$('reference');ref.open=true;ref.scrollIntoView({behavior:'smooth',block:'start'})}
   function toggleTheme(){const light=document.documentElement.dataset.theme==='light';document.documentElement.dataset.theme=light?'dark':'light';$('themeButton').textContent=light?'☀  Tema':'☾  Tema';try{localStorage.setItem(THEME_KEY,light?'dark':'light')}catch(e){}}
   function initTheme(){let current='dark';try{current=localStorage.getItem(THEME_KEY)||'dark'}catch(e){}document.documentElement.dataset.theme=current;$('themeButton').textContent=current==='light'?'☾  Tema':'☀  Tema'}
-  $('modeGrid').addEventListener('click',e=>{const btn=e.target.closest('[data-open]');if(btn)openMode(btn.dataset.open)});
+  $('modeGrid').addEventListener('click',e=>{
+    const btn=e.target.closest('[data-open]');if(!btn)return;
+    const id=btn.dataset.open,prior=savedDrafts[id];
+    if(prior?.courseAttempt){
+      if(hasPendingWork(prior.exercise)&&!confirm('Há um exercício guiado salvo neste tema. Abrir a prática livre criará outro exercício. Deseja continuar?'))return;
+      courseAttempt=null;openMode(id,true,true);return;
+    }
+    courseAttempt=null;openMode(id);
+  });
   $('modeGrid').addEventListener('toggle',e=>{
     const section=e.target.closest('[data-practice-section]');if(!section)return;
     if(section.open)expandedPracticeSections.add(section.dataset.practiceSection);
@@ -1152,7 +1160,11 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(courseAttempt.stage==='guided'&&rate>=.5&&exercise.grade.missing<=exercise.grade.total*.25){p.guided=true;didPass=true}else if(courseAttempt.stage==='independent'&&rate>=.8&&exercise.grade.missing===0&&!courseAttempt.hintUsed){p.independent=true;didPass=true}
     saveCourseState();const comment=didPass?'Etapa registrada. Volte à aula para continuar.':`Resultado ${Math.round(rate*100)}%. Faça outro exercício para atingir a meta desta etapa, preenchendo as respostas necessárias.`;toast(comment);}
   function courseClick(e){const btn=e.target.closest('[data-caction]');if(!btn)return;const action=btn.dataset.caction,id=btn.dataset.id;
-    if(action==='map'){openCourse(true);return}if(action==='lesson'){openCourse(true,id);return}if(action==='practice-free'){courseAttempt=null;openMode(courseActive);return}
+    if(action==='map'){openCourse(true);return}if(action==='lesson'){openCourse(true,id);return}if(action==='practice-free'){
+      const previous=savedDrafts[courseActive];
+      if(previous?.courseAttempt&&hasPendingWork(previous.exercise)&&!confirm('Esta aula possui uma tentativa guiada salva. Iniciar a prática livre substituirá essa tentativa. Deseja continuar?'))return;
+      courseAttempt=null;openMode(courseActive,true,!!previous?.courseAttempt);return
+    }
     if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();return}
     if(action==='example'){courseProgress(courseActive).example=true;saveCourseState();renderCourseLesson();return}
     if(action==='guided'||action==='independent'){beginCourseExercise(courseActive,action);return}
@@ -1197,7 +1209,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   });
   // Os outros modos (incluindo prova, Venn e tradução) editam exercise em handlers próprios.
   // Salvamos depois desses handlers, preservando o enunciado e os dados já preenchidos.
-  for(const name of ['input','change','click']){
+  for(const name of ['input','change','click','keydown']){
     document.addEventListener(name,()=>saveExerciseDraft());
   }
   addEventListener('pagehide',()=>{saveExerciseDraft();saveExamDraft()});
