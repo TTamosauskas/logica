@@ -816,9 +816,6 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     $('continueTitle').textContent=draft?(draft.type==='exam'?'Avaliação final em andamento':draftModule?.name||'Atividade em andamento'):next.title;
     $('continueDescription').textContent=draft?(draft.type==='exam'?'Suas respostas da avaliação estão salvas neste navegador.':'Continue a questão que você estava resolvendo, com suas respostas preservadas.'):next.description;
     $('continueButton').textContent=draft?(draft.type==='exam'?'Continuar avaliação →':'Retomar exercício →'):next.button;
-    $('courseNextTitle').textContent=next.kind==='lesson'?'Próximo passo: '+next.title:next.title;
-    $('courseNextDescription').textContent=next.description;
-    $('courseNextButton').textContent=next.button;
   }
   function resumeLearning(){
     const draft=mostRecentUnfinished(savedDrafts,savedExam());
@@ -1333,7 +1330,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     $('courseMap').innerHTML=html;
   }
   function openCourse(updateHash=true,id=null){courseAttempt=null;courseActive=id&&LESSONS[id]?id:null;lessonFeedback=null;$('homeView').classList.add('hide');$('workView').classList.add('hide');$('courseView').classList.remove('hide');$('courseExam').classList.add('hide');if(updateHash)setRouteHash(courseActive?'aula-'+courseActive:'curso');renderCourse();scrollTo({top:0,behavior:'instant'})}
-  function renderCourse(){updateNextLearningCards();$('courseNext').classList.remove('hide');renderCourseMap();$('courseMap').classList.toggle('hide',!!courseActive);$('courseLesson').classList.toggle('hide',!courseActive);$('courseMapButton').classList.toggle('hide',!courseActive);$('courseExam').classList.add('hide');if(courseActive)renderCourseLesson();}
+  function renderCourse(){renderCourseMap();$('courseMap').classList.toggle('hide',!!courseActive);$('courseLesson').classList.toggle('hide',!courseActive);$('courseMapButton').classList.toggle('hide',!courseActive);$('courseExam').classList.add('hide');if(courseActive)renderCourseLesson();}
   function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
     const flags=[p.read,p.example,p.guided,p.independent,p.mastered],labels=['1. Compreender','2. Observar','3. Praticar com ajuda','4. Resolver sozinho','5. Aprovar avaliação inicial'];let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><div class="course-lesson-flow">${labels.map((l,i)=>`<span class="${flags[i]?'done':''}">${flags[i]?'✓ ':''}${l}</span>`).join('')}</div><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
     html+=`<section class="course-lesson-panel"><h3>1. Compreender</h3><p>${escapeHTML(lesson.theory)}</p><div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Aula lida':'Concluí a leitura →'}</button></div></section>`;
@@ -1350,7 +1347,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       else html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível a partir de ${formatReviewDate(state.dueAt)}.</strong> Continue praticando livremente até a liberação.</p>`;
       html+='</section>';
     }
-    $('courseLesson').innerHTML=html;updateNextLearningCards();
+    $('courseLesson').innerHTML=html;
   }
   function beginCourseExercise(id,stage){
     if(stage==='review'&&reviewStatus(courseProgress(id)).status!=='due'){toast('Esta revisão ainda não está disponível. Consulte o calendário do tema.');return}
@@ -1418,7 +1415,6 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   }
   function openFinalExam(updateHash=true,fresh=false){
     courseActive=null;renderCourse();
-    $('courseNext').classList.add('hide');
     $('courseMap').classList.add('hide');
     $('courseLesson').classList.add('hide');
     $('courseExam').classList.remove('hide');
@@ -1471,7 +1467,6 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   $('importProgressFile').addEventListener('change',importProgressFile);
   $('continueButton').addEventListener('click',resumeLearning);
   $('nextLessonButton').addEventListener('click',openRecommendedLesson);
-  $('courseNextButton').addEventListener('click',openRecommendedLesson);
   $('heroStartButton').addEventListener('click',()=>openCourse());
   $('heroPracticeButton').addEventListener('click',()=>{const section=$('practiceSection');section.scrollIntoView({behavior:'smooth',block:'start'});section.focus({preventScroll:true})});
   $('topCourse').addEventListener('click',()=>openCourse());$('startCourseButton').addEventListener('click',()=>openCourse());$('courseHomeBack').addEventListener('click',()=>goHome());$('courseMapButton').addEventListener('click',()=>openCourse());$('courseMap').addEventListener('click',courseClick);$('courseLesson').addEventListener('click',courseClick);$('courseExam').addEventListener('click',courseClick);
