@@ -26,6 +26,9 @@ try{
   await page.goto(root,{waitUntil:'networkidle'});
 
   assert.match(await page.locator('#continueTitle').innerText(),/Fundamentos/);
+  // A recomendação é útil na página inicial, não deve aparecer de novo dentro do curso.
+  assert.equal(await page.locator('#continueLearning').isVisible(),true);
+  assert.equal(await page.locator('#courseNext').count(),0);
   assert.equal(await page.locator('.practice-group').count(),7);
   assert.equal(await page.locator('.practice-group').first().getAttribute('open'),'');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
@@ -34,8 +37,11 @@ try{
   await page.locator('#continueButton').click();
   await page.locator('#courseLesson').waitFor({state:'visible'});
   assert.match(await page.locator('#courseLesson').innerText(),/Fundamentos/);
+  assert.equal(await page.locator('#continueLearning').isVisible(),false);
+  assert.equal(await page.locator('#courseNext').count(),0);
   await page.locator('[data-caction="read"]').click();
-  assert.match(await page.locator('#courseNextDescription').innerText(),/Etapa 2\/5/);
+  assert.equal(await page.locator('#courseLesson [data-caction="example"]').isVisible(),true);
+  assert.equal(await page.locator('#courseNext').count(),0);
   await page.locator('#courseHomeBack').click();
   assert.match(await page.locator('#continueDescription').innerText(),/Etapa 2\/5/);
 
@@ -78,11 +84,24 @@ try{
 
   // Avaliação final mantém enunciados e respostas, com rota direta e retorno pela navegação.
   await page.locator('#topCourse').click();
+  await page.locator('#courseMap').waitFor({state:'visible'});
+  assert.equal(await page.locator('#courseNext').count(),0);
+  assert.equal(await page.locator('#continueLearning').isVisible(),false);
+  assert.equal(await page.locator('#courseMap [data-caction="exam-open"]').isVisible(),true);
+  await page.locator('#courseMap [data-caction="lesson"]').first().click();
+  await page.locator('#courseLesson').waitFor({state:'visible'});
+  assert.equal(await page.locator('#courseNext').count(),0);
+  await page.locator('#courseLesson [data-caction="map"]').click();
+  await page.locator('#courseMap').waitFor({state:'visible'});
   await page.locator('[data-caction="exam-open"]').click();
+  assert.equal(await page.locator('#courseNext').count(),0);
+  assert.equal(await page.locator('#courseExam').isVisible(),true);
   assert.match(page.url(),/#avaliacao-final$/);
   const examQuestion=await page.locator('.course-question > strong').first().innerText();
   await page.locator('input[name="finalq-0"][value="0"]').check();
   await page.reload({waitUntil:'networkidle'});
+  assert.equal(await page.locator('#courseNext').count(),0);
+  assert.equal(await page.locator('#courseExam').isVisible(),true);
   assert.equal(await page.locator('.course-question > strong').first().innerText(),examQuestion);
   assert.equal(await page.locator('input[name="finalq-0"][value="0"]').isChecked(),true);
   await page.locator('[data-caction="map"]').click();
@@ -335,6 +354,22 @@ try{
   assert.match(await scoringPage.locator('.feedback-metric').nth(1).innerText(),/0%/);
   assert.deepEqual(scoringErrors,[]);
   await scoringContext.close();
+
+  // Auditoria de composição: desktop e mobile devem mostrar orientação contextual
+  // somente na página inicial, em vez de duplicá-la no mapa e na aula.
+  const desktopContext=await browser.newContext({viewport:{width:1280,height:800}});
+  const desktopPage=await desktopContext.newPage();
+  await desktopPage.goto(root,{waitUntil:'networkidle'});
+  assert.equal(await desktopPage.locator('#continueLearning').isVisible(),true);
+  await desktopPage.locator('#topCourse').click();
+  assert.equal(await desktopPage.locator('#courseMap').isVisible(),true);
+  assert.equal(await desktopPage.locator('#courseNext').count(),0);
+  await desktopPage.locator('#courseMap [data-caction="lesson"]').first().click();
+  assert.equal(await desktopPage.locator('#courseLesson').isVisible(),true);
+  assert.equal(await desktopPage.locator('#courseNext').count(),0);
+  await desktopPage.locator('#courseHomeBack').click();
+  assert.equal(await desktopPage.locator('#continueLearning').isVisible(),true);
+  await desktopContext.close();
 
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
   await context.close();

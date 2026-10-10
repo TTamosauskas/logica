@@ -43,12 +43,17 @@ test('conclusão total produz estado de revisão e mantém a contagem',()=>{
   assert.equal(LEARNING_STAGES.length,5);
 });
 
-test('marcadores de continuidade e agrupamento existem no HTML e na folha de estilos',()=>{
+test('recomendação aparece na página inicial, sem duplicação dentro do Curso Guiado',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
   const css=readFileSync(new URL('../styles/learning.css',import.meta.url),'utf8');
-  for(const id of ['continueLearning','continueButton','courseNext','courseNextButton','modeGrid']){
+  const app=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
+  for(const id of ['continueLearning','continueButton','modeGrid','courseView','courseMap','courseLesson','courseExam']){
     assert.match(html,new RegExp('id="'+id+'"'));
   }
+  assert.equal((html.match(/id="continueLearning"/g)||[]).length,1);
+  assert.doesNotMatch(html,/id="courseNext(?:Button|Description|Title)?"/);
+  assert.doesNotMatch(app,/courseNext(?:Button|Description|Title)?/);
+  assert.doesNotMatch(css,/\.course-next/);
   assert.match(css,/\.practice-group\s+summary/);
   assert.match(css,/\.truth-table\s+\.cell\s*\{min-width:44px;min-height:44px/);
 });
