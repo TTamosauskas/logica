@@ -510,7 +510,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       }
       return `<g class="venn-witness" pointer-events="none"><circle cx="${cx}" cy="${cy}" r="17" fill="var(--panel)" stroke="var(--teal)" stroke-width="2.4"/><text x="${cx}" y="${cy+5}" text-anchor="middle" fill="var(--teal)" font-size="17" font-weight="900">×${witnessSelections.length>1?i+1:''}</text></g>`;
     }).join('');
-    return `<svg class="venn-svg" viewBox="0 0 480 330" role="img" aria-label="Três conjuntos S, M e P, com regiões numeradas; áreas hachuradas são vazias e X indica existência." xmlns="http://www.w3.org/2000/svg"><defs>${clips}<pattern id="venn-stripes" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(40)"><rect width="10" height="10" fill="var(--accent-bg)"/><path d="M0 0V10" stroke="var(--accent)" stroke-opacity=".8" stroke-width="4"/></pattern></defs><rect x="8" y="7" width="464" height="316" rx="16" fill="var(--input)" stroke="var(--border)"/>${shaped}${Object.entries(circles).map(([n,[x,y,r]])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${n==='S'?'#83a7ff':n==='M'?'#65dab0':'#e2b66e'}" stroke-width="2.5"/>`).join('')}<text x="112" y="62" fill="#83a7ff" font-weight="800" font-size="17">S</text><text x="366" y="62" fill="#65dab0" font-weight="800" font-size="17">M</text><text x="241" y="310" fill="#e2b66e" font-weight="800" font-size="17" text-anchor="middle">P</text>${Object.entries(VENN_POINTS).map(([n,[x,y]])=>`<g data-venn-region="${n}" class="venn-hotspot" role="button" tabindex="0" aria-label="Região ${Number(n)+1}: ${vennRegName(Number(n))}"><circle cx="${x}" cy="${y}" r="24" fill="var(--panel)" stroke="${shade.includes(Number(n))?'var(--accent)':'var(--border-hi)'}" stroke-width="2"/><text x="${x}" y="${y+5}" text-anchor="middle" fill="var(--text)" font-size="14" font-weight="800" pointer-events="none">${Number(n)+1}</text></g>`).join('')}${xs}</svg>`;
+    return `<svg class="venn-svg" viewBox="0 0 480 330" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs>${clips}<pattern id="venn-stripes" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(40)"><rect width="10" height="10" fill="var(--accent-bg)"/><path d="M0 0V10" stroke="var(--accent)" stroke-opacity=".8" stroke-width="4"/></pattern></defs><rect x="8" y="7" width="464" height="316" rx="16" fill="var(--input)" stroke="var(--border)"/>${shaped}${Object.entries(circles).map(([n,[x,y,r]])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${n==='S'?'#83a7ff':n==='M'?'#65dab0':'#e2b66e'}" stroke-width="2.5"/>`).join('')}<text x="112" y="62" fill="#83a7ff" font-weight="800" font-size="17">S</text><text x="366" y="62" fill="#65dab0" font-weight="800" font-size="17">M</text><text x="241" y="310" fill="#e2b66e" font-weight="800" font-size="17" text-anchor="middle">P</text>${Object.entries(VENN_POINTS).map(([n,[x,y]])=>`<g data-venn-region="${n}" class="venn-hotspot"><circle cx="${x}" cy="${y}" r="24" fill="var(--panel)" stroke="${shade.includes(Number(n))?'var(--accent)':'var(--border-hi)'}" stroke-width="2"/><text x="${x}" y="${y+5}" text-anchor="middle" fill="var(--text)" font-size="14" font-weight="800" pointer-events="none">${Number(n)+1}</text></g>`).join('')}${xs}</svg>`;
   }
   // Reutilizada no Venn de premissas e no Venn de cada modelo concreto.
   function vennTermsLegend(terms){
@@ -568,6 +568,14 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     }else html+='<div class="venn-task-card"><span class="venn-step-label">DIAGRAMA COMPLETO</span><div class="venn-statement">As duas premissas já estão representadas.</div><p class="venn-instruction">Agora examine o desenho e avalie se a conclusão é obrigatória.</p></div>';
     html+=`<div class="venn-simple-board"><div class="venn-diagram"><p class="venn-diagram-guide">${active?.kind==='shade'?'Toque nos números dentro dos círculos para marcar ou desmarcar uma região.':'Observe as regiões marcadas no desenho.'}</p>${vennSvg(shade,witnesses)}${vennTermsLegend(cat.terms)}<div class="venn-legend"><span><span class="stripe-sample"></span> Impossível</span><span><span class="x-sample">X</span> Existe alguém</span></div></div>`;
     html+='<div class="venn-simple-tools">';
+    // Alternativa nativa, sincronizada ao mesmo estado do desenho.
+    if(active?.kind==='shade'){
+      const selected=vennUnion(v.shaded,v.workingShade);
+      html+='<div class="venn-text-alternative"><strong>Regiões por texto e teclado</strong><p>Use Tab para percorrer as oito regiões e espaço ou Enter para marcar. Os mesmos estados aparecem no desenho.</p><div class="venn-text-region-grid" role="group" aria-label="Selecionar regiões do Diagrama de Venn">';
+      html+=Array.from({length:8},(_,n)=>`<button type="button" class="venn-text-region ${selected.includes(n)?'selected':''}" data-venn-region-text="${n}" aria-pressed="${selected.includes(n)}" aria-label="Região ${n+1}: ${escapeHTML(vennPlainRegion(n,cat.terms))}${v.shaded.includes(n)?' Já marcada na premissa anterior.':''}">${n+1}. ${escapeHTML(vennRegName(n))}${selected.includes(n)?' · Marcada':''}</button>`).join('');
+      html+='</div></div>';
+    }
+
     if(active?.kind==='shade'){
       const selected=v.workingShade||[],already=v.shaded||[];
       html+=`<div class="venn-selected-list"><strong>Regiões que você marcou nesta frase:</strong><div>${selected.length?selected.map(p=>`Região ${p+1}`).join(', '):'Toque em uma região numerada no desenho.'}</div>${already.length?`<div style="margin-top:6px;color:var(--muted)">Já marcadas em outra premissa: ${already.map(p=>p+1).join(', ')}.</div>`:''}</div>`;
@@ -595,6 +603,19 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     }
     html+=`<p class="venn-gate">${v.verdictVerified||ex.revealed?'PASSO 4 LIBERADO · AGORA TESTE MODELOS CONCRETOS':'A tabela de modelos será liberada depois de concluir o desenho e avaliar a conclusão.'}</p>`;
     area.innerHTML=html;
+  }
+  function rerenderVennWithFocus(trigger){
+    const textRegion=trigger?.dataset?.vennRegionText;
+    const choice=trigger?.dataset?.vennWitnessChoice;
+    const verdict=trigger?.dataset?.vennVerdict;
+    const id=trigger?.id;
+    renderVenn();
+    let replacement=null;
+    if(textRegion!==undefined)replacement=[...$('vennArea').querySelectorAll('[data-venn-region-text]')].find(b=>b.dataset.vennRegionText===textRegion);
+    else if(choice!==undefined)replacement=[...$('vennArea').querySelectorAll('[data-venn-witness-choice]')].find(b=>b.dataset.vennWitnessChoice===choice);
+    else if(verdict!==undefined)replacement=[...$('vennArea').querySelectorAll('[data-venn-verdict]')].find(b=>b.dataset.vennVerdict===verdict);
+    else if(id)replacement=document.getElementById(id);
+    replacement?.focus({preventScroll:true});
   }
   function validateVenn(){
     const ex=exercise;if(ex?.mode!=='categoricos'||!ex.cat.unlocked||ex.revealed)return;
@@ -1057,7 +1078,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     $('hintButton').focus({preventScroll:true});
   }
   function setAnswer(r,c,value){if(!exercise||exercise.revealed)return;const key=fieldKey(r,c),current=exercise.answers[key]||'';const next=value===undefined?(current===''?'V':current==='V'?'F':''):value;if(next)exercise.answers[key]=next;else delete exercise.answers[key];exercise.grade=null;renderTable();renderFeedback();renderFeedbackActions();renderChoice();saveExerciseDraft()}
-  function setChoice(option){if(!exercise||exercise.revealed)return;exercise.picked=option;exercise.grade=null;renderChoice();renderTable();renderFeedback();renderFeedbackActions();saveExerciseDraft()}
+  function setChoice(option){if(!exercise||exercise.revealed)return;exercise.picked=option;exercise.grade=null;renderChoice();renderTable();renderFeedback();renderFeedbackActions();[...$('decisionArea').querySelectorAll('[data-choice]')].find(el=>el.dataset.choice===option)?.focus({preventScroll:true});saveExerciseDraft()}
   function gradeExercise(){if(!exercise||exercise.revealed)return;if(exercise.special){gradeSpecial();return;}if(exercise.translation&&!exercise.translation.unlocked){toast('Conclua a tradução primeiro.');return}if(exercise.cat&&(!exercise.cat.unlocked||!exercise.cat.venn.verdictVerified)){toast('Conclua a tradução e o Diagrama de Venn primeiro.');return}const ex=exercise;let correct=0,total=0,missing=0;if(!(ex.mode==='deducao'&&ex.metadata.contest))ex.envs.forEach((env,r)=>ex.cols.forEach((col,c)=>{if(!col.editable)return;const a=ex.answers[fieldKey(r,c)],exp=expected(ex,r,c);total++;if(!a)missing++;if(a===exp)correct++}));if(ex.choice){total++;if(ex.picked===ex.choice.correct)correct++;if(!ex.picked)missing++}if(ex.cat){for(const first of ex.cat.first){total++;if(first===true)correct++;if(first===null)missing++}const venn=ex.cat.venn;for(const first of [venn.firstShade,...Object.values(venn.firstWitness),venn.firstVerdict]){total++;if(first===true)correct++;if(first===null)missing++}}if(ex.translation){for(const first of ex.translation.first){total++;if(first===true)correct++;if(first===null)missing++}if(ex.translation.rule){total++;if(ex.translation.rule.first===true)correct++;if(ex.translation.rule.first===null)missing++}}ex.grade={correct,total,missing};if(!ex.gradedEver){ex.firstGrade={...ex.grade};ex.gradedEver=true;const s=stats.byMode[ex.mode]||{tries:0,perfect:0,correct:0,total:0};s.tries++;s.correct+=correct;s.total+=total;if(correct===total)s.perfect++;if(ex.translation){stats.translationTypes=stats.translationTypes||{};const id=ex.translation.templateId,ts=stats.translationTypes[id]||{tries:0,wins:0};ts.tries++;if(ex.translation.first.every(Boolean)&&(!ex.translation.rule||ex.translation.rule.first===true))ts.wins++;stats.translationTypes[id]=ts}if(ex.mode==='deducao'){stats.deductionLevels=stats.deductionLevels||{};const lev=ex.metadata.levelCode,ds=stats.deductionLevels[lev]||{tries:0,correct:0};ds.tries++;if(correct===total)ds.correct++;stats.deductionLevels[lev]=ds}stats.byMode[ex.mode]=s;stats.tries++;stats.correct+=correct;stats.total+=total;if(correct===total)stats.perfect++;save()}recordGuidedAttempt();renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'})}
   function reveal(){if(!exercise||!confirmDiscard('Revelar a resolução'))return;if(courseAttempt)courseAttempt.hintUsed=true;exercise.revealed=true;exercise.grade=null;renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'})}
   function clear(){if(!exercise||exercise.revealed)return;
@@ -1121,25 +1142,25 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   $('vennArea').addEventListener('click',e=>{
     if(exercise?.mode!=='categoricos'||exercise.revealed)return;
     const v=exercise.cat.venn,task=vennTasks(exercise)[v.phase||0];
-    const reg=e.target.closest('[data-venn-region]');
+    const reg=e.target.closest('[data-venn-region], [data-venn-region-text]');
     if(reg&&task?.kind==='shade'&&!v.verified){
-      const p=Number(reg.dataset.vennRegion);v.lastRegion=p;
-      if(v.shaded.includes(p)){v.feedback='Esta região já foi marcada pela premissa anterior.';renderVenn();return}
+      const p=Number(reg.dataset.vennRegionText??reg.dataset.vennRegion);v.lastRegion=p;
+      if(v.shaded.includes(p)){v.feedback='Esta região já foi marcada pela premissa anterior.';rerenderVennWithFocus(e.target);return}
       const cur=v.workingShade||[];
       v.workingShade=cur.includes(p)?cur.filter(x=>x!==p):[...cur,p].sort((a,b)=>a-b);
-      v.feedback='';renderVenn();return;
+      v.feedback='';rerenderVennWithFocus(e.target);return;
     }
     const choice=e.target.closest('[data-venn-witness-choice]');
     if(choice&&task?.kind==='witness'&&!v.verified){
       v.witnessChoices[Number(choice.dataset.vennWitnessIndex)]=choice.dataset.vennWitnessChoice;
-      v.feedback='';renderVenn();return;
+      v.feedback='';rerenderVennWithFocus(e.target);return;
     }
-    if(e.target.closest('#clearVenn')&&!v.verified){v.workingShade=[];v.lastRegion=null;v.feedback='';renderVenn();return}
-    const verdict=e.target.closest('[data-venn-verdict]');if(verdict&&v.verified&&!v.verdictVerified){v.verdict=verdict.dataset.vennVerdict;v.verdictFeedback='';renderVenn();return}
+    if(e.target.closest('#clearVenn')&&!v.verified){v.workingShade=[];v.lastRegion=null;v.feedback='';rerenderVennWithFocus(e.target);return}
+    const verdict=e.target.closest('[data-venn-verdict]');if(verdict&&v.verified&&!v.verdictVerified){v.verdict=verdict.dataset.vennVerdict;v.verdictFeedback='';rerenderVennWithFocus(e.target);return}
     if(e.target.closest('#validateVenn'))validateVenn();
     if(e.target.closest('#validateVennVerdict'))validateVennVerdict();
   });
-  $('vennArea').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('[data-venn-region]')){e.preventDefault();e.target.click()}});
+  // O desenho responde a cliques; a seleção por teclado usa os botões textuais nativos.
   $('specialArea').addEventListener('change',onSpecialChange);$('checkButton').addEventListener('click',gradeExercise);$('hintButton').addEventListener('click',requestHint);$('independentHintDecision').addEventListener('click',handleHintDecision);$('clearButton').addEventListener('click',clear);$('undoClearButton').addEventListener('click',undoClear);$('revealButton').addEventListener('click',reveal);$('newButton').addEventListener('click',()=>nextExercise());$('newTopButton').addEventListener('click',()=>nextExercise());
   $('backButton').addEventListener('click',()=>courseAttempt?openCourse(true,courseAttempt.id):goHome());$('topHome').addEventListener('click',()=>goHome());$('brand').addEventListener('click',e=>{e.preventDefault();goHome()});$('howButton').addEventListener('click',showGuide);$('topGuide').addEventListener('click',showGuide);$('themeButton').addEventListener('click',toggleTheme);$('resetButton').addEventListener('click',resetProgress);
   $('deductionArea').addEventListener('click',e=>{if(e.target.closest('#toggleDeductionTable')&&exercise?.mode==='deducao'){exercise.metadata.tableOpened=!exercise.metadata.tableOpened;renderDeduction();}});
@@ -1178,7 +1199,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     return makeSpecial('provas','Construa uma prova formal','Complete as linhas derivadas. Indique a fórmula e a regra aplicada às linhas de origem. Cada justificativa pode ser conferida.',{type:'proof',premises:model.premises,steps,ruleOptions:[['MP','Modus ponens (→E)'],['MT','Modus tollens'],['SH','Silogismo hipotético'],['DS','Silogismo disjuntivo'],['AND_E','Eliminar conjunção (∧E)'],['AND_I','Introduzir conjunção (∧I)'],['OR_I','Introduzir disjunção (∨I)'],['DN','Eliminar dupla negação']]},'Leia as linhas de origem de cada passo. Identifique a regra e a fórmula que ela autoriza.',`A demonstração conclui ${pretty(steps.at(-1).target)} a partir das premissas, usando regras explícitas de inferência.`);
   }
   function advancedConceptMode(level,id){id=id||mode;const bank=LESSONS[id]?.quiz||LESSONS.metateoria.quiz;const count=level==='easy'?2:3;const questions=shuffle(bank).slice(0,count);return makeSpecial(id,'Interprete o conceito e justifique a escolha','Selecione a resposta de cada questão. Ao corrigir, você verá a explicação da alternativa correta.',{type:'concept',questions},'Releia a definição na miniaula do tema e busque um exemplo que diferencie as alternativas.','Cada questão exige aplicar a definição com precisão. Confira as justificativas de cada resposta.');}
-  function onSpecialChange(e){const s=exercise?.special;if(!s||exercise.revealed)return;const field=e.target.closest('[data-special-field]');if(!field)return;s.values[field.dataset.specialField]=field.value;exercise.grade=null;renderSpecial();renderFeedback();}
+  function onSpecialChange(e){const s=exercise?.special;if(!s||exercise.revealed)return;const field=e.target.closest('[data-special-field]');if(!field)return;s.values[field.dataset.specialField]=field.value;exercise.grade=null;const key=field.dataset.specialField;renderSpecial();renderFeedback();[...$('specialArea').querySelectorAll('[data-special-field]')].find(el=>el.dataset.specialField===key)?.focus({preventScroll:true});}
   function renderSpecial(){const area=$('specialArea');if(!exercise?.special){area.classList.add('hide');$('tableStage').classList.remove('hide');$('checkButton').textContent='✓ Corrigir tabela';return;}
     area.classList.remove('hide');$('tableStage').classList.add('hide');$('checkButton').textContent='✓ Corrigir atividade';const ex=exercise,s=ex.special;
     if(s.type==='theorem'||s.type==='semanticworld'){area.innerHTML=renderAdvancedSpecial(ex);return;}
@@ -1219,7 +1240,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(p.read){html+=`<section class="course-lesson-panel"><h3>2. Observar um exemplo resolvido</h3><div class="course-example"><strong>${escapeHTML(lesson.example)}</strong><ol>${lesson.steps.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol></div><div class="course-lesson-actions"><button type="button" class="button ${p.example?'':'primary'}" data-caction="example">${p.example?'✓ Exemplo estudado':'Entendi a resolução →'}</button></div></section>`}
     if(p.example){html+=`<section class="course-lesson-panel"><h3>3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
     if(p.guided){html+=`<section class="course-lesson-panel"><h3>4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
-    if(p.independent){html+=`<section class="course-lesson-panel"><h3>5. Demonstrar domínio</h3><p>Responda às três perguntas de compreensão. Atingindo três acertos, o tema fica dominado; com dois acertos, você pode revisar e tentar novamente.</p><div class="course-assessment">${lesson.quiz.slice(0,3).map((q,i)=>`<div class="course-question"><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((option,j)=>`<label class="course-option"><input type="radio" name="courseq-${i}" value="${j}"><span>${escapeHTML(option)}</span></label>`).join('')}</div>`).join('')}</div>${lessonFeedback&&lessonFeedback.id===id?`<div class="course-course-result ${lessonFeedback.score<3?'warn':''}"><strong>${lessonFeedback.score}/3 acertos.</strong> ${lessonFeedback.score===3?'Domínio demonstrado!':'Revise as explicações e faça outra tentativa.'}${lessonFeedback.details.map(x=>`<p>${escapeHTML(x)}</p>`).join('')}</div>`:''}<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="lesson-quiz">Corrigir avaliação</button></div></section>`}
+    if(p.independent){html+=`<section class="course-lesson-panel"><h3>5. Demonstrar domínio</h3><p>Responda às três perguntas de compreensão. Atingindo três acertos, o tema fica dominado; com dois acertos, você pode revisar e tentar novamente.</p><div class="course-assessment">${lesson.quiz.slice(0,3).map((q,i)=>`<div class="course-question"><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((option,j)=>`<label class="course-option"><input type="radio" name="courseq-${i}" value="${j}"><span>${escapeHTML(option)}</span></label>`).join('')}</div>`).join('')}</div>${lessonFeedback&&lessonFeedback.id===id?`<div class="course-course-result ${lessonFeedback.score<3?'warn':''}" tabindex="-1" role="status"><strong>${lessonFeedback.score}/3 acertos.</strong> ${lessonFeedback.score===3?'Domínio demonstrado!':'Revise as explicações e faça outra tentativa.'}${lessonFeedback.details.map(x=>`<p>${escapeHTML(x)}</p>`).join('')}</div>`:''}<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="lesson-quiz">Corrigir avaliação</button></div></section>`}
     $('courseLesson').innerHTML=html;updateNextLearningCards();
   }
   function beginCourseExercise(id,stage){
@@ -1247,10 +1268,10 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       if(previous?.courseAttempt&&hasPendingWork(previous.exercise)&&!confirm('Esta aula possui uma tentativa guiada salva. Iniciar a prática livre substituirá essa tentativa. Deseja continuar?'))return;
       courseAttempt=null;openMode(courseActive,true,!!previous?.courseAttempt);return
     }
-    if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();return}
-    if(action==='example'){courseProgress(courseActive).example=true;saveCourseState();renderCourseLesson();return}
+    if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="example"]')?.focus({preventScroll:true});return}
+    if(action==='example'){courseProgress(courseActive).example=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="guided"]')?.focus({preventScroll:true});return}
     if(action==='guided'||action==='independent'){beginCourseExercise(courseActive,action);return}
-    if(action==='lesson-quiz'){const q=LESSONS[courseActive].quiz.slice(0,3),selected=q.map((_,i)=>$('courseLesson').querySelector(`input[name="courseq-${i}"]:checked`)?.value);if(selected.some(x=>x===undefined)){toast('Marque uma alternativa em cada pergunta.');return}const score=q.reduce((acc,item,i)=>acc+(Number(selected[i])===item.correct?1:0),0),p=courseProgress(courseActive);p.best=Math.max(p.best,score/3);if(score===3)p.mastered=true;saveCourseState();lessonFeedback={id:courseActive,score,details:q.map((item,i)=>`${i+1}. ${Number(selected[i])===item.correct?'Correto.':'Revisar.'} ${item.why}`)};renderCourseLesson();return}
+    if(action==='lesson-quiz'){const q=LESSONS[courseActive].quiz.slice(0,3),selected=q.map((_,i)=>$('courseLesson').querySelector(`input[name="courseq-${i}"]:checked`)?.value);if(selected.some(x=>x===undefined)){toast('Marque uma alternativa em cada pergunta.');return}const score=q.reduce((acc,item,i)=>acc+(Number(selected[i])===item.correct?1:0),0),p=courseProgress(courseActive);p.best=Math.max(p.best,score/3);if(score===3)p.mastered=true;saveCourseState();lessonFeedback={id:courseActive,score,details:q.map((item,i)=>`${i+1}. ${Number(selected[i])===item.correct?'Correto.':'Revisar.'} ${item.why}`)};renderCourseLesson();$('courseLesson').querySelector('.course-course-result')?.focus({preventScroll:true});return}
     if(action==='exam-open'){openFinalExam();return}
     if(action==='exam-submit'){gradeFinalExam();return}
     if(action==='exam-new'){openFinalExam(true,true);return}

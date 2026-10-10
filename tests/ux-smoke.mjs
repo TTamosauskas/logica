@@ -168,6 +168,59 @@ try{
   await trainingContext.close();
   assert.deepEqual(errors,[]);
 
+
+  // Ciclo 5: foco restaura após selecionar uma regra ou resposta em atividades avançadas.
+  const a11y=await browser.newContext({viewport:{width:375,height:812},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  const access=await a11y.newPage();
+  const accessErrors=[];
+  access.on('pageerror',err=>accessErrors.push(err.message));
+  await access.goto(root,{waitUntil:'networkidle'});
+  await access.keyboard.press('Tab');
+  assert.equal(await access.evaluate(()=>document.activeElement?.classList.contains('skip-link')),true);
+  await access.keyboard.press('Enter');
+  assert.equal(await access.evaluate(()=>document.activeElement?.id),'mainContent');
+
+  await access.goto(root+'#provas',{waitUntil:'networkidle'});
+  const formula=access.locator('#specialArea select[data-special-field]').first();
+  await formula.focus();
+  await formula.selectOption({index:1});
+  assert.equal(await access.evaluate(()=>document.activeElement?.dataset.specialField),'0-formula');
+
+  // Na aula, o foco acompanha a próxima etapa disponível.
+  await access.goto(root+'#aula-fundamentos',{waitUntil:'networkidle'});
+  await access.locator('[data-caction="read"]').click();
+  assert.equal(await access.evaluate(()=>document.activeElement?.dataset.caction),'example');
+  await access.locator('[data-caction="example"]').click();
+  assert.equal(await access.evaluate(()=>document.activeElement?.dataset.caction),'guided');
+
+  // A alternativa de Venn fica operável pelo teclado e sincronizada ao desenho.
+  await access.goto(root+'#categoricos',{waitUntil:'networkidle'});
+  // O rascunho automático anterior é salvo em pagehide; preparar o teste no início do carregamento.
+  await access.addInitScript(()=>{
+    const key='logiclab_exercise_drafts_v1';
+    const drafts=JSON.parse(localStorage.getItem(key));
+    const ex=drafts.byMode.categoricos.exercise;
+    ex.cat.unlocked=true;
+    ex.cat.forms[0].kind='all';
+    ex.cat.venn.phase=0;
+    ex.cat.venn.workingShade=[];
+    ex.cat.venn.shaded=[];
+    ex.cat.venn.verified=false;
+    localStorage.setItem(key,JSON.stringify(drafts));
+  });
+  await access.reload({waitUntil:'networkidle'});
+  assert.equal(await access.locator('[data-venn-region-text]').count(),8);
+  assert.equal(await access.locator('.venn-svg').getAttribute('aria-hidden'),'true');
+  const region=access.locator('[data-venn-region-text="0"]');
+  await region.focus();
+  await access.keyboard.press('Space');
+  assert.equal(await region.getAttribute('aria-pressed'),'true');
+  assert.equal(await access.evaluate(()=>document.activeElement?.dataset.vennRegionText),'0');
+  await access.locator('[data-venn-region="1"]').click();
+  assert.equal(await access.locator('[data-venn-region-text="1"]').getAttribute('aria-pressed'),'true');
+  assert.deepEqual(accessErrors,[]);
+  await a11y.close();
+
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
   await context.close();
 }catch(error){
