@@ -88,6 +88,14 @@ try{
   await page.locator('[data-caction="map"]').click();
   await page.locator('[data-caction="exam-open"]').click();
   assert.equal(await page.locator('input[name="finalq-0"][value="0"]').isChecked(),true);
+  // Os campos de seleção dos exercícios avançados também precisam sobreviver ao reload.
+  await page.goto(root+'#provas',{waitUntil:'networkidle'});
+  const proofSelect=page.locator('#specialArea select[data-special-field]').first();
+  await proofSelect.selectOption({index:1});
+  const selectedFormula=await page.locator('#specialArea select[data-special-field]').first().inputValue();
+  assert.ok(selectedFormula.length>0);
+  await page.reload({waitUntil:'networkidle'});
+  assert.equal(await page.locator('#specialArea select[data-special-field]').first().inputValue(),selectedFormula);
   assert.deepEqual(errors,[]);
 
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
