@@ -98,6 +98,68 @@ try{
   assert.equal(await page.locator('#specialArea select[data-special-field]').first().inputValue(),selectedFormula);
   assert.deepEqual(errors,[]);
 
+
+  // Ciclo 4: a dica deve aparecer junto ao enunciado, inclusive no celular.
+  await page.goto(root+'#operadores',{waitUntil:'networkidle'});
+  await page.locator('#hintButton').click();
+  assert.equal(await page.locator('#inlineHint').isVisible(),true);
+  assert.equal(await page.locator('#inlineHint').evaluate(el=>el===document.activeElement),true);
+  assert.equal(await page.locator('#hintButton').getAttribute('aria-expanded'),'true');
+  await page.locator('#hintButton').click();
+  assert.equal(await page.locator('#inlineHint').isVisible(),false);
+
+  // Corrigir de novo atualiza o resultado atual, mas preserva a primeira correção.
+  await page.locator('#checkButton').click();
+  assert.equal(await page.locator('.feedback-metric').count(),3);
+  const firstMetric=page.locator('.feedback-metric').nth(1);
+  assert.match(await firstMetric.innerText(),/0%/);
+  const firstCell=page.locator('#truthTable button.cell').first();
+  const desired=(await firstCell.locator('.expected').innerText()).trim();
+  await firstCell.click();
+  if(desired==='F')await firstCell.click();
+  await page.locator('#checkButton').click();
+  assert.match(await page.locator('.feedback-metric').first().innerText(),/[1-9][0-9]*%/);
+  assert.match(await firstMetric.innerText(),/0%/);
+  assert.match(await page.locator('.feedback-metric').last().innerText(),/0%/);
+
+  // Contexto de avaliação independente: consultar uma dica exige escolha explícita.
+  const trainingContext=await browser.newContext({viewport:{width:375,height:812},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  const study=await trainingContext.newPage();
+  const studyErrors=[];
+  study.on('pageerror',error=>studyErrors.push(error.message));
+  await study.goto(root,{waitUntil:'networkidle'});
+  await study.evaluate(()=>{
+    localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({
+      lessons:{fundamentos:{read:true,example:true,guided:true,independent:false,mastered:false,best:0}},
+      final:{}
+    }));
+  });
+  await study.reload({waitUntil:'networkidle'});
+  await study.locator('#topCourse').click();
+  await study.locator('[data-caction="lesson"][data-id="fundamentos"]').click();
+  await study.locator('[data-caction="independent"]').click();
+  await study.locator('#hintButton').click();
+  assert.equal(await study.locator('#independentHintDecision').isVisible(),true);
+  assert.equal(await study.locator('#inlineHint').isVisible(),false);
+  await study.locator('[data-hint-action="keep"]').click();
+  assert.equal(await study.locator('#independentHintDecision').isVisible(),false);
+  let draft=await study.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_exercise_drafts_v1')));
+  assert.equal(draft.byMode.fundamentos.courseAttempt.hintUsed,false);
+  await study.locator('#hintButton').click();
+  await study.locator('[data-hint-action="show"]').click();
+  assert.equal(await study.locator('#inlineHint').isVisible(),true);
+  assert.match(await study.locator('#courseExerciseBanner').innerText(),/não valida autonomia/);
+  draft=await study.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_exercise_drafts_v1')));
+  assert.equal(draft.byMode.fundamentos.courseAttempt.hintUsed,true);
+  await study.locator('#checkButton').click();
+  assert.equal(await study.locator('.feedback-assisted').isVisible(),true);
+  await study.reload({waitUntil:'networkidle'});
+  assert.equal(await study.locator('#inlineHint').isVisible(),true);
+  assert.match(await study.locator('#courseExerciseBanner').innerText(),/não valida autonomia/);
+  assert.deepEqual(studyErrors,[]);
+  await trainingContext.close();
+  assert.deepEqual(errors,[]);
+
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
   await context.close();
 }catch(error){
