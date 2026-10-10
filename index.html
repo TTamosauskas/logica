@@ -25,7 +25,7 @@
   <main class="shell" id="mainContent" tabindex="-1">
     <section id="homeView" aria-label="Página inicial">
       <div class="hero">
-        <div><span class="eyebrow"><span class="dot"></span> CURSO DE LÓGICA FORMAL</span><h1>Aprenda a pensar.<br><span class="gradient-text">E a demonstrar.</span></h1><p>Um percurso de lógica formal com aulas, demonstrações, exercícios interativos, diagramas, quantificadores e avaliações e revisões espaçadas. Estude na ordem guiada ou explore livremente os desafios.</p><div class="hero-actions"><button class="button" id="heroStartButton" type="button">Conhecer o curso →</button><button class="button" id="heroPracticeButton" type="button">Praticar um assunto ↓</button></div></div>
+        <div><span class="eyebrow"><span class="dot"></span> INÍCIO · LOGICLAB</span><h1>Aprenda a pensar.<br><span class="gradient-text">E a demonstrar.</span></h1><p>Um percurso de lógica formal com aulas, demonstrações, exercícios interativos, diagramas, quantificadores e avaliações e revisões espaçadas. Escolha a próxima etapa recomendada logo abaixo ou explore livremente os assuntos.</p><div class="hero-actions"><button class="button" id="heroStartButton" type="button">Conhecer o curso →</button><button class="button" id="heroPracticeButton" type="button">Praticar um assunto ↓</button></div></div>
         <div class="hero-visual" aria-hidden="true"><div class="mini-top">VISUALIZE A LÓGICA</div><div class="mini-equation">(p ∧ q) → p</div><table class="mini-table"><thead><tr><th>p</th><th>q</th><th>p ∧ q</th><th>→ p</th></tr></thead><tbody><tr><td>V</td><td>V</td><td>V</td><td>V</td></tr><tr><td>V</td><td>F</td><td>F</td><td>V</td></tr><tr><td>F</td><td>V</td><td>F</td><td>V</td></tr><tr><td>F</td><td>F</td><td>F</td><td>V</td></tr></tbody></table></div>
       </div>
       <section class="learning-next" id="continueLearning" aria-label="Próxima etapa recomendada">
@@ -50,7 +50,7 @@
     </section>
     <section id="workView" class="hide" aria-label="Área de exercícios">
       <button class="back" id="backButton" type="button">← Voltar aos módulos</button>
-      <div class="work-head"><div><span class="eyebrow"><span class="dot"></span> SALA DE EXERCÍCIOS</span><h1 id="workTitle">Teste de operadores</h1><p id="workDescription"></p></div><button class="button small" id="newTopButton" type="button">↻ Novo exercício</button></div>
+      <div class="work-head"><div><span class="eyebrow" id="workLocation"><span class="dot"></span> PRÁTICA LIVRE</span><h1 id="workTitle">Teste de operadores</h1><p id="workDescription"></p></div><button class="button small" id="newTopButton" type="button">↻ Novo exercício</button></div>
       <div class="level-bar"><span>Dificuldade</span><div id="levelSegments" class="segments" role="group" aria-label="Dificuldade"><button class="segment" data-level="easy" type="button">Fácil</button><button class="segment" data-level="medium" type="button">Médio</button><button class="segment" data-level="hard" type="button">Difícil</button></div><span id="exerciseIndex" class="exercise-index"></span></div>
       <div class="work-grid">
         <article class="panel main-panel">
@@ -82,7 +82,7 @@
 
     <section id="courseView" class="hide" aria-label="Curso Guiado de Lógica Formal">
       <button class="back" id="courseHomeBack" type="button">← Página inicial</button>
-      <div class="course-head"><div><span class="eyebrow"><span class="dot"></span> FORMAÇÃO EM LÓGICA FORMAL</span><h1>Curso Guiado</h1><p>Aprenda → pratique → demonstre aprovação inicial → consolide o conhecimento em duas revisões espaçadas.</p></div><button type="button" id="courseMapButton" class="button">Mapa das unidades</button></div>
+      <div class="course-head"><div><span class="eyebrow" id="courseLocation"><span class="dot"></span> CURSO GUIADO / MAPA DAS UNIDADES</span><h1>Curso Guiado</h1><p id="courseDescription">Escolha uma aula para estudar e acompanhe suas revisões.</p></div><button type="button" id="courseMapButton" class="button">Mapa das unidades</button></div>
       <div id="courseMap" class="course-map"></div>
       <div id="courseLesson" class="course-lesson hide"></div>
       <div id="courseExam" class="course-exam hide"></div>
