@@ -16,6 +16,7 @@ test('o curso guiado e cada aula recebem rotas explícitas',()=>{
   assert.deepEqual(routeFromHash('#curso',modules,lessons),{view:'course',id:null});
   assert.deepEqual(routeFromHash('#aula-operadores',modules,lessons),{view:'course',id:'operadores'});
   assert.deepEqual(routeFromHash('#aula-inexistente',modules,lessons),{view:'home',id:null});
+  assert.deepEqual(routeFromHash('#avaliacao-final',modules,lessons),{view:'exam',id:null});
 });
 
 test('módulos de prática e fragmentos codificados são reconhecidos',()=>{
