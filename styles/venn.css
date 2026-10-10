@@ -1,0 +1,79 @@
+    .venn-area{padding:22px 24px;border-bottom:1px solid var(--border);background:linear-gradient(140deg,rgba(116,98,225,.07),rgba(56,169,140,.04))}
+    .venn-intro{font-size:13px;line-height:1.72;color:var(--muted);margin:13px 0}
+    .venn-intro b,.venn-intro strong{color:var(--text)}
+    .venn-board{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(250px,.95fr);gap:14px;align-items:start}
+    .venn-diagram{background:var(--input);border:1px solid var(--border);border-radius:14px;padding:9px;min-width:0}
+    .venn-svg{width:100%;height:auto;display:block;max-height:355px}
+    .venn-hotspot{cursor:pointer;transition:opacity .12s}.venn-hotspot:hover{opacity:.7}
+    .venn-mini-title{font-weight:800;font-size:13px;color:var(--teal);margin:10px 0 7px}
+    .venn-tool-note{color:var(--muted);font-size:12px;line-height:1.62;margin:2px 0 12px}
+    .venn-region-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+    .venn-region{min-width:0;text-align:left;white-space:normal;display:flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--input);color:var(--muted);border-radius:9px;padding:8px;font-size:10.5px;line-height:1.3}
+    .venn-region:hover:enabled{border-color:var(--accent);color:var(--text)}.venn-region.is-shaded{border-color:var(--accent);background:var(--accent-bg);color:var(--text)}
+    .venn-region b{display:grid;place-items:center;flex:none;border-radius:6px;background:var(--panel2);border:1px solid var(--border);width:23px;height:23px;color:var(--text)}
+    .venn-witness-row{display:flex;flex-direction:column;gap:7px;padding:12px 0;border-top:1px solid var(--border)}
+    .venn-witness-row strong{font-size:12px;line-height:1.6}
+    .venn-witness-row select{background:var(--input);color:var(--text);border:1px solid var(--border-hi);border-radius:10px;padding:11px 12px;max-width:100%;font:inherit;font-size:12px}
+    .venn-controls{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+    .venn-gate{font-size:11px;color:var(--teal);letter-spacing:.45px;font-weight:800;margin:15px 0 0}
+    .venn-verdict{border:1px solid var(--border);border-radius:12px;background:var(--panel2);padding:15px;margin-top:16px}
+    .venn-verdict p{font-size:13px;margin:8px 0 13px;color:var(--muted)}
+    .venn-verdict-choices{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 15px}
+    .venn-verdict-choices .button{white-space:normal;font-size:12px;text-align:center;flex:1;min-width:155px}
+    .venn-verdict-choices .button.venn-selected{border-color:var(--teal);background:var(--success-bg);color:var(--text)}
+    .venn-verdict .venn-verdict-feedback{font-weight:650;color:var(--teal)}
+    .categorical-model-help{padding:14px 24px 0;color:var(--muted);font-size:12px;line-height:1.6}
+    .categorical-model-help strong{color:var(--teal);font-size:11px;letter-spacing:1px}
+    .categorical-model-help p{margin:5px 0 4px}
+    .reference-venn{margin-top:12px}
+    .venn-guide-content{padding:14px 20px 22px;font-size:13px;color:var(--muted);line-height:1.75}
+    .venn-guide-content strong{color:var(--text)}
+    .venn-guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:13px 0}
+    .venn-guide-grid>div{padding:12px;background:var(--input);border:1px solid var(--border);border-radius:10px}
+    .venn-guide-grid b,.venn-guide-grid code,.venn-guide-grid span{display:block}
+    .venn-guide-grid b{color:var(--text)}.venn-guide-grid code{color:var(--accent);margin:5px 0;overflow-wrap:anywhere}
+    @media(max-width:1070px){.venn-board{grid-template-columns:1fr}.venn-diagram{max-width:500px;margin:0 auto;width:100%}}
+    @media(max-width:560px){.venn-area{padding:17px 15px}.venn-region-grid{gap:5px}.venn-region{font-size:10px;padding:7px 5px}.venn-guide-grid{grid-template-columns:1fr}.venn-verdict-choices .button{min-width:100%}}
+
+    /* Venn guiado: uma premissa e uma ação por vez. */
+    .venn-simple-lead{font-size:14px;line-height:1.65;margin:10px 0 16px;color:var(--text)}
+    .venn-meaning{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 16px}
+    .venn-meaning span{font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel2)}
+    .venn-meaning b{color:var(--accent)}
+    .venn-progress{font-weight:750;font-size:12px;color:var(--teal);letter-spacing:.2px;margin:0 0 8px}
+    .venn-task-card{border:1px solid var(--border-hi);border-radius:14px;background:var(--panel2);padding:16px;margin-bottom:15px}
+    .venn-task-card .venn-statement{font-size:16px;line-height:1.5;font-weight:750;margin:5px 0 9px;color:var(--text)}
+    .venn-task-card .venn-instruction{font-size:14px;line-height:1.6;margin:0;color:var(--text)}
+    .venn-step-label{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--teal)}
+    .venn-diagram-guide{font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.5}
+    /* A legenda com os nomes reais acompanha cada desenho de Venn. */
+    .venn-term-legend{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 9px;padding:9px;border:1px solid var(--border);border-radius:10px;background:var(--panel2)}
+    .venn-term-legend span{display:inline-flex;align-items:baseline;gap:5px;min-width:0;flex:1 1 135px;font-size:12px;line-height:1.45;color:var(--text);overflow-wrap:anywhere}
+    .venn-term-legend b{display:inline-block;flex:none;font-size:13px;font-weight:850;line-height:1.15;border-bottom:2px solid currentColor}
+    .venn-term-legend .venn-term-s{color:#83a7ff}
+    .venn-term-legend .venn-term-m{color:#65dab0}
+    .venn-term-legend .venn-term-p{color:#e2b66e}
+    .venn-legend{display:flex;gap:9px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:9px 0}
+    .venn-legend .stripe-sample{display:inline-block;width:18px;height:13px;vertical-align:middle;border:1px solid var(--accent);border-radius:3px;background:repeating-linear-gradient(45deg,var(--accent-bg) 0 4px,var(--accent) 4px 6px,var(--accent-bg) 6px 10px)}
+    .venn-legend .x-sample{display:inline-grid;place-items:center;vertical-align:middle;width:17px;height:17px;border-radius:50%;border:1px solid var(--teal);font-weight:900;color:var(--teal)}
+    .venn-simple-board{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(245px,.88fr);gap:18px;align-items:start}
+    .venn-simple-tools{font-size:13px;color:var(--text);line-height:1.5}
+    .venn-selected-list{background:var(--input);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;line-height:1.6;margin-bottom:11px}
+    .venn-region-meaning{background:var(--panel2);border-left:3px solid var(--teal);border-radius:7px;padding:10px;font-size:12px;line-height:1.55;margin:8px 0}
+    .venn-choices{display:grid;gap:8px;margin:10px 0}
+    .venn-choices button{padding:12px;white-space:normal;text-align:left;line-height:1.5;font-size:13px;border:1px solid var(--border-hi);border-radius:10px;background:var(--input);color:var(--text);cursor:pointer}
+    .venn-choices button[aria-pressed="true"]{border-color:var(--teal);background:var(--success-bg)}
+    .venn-choices button:hover:enabled{border-color:var(--accent)}
+    .venn-choices button:focus-visible,.venn-hotspot:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+    .venn-simple-tools .button{margin-top:7px}
+    .venn-hint-details{margin:12px 0;font-size:12px;line-height:1.6;color:var(--muted)}
+    .venn-hint-details summary{color:var(--text);cursor:pointer;font-weight:700}
+    .venn-hint-details p{margin:6px 0}
+    .venn-simple-feedback{font-size:13px;line-height:1.6;border:1px solid var(--border);background:var(--input);padding:12px;border-radius:9px;margin-top:12px}
+    .venn-simple-feedback.good{border-color:var(--teal);color:var(--text)}
+    .venn-svg .venn-hotspot circle{transition:stroke .15s,fill .15s}
+    .venn-hotspot.selected circle{stroke:var(--teal);stroke-width:3}
+    @media(max-width:960px){.venn-simple-board{grid-template-columns:1fr}.venn-simple-tools{max-width:580px}}
+    @media(max-width:560px){.venn-task-card{padding:12px}.venn-task-card .venn-statement{font-size:15px}.venn-simple-lead{font-size:13px}.venn-meaning span{font-size:11px}.venn-area{padding:15px 12px}.venn-simple-tools .button{width:100%}}
+
+

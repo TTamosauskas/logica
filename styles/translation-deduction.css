@@ -1,0 +1,73 @@
+    /* Lição 08: tradução guiada e interpretação sem dependências externas. */
+    .translation-area{padding:22px 24px 24px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(103,92,190,.07),transparent 55%)}
+    .translation-heading,.translation-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.translation-step{font-weight:850;letter-spacing:1.4px;color:var(--teal);font-size:11px}.translation-topic{border:1px solid var(--border);padding:4px 10px;border-radius:25px;color:var(--muted);font-size:11px}
+    .translation-caption{font-size:12px;color:var(--muted);line-height:1.65;margin:10px 0 13px}.translation-sentences{display:grid;gap:10px;margin:16px 0}.translation-sentence{background:var(--input);border:1px solid var(--border);border-left:3px solid var(--accent);padding:12px 15px;border-radius:10px}.translation-sentence span{font-size:10px;letter-spacing:1.2px;color:var(--faint);font-weight:850;text-transform:uppercase}.translation-sentence p{font-size:15px;font-weight:650;line-height:1.6;margin:5px 0 0}
+    .translation-mapping{border-radius:12px;background:var(--panel2);border:1px solid var(--border);padding:13px 15px;margin-bottom:18px;display:grid;gap:7px}.translation-mapping strong{font-size:12px;color:var(--muted);margin-bottom:2px}.translation-mapping div{font-size:13px;color:var(--text)}.translation-mapping b{display:inline-grid;place-items:center;min-width:26px;padding:1px 6px;border-radius:6px;background:var(--accent-bg);color:var(--accent)}
+    .translation-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:17px}.translation-option{min-height:48px;border:1px solid var(--border);border-radius:10px;background:var(--input);color:var(--text);font-size:16px;font-weight:800;overflow-wrap:anywhere}.translation-option:hover:not(:disabled){border-color:var(--accent)}.translation-option.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}.translation-option:disabled{cursor:default;opacity:.85}
+    .translation-fields{display:grid;gap:12px;margin:17px 0}.translation-input-label{display:grid;gap:7px;font-size:12px;color:var(--text);font-weight:750}.translation-input-label small{font-weight:450;color:var(--muted)}.translation-input-label input{width:100%;border:1px solid var(--border-hi);border-radius:10px;background:var(--input);color:var(--text);padding:11px 13px;min-height:46px;font-size:16px;font-weight:650;letter-spacing:.3px}.translation-input-label input:focus{outline:2px solid var(--accent);outline-offset:1px}.translation-input-label input:disabled{opacity:.8}
+    .symbol-keypad{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.symbol-keypad button{font-size:17px;font-weight:750;border-radius:8px;color:var(--accent);background:var(--accent-bg);border:1px solid var(--border);min-width:42px;min-height:37px}.symbol-keypad button:hover{border-color:var(--accent)}.translation-state{font-size:11px;color:var(--muted)}.translation-feedback{font-size:12px;line-height:1.7;padding:12px 14px;margin-top:13px;border-radius:11px;overflow-wrap:anywhere}.translation-feedback.ok{border:1px solid var(--success);background:var(--success-bg);color:var(--text)}.translation-feedback.note{border:1px solid var(--warning);background:var(--warning-bg);color:var(--text)}
+    @media(max-width:520px){.translation-area{padding:17px 15px}.translation-options{grid-template-columns:1fr 1fr}.translation-option{font-size:14px}.translation-sentence p{font-size:14px}}
+
+    /* Módulo 09: tabelas de atribuições e desafios de concursos. */
+    .deduction-area{padding:22px 24px 24px;border-bottom:1px solid var(--border);background:linear-gradient(115deg,rgba(60,199,173,.07),transparent 70%)}
+    .translation-area.deduction-translation{background:linear-gradient(135deg,rgba(60,199,173,.09),transparent 60%)}
+    .translation-area.deduction-translation .translation-mapping{max-height:240px;overflow-y:auto;scrollbar-width:thin}
+    .translation-question{border:1px solid var(--border);border-radius:12px;padding:12px;margin:8px 0 12px;background:var(--panel2)}
+    .translation-question>strong{display:block;margin-bottom:5px;font-size:12px}
+    .translation-question>p{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 10px}
+    .translation-question .translation-options{margin-bottom:0}
+    .translation-status{display:inline-flex;font-size:11px;font-weight:750;margin-left:7px}
+    .translation-status.good{color:var(--success)}.translation-status.bad{color:var(--danger)}
+    .translation-clue-label{display:block;font-size:12px;font-weight:450;line-height:1.6;color:var(--muted);margin-bottom:4px}
+    .translation-rule{border:1px solid var(--border);border-radius:12px;margin:15px 0;padding:14px;background:var(--panel2)}
+    .translation-rule p{color:var(--muted);font-size:12px;line-height:1.6;margin:6px 0 12px}
+    .translation-rule .translation-options{margin:0}
+    .translation-stage-note{font-size:12px;line-height:1.65;margin:8px 0 14px;color:var(--muted)}
+    .deduction-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;margin-bottom:10px}
+    .deduction-kicker{color:var(--teal);font-size:11px;letter-spacing:1.35px;font-weight:850}
+    .deduction-tag{color:var(--muted);background:var(--panel2);border:1px solid var(--border);padding:4px 10px;border-radius:25px;font-size:11px;font-weight:700}
+    .deduction-story{margin:7px 0 14px;color:var(--text);font-weight:650;font-size:15px;line-height:1.7}
+    .deduction-rule{border-left:3px solid var(--teal);padding:10px 14px;border-radius:8px;background:var(--success-bg);font-weight:750;font-size:13px;margin:12px 0}
+    .deduction-clues{list-style:none;counter-reset:clues;margin:16px 0;padding:0;display:grid;gap:8px}
+    .deduction-clues li{position:relative;display:flex;align-items:start;gap:11px;padding:11px 13px;background:var(--input);border:1px solid var(--border);border-radius:10px;line-height:1.65;font-size:13px}
+    .clue-number{flex:0 0 auto;border-radius:7px;background:var(--accent-bg);color:var(--accent);min-width:28px;text-align:center;font-size:11px;font-weight:850;padding:4px 5px}
+    .deduction-note{font-size:12px;color:var(--muted);line-height:1.65;margin:11px 0 0}
+    .deduction-options{background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:12px 15px;margin-top:14px}
+    .deduction-options h3{margin:0 0 8px;font-size:13px}.deduction-options p{margin:7px 0;font-size:12px;color:var(--muted);line-height:1.6}
+    .deduction-options p b{color:var(--accent);margin-right:6px}
+    .scratch-label{display:block;font-size:12px;font-weight:800;margin:18px 0 7px}
+    .deduction-scratch{width:100%;min-height:110px;resize:vertical;font-family:inherit;font-size:13px;line-height:1.55;padding:12px 13px;border:1px solid var(--border-hi);border-radius:10px;color:var(--text);background:var(--input)}
+    .deduction-scratch:focus{outline:2px solid var(--teal);outline-offset:1px}
+    .deduction-toggle{margin-top:12px;white-space:normal;text-align:center}.deduction-table-note{color:var(--muted);font-size:12px;margin:8px 0 0}
+    .deduction-inline-summary{font-size:12px;color:var(--muted);line-height:1.65;margin:0 24px 12px}
+    /* Módulo 09: a tabela retoma enunciado e fórmula já validada. */
+    .truth-table th.deduction-clue-header{width:200px;min-width:170px;max-width:215px;white-space:normal;text-align:left;vertical-align:top;padding:13px 12px}
+    .deduction-header-id{display:block;font-size:12px;font-weight:900;color:var(--accent);letter-spacing:.4px;margin-bottom:8px}
+    .deduction-header-text{display:block;font-size:12px;font-weight:650;line-height:1.5;color:var(--text);overflow-wrap:break-word;hyphens:auto;margin-bottom:9px}
+    .deduction-header-formula{display:inline-block;font:750 14px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:0;background:var(--panel);border:1px solid var(--border-hi);color:var(--accent);border-radius:7px;padding:5px 8px;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+    /* A última coluna explica a regra específica e como preencher seu valor. */
+    .truth-table th.deduction-condition-header{width:225px;min-width:205px;max-width:245px;white-space:normal;text-align:center;vertical-align:top;padding:13px 12px;background:var(--success-bg);color:var(--text)}
+    .deduction-condition-label{display:block;color:var(--teal);font-size:10px;letter-spacing:1.1px;font-weight:900;margin-bottom:9px;text-transform:uppercase}
+    .deduction-condition-rule{display:block;font-size:13px;line-height:1.4;font-weight:850;overflow-wrap:break-word;margin-bottom:9px}
+    .deduction-condition-question{display:block;font-size:11px;line-height:1.5;font-weight:550;color:var(--muted);margin-bottom:10px}
+    .deduction-condition-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+    .deduction-condition-legend span{border:1px solid var(--border-hi);border-radius:6px;padding:4px 7px;font-size:11px;line-height:1.25;white-space:nowrap;font-weight:850}
+    .deduction-legend-yes{color:var(--success);background:var(--success-bg)}
+    .deduction-legend-no{color:var(--danger);background:var(--danger-bg)}
+    @media(max-width:520px){.truth-table th.deduction-clue-header{min-width:160px;width:178px;max-width:195px;padding:12px 10px}.deduction-header-text{font-size:11px}.deduction-header-formula{font-size:13px}.truth-table th.deduction-condition-header{width:190px;min-width:185px;max-width:195px;padding:12px 9px}.deduction-condition-rule{font-size:12px}}
+    .truth-table td.given.assignment{font-size:11px;max-width:145px;min-width:102px;white-space:normal;line-height:1.35}
+    .segment{white-space:normal}.segments.levels-five{flex-wrap:wrap}
+    @media(max-width:520px){.deduction-area{padding:18px 15px}.deduction-story{font-size:14px}.deduction-clues li{font-size:12px}.deduction-options{padding:11px}.deduction-inline-summary{margin:0 15px 12px}.levels-five .segment{font-size:11px;padding:8px 9px}}
+    .categorical-area{background:linear-gradient(135deg,rgba(105,199,160,.08),transparent 60%)}
+    .categorical-intro{font-size:13px;line-height:1.7;color:var(--muted);margin:10px 0 15px}
+    .categorical-stage{padding:12px 14px;border:1px solid var(--border);border-radius:12px;margin:10px 0;background:var(--input)}
+    .categorical-stage strong{font-size:12px;color:var(--teal)}
+    .categorical-stage p{margin:5px 0 11px;font-size:14px}
+    .categorical-terms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}
+    .categorical-terms div{border:1px solid var(--border);border-radius:9px;background:var(--panel2);padding:9px 10px;font-size:12px}
+    .categorical-terms b{color:var(--accent);font-size:14px}
+    .truth-table th.categorical-clue-header{min-width:175px;max-width:220px;width:185px;white-space:normal;vertical-align:top;text-align:left}
+    .truth-table th.categorical-clue-header code{display:block;color:var(--teal);font-size:12px;margin-top:8px;white-space:normal;overflow-wrap:anywhere}
+    .truth-table .model-cell{max-width:270px;min-width:190px;white-space:normal;text-align:left;font-size:12px;line-height:1.6}
+    .cat-note{margin:5px 0 16px;padding:11px 13px;border:1px solid var(--border);background:var(--panel2);border-radius:10px;font-size:12px;color:var(--muted)}
+    /* Etapa Venn: sombreamento interativo, testemunhas e interpretação guiada. */
