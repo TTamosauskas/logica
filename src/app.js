@@ -1347,7 +1347,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     const stage=courseAttempt.stage,isReview=stage==='review',
       independent=stage==='independent'||isReview,used=independent&&courseAttempt.hintUsed;
     const instructions=independent
-      ?used?'Treino com ajuda: esta tentativa não conta para a avaliação independente nem para a consolidação. Faça outro exercício sem dica.'
+      ?used?'Treino com ajuda: esta tentativa não valida autonomia nem consolidação. Faça outro exercício sem dica.'
         :isReview?'Revisão espaçada: resolva um novo desafio com ao menos 80% na primeira correção, sem campos pendentes nem dicas.'
         :'Meta: ao menos 80% na primeira correção, sem campos pendentes e sem consultar dicas. Se abrir uma dica, esta tentativa se torna prática assistida.'
       :'Prática assistida: consulte as dicas e corrija para registrar esta etapa.';
