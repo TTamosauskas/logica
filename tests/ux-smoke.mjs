@@ -195,7 +195,8 @@ try{
 
   // A alternativa de Venn fica operável pelo teclado e sincronizada ao desenho.
   await access.goto(root+'#categoricos',{waitUntil:'networkidle'});
-  await access.evaluate(()=>{
+  // O rascunho automático anterior é salvo em pagehide; preparar o teste no início do carregamento.
+  await access.addInitScript(()=>{
     const key='logiclab_exercise_drafts_v1';
     const drafts=JSON.parse(localStorage.getItem(key));
     const ex=drafts.byMode.categoricos.exercise;
