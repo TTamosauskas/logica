@@ -4,6 +4,7 @@ import { routeFromHash } from './core/navigation.js';
 import { reviewStatus,beginReviewTracking,recordReview,reviewQueue,consolidatedCount,studyRecommendation } from './core/reviews.js';
 import { createBackup,importBackup,PORTABLE_KEYS } from './core/progress-portability.js';
 import { performanceSummary } from './core/performance.js';
+import { learningOverview, nextCourseMessage, formatReviewDate, attemptDecision, examWeakAreas } from './core/learning-feedback.js';
 import { EXERCISE_DRAFTS_KEY, EXAM_DRAFT_KEY, DRAFT_VERSION, hasPendingWork, readExerciseDrafts, readExamDraft, mostRecentUnfinished } from './core/draft-store.js';
 import { SYMBOLS, rng, pick, v, not, bin, A, O, X, I, B, t, evalAst, fmt, pretty, sig, varsOf, relevantNames, truthRows, varColumns, stepNodes, formulaColumns, build } from './core/logic.js';
 import { tokens, parseFormula, equivalentFormula } from './core/parser.js';
@@ -806,21 +807,18 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function nextLesson(){return getNextLearningStep(COURSE_UNITS,courseState.lessons)}
   function updateNextLearningCards(){
     const draft=mostRecentUnfinished(savedDrafts,savedExam());
-    const next=nextLesson(),recommendation=studyRecommendation(COURSE_UNITS,courseState.lessons),
-      reviewLesson=recommendation.kind==='review'?MODULES.find(m=>m.id===recommendation.id):null,
-      lesson=reviewLesson||MODULES.find(m=>m.id===next.id);
-    const detail=reviewLesson?`Revisão disponível de ${recommendation.count} ${recommendation.count===1?'tema':'temas'}. Faça um novo exercício sem dica para consolidar o aprendizado.`
-      :lesson?`${next.unitTitle} · Etapa ${LEARNING_STAGES.findIndex(s=>s.key===next.stage)+1}/5: ${next.label}.`
-      :'Todas as avaliações iniciais foram concluídas. Consulte o mapa para acompanhar as revisões programadas.';
+    const overview=learningOverview(COURSE_UNITS,courseState.lessons);
+    const next=nextCourseMessage(overview,nextLesson(),id=>MODULES.find(m=>m.id===id)?.name||'Tema');
     const draftModule=draft?.type==='exercise'?MODULES.find(m=>m.id===draft.mode):null;
-    $('continueLabel').textContent=draft?'RETOMAR ATIVIDADE SALVA':reviewLesson?'REVISÃO RECOMENDADA':'PRÓXIMA ETAPA RECOMENDADA';
+    $('continueLabel').textContent=draft?'RETOMAR ATIVIDADE SALVA':next.kind==='due'?'REVISÃO DISPONÍVEL':next.kind==='scheduled'?'REVISÃO PROGRAMADA':'PRÓXIMO PASSO RECOMENDADO';
     $('nextLessonButton').hidden=!draft;
-    $('continueTitle').textContent=draft?(draft.type==='exam'?'Avaliação final em andamento':draftModule?.name||'Atividade em andamento'):(lesson?lesson.name:'Percurso concluído');
-    $('continueDescription').textContent=draft?(draft.type==='exam'?'Suas respostas da avaliação estão salvas neste navegador.':'Continue a questão que você estava resolvendo, com suas respostas preservadas.'):detail;
-    $('continueButton').textContent=draft?(draft.type==='exam'?'Continuar avaliação →':'Retomar exercício →'):(reviewLesson?'Abrir revisão →':lesson?(next.stage==='read'&&next.completed===0?'Começar pela primeira aula →':'Abrir esta etapa →'):'Ver meu percurso →');
-    $('courseNextTitle').textContent=reviewLesson?`Revisão disponível: ${reviewLesson.name}`:lesson?`Próximo passo: ${lesson.name}`:'Avaliações iniciais concluídas';
-    $('courseNextDescription').textContent=detail;
-    $('courseNextButton').textContent=lesson?'Ir para esta aula →':'Ver mapa do curso →';
+    $('nextLessonButton').textContent=next.button;
+    $('continueTitle').textContent=draft?(draft.type==='exam'?'Avaliação final em andamento':draftModule?.name||'Atividade em andamento'):next.title;
+    $('continueDescription').textContent=draft?(draft.type==='exam'?'Suas respostas da avaliação estão salvas neste navegador.':'Continue a questão que você estava resolvendo, com suas respostas preservadas.'):next.description;
+    $('continueButton').textContent=draft?(draft.type==='exam'?'Continuar avaliação →':'Retomar exercício →'):next.button;
+    $('courseNextTitle').textContent=next.kind==='lesson'?'Próximo passo: '+next.title:next.title;
+    $('courseNextDescription').textContent=next.description;
+    $('courseNextButton').textContent=next.button;
   }
   function resumeLearning(){
     const draft=mostRecentUnfinished(savedDrafts,savedExam());
