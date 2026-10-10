@@ -156,6 +156,14 @@ try{
   await study.reload({waitUntil:'networkidle'});
   assert.equal(await study.locator('#inlineHint').isVisible(),true);
   assert.match(await study.locator('#courseExerciseBanner').innerText(),/não valida autonomia/);
+  // A dica consultada após uma correção é revisão e não invalida a tentativa.
+  await study.locator('#newButton').click();
+  await study.locator('#checkButton').click();
+  await study.locator('#hintButton').click();
+  assert.equal(await study.locator('#independentHintDecision').isVisible(),false);
+  assert.equal(await study.locator('#inlineHint').isVisible(),true);
+  draft=await study.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_exercise_drafts_v1')));
+  assert.equal(draft.byMode.fundamentos.courseAttempt.hintUsed,false);
   assert.deepEqual(studyErrors,[]);
   await trainingContext.close();
   assert.deepEqual(errors,[]);
