@@ -371,6 +371,59 @@ try{
   assert.equal(await desktopPage.locator('#continueLearning').isVisible(),true);
   await desktopContext.close();
 
+  // Critério de usabilidade: em cada tela, localização, tarefa e caminhos de saída
+  // devem estar explícitos SEM uma segunda caixa de "Próximo passo".
+  for(const width of [375,1280]){
+    const journeyContext=await browser.newContext({viewport:{width,height:812}});
+    const journey=await journeyContext.newPage();
+    const journeyErrors=[];
+    journey.on('pageerror',error=>journeyErrors.push(error.message));
+
+    await journey.goto(root,{waitUntil:'networkidle'});
+    assert.match(await journey.locator('#homeView .hero .eyebrow').innerText(),/INÍCIO/);
+    assert.match(await journey.locator('#homeView .hero p').innerText(),/Escolha a próxima etapa/);
+    assert.equal(await journey.locator('#continueButton').isVisible(),true);
+
+    await journey.goto(root+'#curso',{waitUntil:'networkidle'});
+    assert.match(await journey.locator('#courseLocation').innerText(),/MAPA DAS UNIDADES/);
+    assert.match(await journey.locator('#courseDescription').innerText(),/Escolha uma aula/);
+    assert.equal(await journey.locator('#courseMap [data-caction="lesson"]').count()>0,true);
+    assert.equal(await journey.locator('#courseMap [data-caction="exam-open"]').getAttribute('class'),'button');
+    assert.equal(await journey.locator('#courseNext').count(),0);
+
+    await journey.locator('#courseMap [data-caction="lesson"]').first().click();
+    assert.match(await journey.locator('#courseLocation').innerText(),/AULA/);
+    assert.match(await journey.locator('#courseDescription').innerText(),/Leia/);
+    assert.equal(await journey.locator('#courseLesson [data-caction="map"]').isVisible(),true);
+    assert.equal(await journey.locator('#courseLesson [data-caction="read"]').isVisible(),true);
+
+    await journey.locator('#courseLesson [data-caction="read"]').click();
+    await journey.locator('#courseLesson [data-caction="example"]').click();
+    await journey.locator('#courseLesson [data-caction="guided"]').click();
+    assert.match(await journey.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
+    assert.match(await journey.locator('#workDescription').innerText(),/Corrigir/);
+    assert.match(await journey.locator('#backButton').innerText(),/Voltar à aula/);
+    await journey.locator('#checkButton').click();
+    assert.match(await journey.locator('#workDescription').innerText(),/Confira a correção/);
+    assert.equal(await journey.locator('#feedbackNextActions button').count()>0,true);
+    await journey.locator('#backButton').click();
+    assert.match(await journey.locator('#courseLocation').innerText(),/AULA/);
+
+    await journey.goto(root+'#fundamentos',{waitUntil:'networkidle'});
+    assert.match(await journey.locator('#workLocation').innerText(),/PRÁTICA LIVRE/);
+    assert.match(await journey.locator('#workDescription').innerText(),/módulos/);
+    assert.match(await journey.locator('#backButton').innerText(),/Voltar aos módulos/);
+
+    await journey.goto(root+'#avaliacao-final',{waitUntil:'networkidle'});
+    assert.match(await journey.locator('#courseLocation').innerText(),/AVALIAÇÃO FINAL/);
+    assert.match(await journey.locator('#courseDescription').innerText(),/12 questões/);
+    assert.match(await journey.locator('#courseDescription').innerText(),/Volte ao mapa/);
+    assert.equal(await journey.locator('#courseExam [data-caction="map"]').first().isVisible(),true);
+    assert.equal(await journey.locator('#courseNext').count(),0);
+    assert.deepEqual(journeyErrors,[]);
+    await journeyContext.close();
+  }
+
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
   await context.close();
 }catch(error){
