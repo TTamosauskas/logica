@@ -237,7 +237,7 @@ try{
   });
   await progressPage.reload({waitUntil:'networkidle'});
   assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 17 avaliações aprovadas · 0 consolidados/);
-  assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO RECOMENDADA/);
+  assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO DISPONÍVEL/);
   await progressPage.locator('#continueButton').click();
   assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
   await progressPage.locator('[data-caction="review"]').click();
