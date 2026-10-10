@@ -1,6 +1,8 @@
 import { MODULES } from './content/modules.js';
 import { LEARNING_STAGES, getPracticeGroups, getNextLearningStep } from './core/learning-path.js';
 import { routeFromHash } from './core/navigation.js';
+import { reviewStatus,beginReviewTracking,recordReview,reviewQueue,consolidatedCount,studyRecommendation } from './core/reviews.js';
+import { createBackup,importBackup,PORTABLE_KEYS } from './core/progress-portability.js';
 import { performanceSummary } from './core/performance.js';
 import { EXERCISE_DRAFTS_KEY, EXAM_DRAFT_KEY, DRAFT_VERSION, hasPendingWork, readExerciseDrafts, readExamDraft, mostRecentUnfinished } from './core/draft-store.js';
 import { SYMBOLS, rng, pick, v, not, bin, A, O, X, I, B, t, evalAst, fmt, pretty, sig, varsOf, relevantNames, truthRows, varColumns, stepNodes, formulaColumns, build } from './core/logic.js';
@@ -804,15 +806,19 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   function nextLesson(){return getNextLearningStep(COURSE_UNITS,courseState.lessons)}
   function updateNextLearningCards(){
     const draft=mostRecentUnfinished(savedDrafts,savedExam());
-    const next=nextLesson(),lesson=MODULES.find(m=>m.id===next.id);
-    const detail=lesson?`${next.unitTitle} · Etapa ${LEARNING_STAGES.findIndex(s=>s.key===next.stage)+1}/5: ${next.label}.`:'Todos os temas do percurso foram concluídos. Revise os conteúdos ou explore a avaliação integrada.';
+    const next=nextLesson(),recommendation=studyRecommendation(COURSE_UNITS,courseState.lessons),
+      reviewLesson=recommendation.kind==='review'?MODULES.find(m=>m.id===recommendation.id):null,
+      lesson=reviewLesson||MODULES.find(m=>m.id===next.id);
+    const detail=reviewLesson?`Revisão disponível de ${recommendation.count} ${recommendation.count===1?'tema':'temas'}. Faça um novo exercício sem dica para consolidar o aprendizado.`
+      :lesson?`${next.unitTitle} · Etapa ${LEARNING_STAGES.findIndex(s=>s.key===next.stage)+1}/5: ${next.label}.`
+      :'Todas as avaliações iniciais foram concluídas. Consulte o mapa para acompanhar as revisões programadas.';
     const draftModule=draft?.type==='exercise'?MODULES.find(m=>m.id===draft.mode):null;
-    $('continueLabel').textContent=draft?'RETOMAR ATIVIDADE SALVA':'PRÓXIMA ETAPA RECOMENDADA';
+    $('continueLabel').textContent=draft?'RETOMAR ATIVIDADE SALVA':reviewLesson?'REVISÃO RECOMENDADA':'PRÓXIMA ETAPA RECOMENDADA';
     $('nextLessonButton').hidden=!draft;
     $('continueTitle').textContent=draft?(draft.type==='exam'?'Avaliação final em andamento':draftModule?.name||'Atividade em andamento'):(lesson?lesson.name:'Percurso concluído');
     $('continueDescription').textContent=draft?(draft.type==='exam'?'Suas respostas da avaliação estão salvas neste navegador.':'Continue a questão que você estava resolvendo, com suas respostas preservadas.'):detail;
-    $('continueButton').textContent=draft?(draft.type==='exam'?'Continuar avaliação →':'Retomar exercício →'):(lesson?(next.stage==='read'&&next.completed===0?'Começar pela primeira aula →':'Abrir esta etapa →'):'Ver meu percurso →');
-    $('courseNextTitle').textContent=lesson?`Próximo passo: ${lesson.name}`:'Percurso concluído';
+    $('continueButton').textContent=draft?(draft.type==='exam'?'Continuar avaliação →':'Retomar exercício →'):(reviewLesson?'Abrir revisão →':lesson?(next.stage==='read'&&next.completed===0?'Começar pela primeira aula →':'Abrir esta etapa →'):'Ver meu percurso →');
+    $('courseNextTitle').textContent=reviewLesson?`Revisão disponível: ${reviewLesson.name}`:lesson?`Próximo passo: ${lesson.name}`:'Avaliações iniciais concluídas';
     $('courseNextDescription').textContent=detail;
     $('courseNextButton').textContent=lesson?'Ir para esta aula →':'Ver mapa do curso →';
   }
@@ -822,7 +828,11 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     if(draft?.type==='exercise'){openMode(draft.mode);return}
     openRecommendedLesson();
   }
-  function openRecommendedLesson(){const next=nextLesson();openCourse(true,next.id)}
+  function openRecommendedLesson(){
+    const urgent=reviewQueue(COURSE_UNITS,courseState.lessons);
+    if(urgent.length){openCourse(true,urgent[0].id);return}
+    const next=nextLesson();openCourse(true,next.id)
+  }
   function renderHome(){updateCourseHome();updateNextLearningCards();const tried=Object.entries(stats.byMode).filter(([id,x])=>id!=='misto'&&x.tries>0).length;$('overview').innerHTML=`<div class="stat"><div class="stat-value">${stats.tries}</div><div class="stat-caption">Exercícios corrigidos</div></div><div class="stat"><div class="stat-value">${pct(stats.correct,stats.total)}</div><div class="stat-caption">Acertos na primeira tentativa</div></div><div class="stat"><div class="stat-value">${tried}<span style="font-size:15px;color:var(--faint)"> / ${MODULES.length-1}</span></div><div class="stat-caption">Módulos praticados</div></div>`;
     $('modeGrid').innerHTML=practiceGroups.map(group=>{
       const attempts=group.modules.filter(m=>modeStats(m.id).tries>0).length;
@@ -834,7 +844,16 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       const expanded=expandedPracticeSections.has(group.id)?' open':'';
       return `<details class="practice-group" data-practice-section="${group.id}"${expanded}><summary><span class="practice-group-heading"><strong>${escapeHTML(group.title)}</strong><small>${escapeHTML(group.note)}</small></span><span class="practice-group-count">${attempts}/${group.modules.length} praticados</span></summary><div class="mode-grid">${cards}</div></details>`;
     }).join('')}
-  function selectMixed(){const choices=MODULES.filter(m=>m.id!=='misto');const weighted=choices.flatMap(m=>{const s=modeStats(m.id);const accuracy=s.total?s.correct/s.total:0;const w=s.tries===0?5:Math.max(1,Math.ceil(1+5*(1-accuracy)));return Array.from({length:w},()=>m.id)});return pick(weighted)}
+  function selectMixed(){
+    const due=new Set(reviewQueue(COURSE_UNITS,courseState.lessons).map(item=>item.id));
+    const choices=MODULES.filter(m=>m.id!=='misto');
+    const weighted=choices.flatMap(m=>{
+      const stat=modeStats(m.id),accuracy=stat.total?stat.correct/stat.total:0;
+      const weight=(stat.tries===0?5:Math.max(1,Math.ceil(1+5*(1-accuracy))))+(due.has(m.id)?7:0);
+      return Array.from({length:weight},()=>m.id)
+    });
+    return pick(weighted)
+  }
   function renderLevelButtons(){const extended=mode==='deducao',items=extended?[['easy','1 · Básico'],['medium','2 · Falsidades'],['hard','3 · Conectivos'],['expert','4 · Concurso'],['exam','5 · Autônomo']]:[['easy','Fácil'],['medium','Médio'],['hard','Difícil']];$('levelSegments').classList.toggle('levels-five',extended);$('levelSegments').innerHTML=items.map(([id,label])=>`<button class="segment" data-level="${id}" type="button" aria-pressed="${level===id}">${label}</button>`).join('');}
   function nextExercise(force=false){
     if(!GENERATORS[mode]&&mode!=='misto')return;
