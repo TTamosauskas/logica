@@ -74,3 +74,11 @@ Em GitHub Pages, Cloudflare Pages ou Netlify, configure a raiz publicada na past
 ## Escopo da modularização
 
 Esta entrega é a primeira etapa de baixo risco: arquivos separados, módulo lógico puro, bancos didáticos apartados, testes básicos, ajuste no tokenizador para a expressão `não` e tratamento seguro de fragmentos de URL malformados. A decomposição do controlador `src/app.js` em controladores e views menores é recomendada após a validação funcional completa. Consulte `ARCHITECTURE.md`.
+
+### Ativação inicial no GitHub Pages
+
+Para este repositório, abra [Settings → Pages](https://github.com/TTamosauskas/logica/settings/pages) e selecione **GitHub Actions** em **Build and deployment → Source**. Esta configuração inicial requer a permissão administrativa de Pages do proprietário do repositório.
+
+Depois, abra [Actions](https://github.com/TTamosauskas/logica/actions/workflows/pages.yml) e execute novamente o workflow **LogicLab - testes e GitHub Pages** (Run workflow). A cada atualização da branch `main`, o pipeline executará os testes e publicará os arquivos estáticos.
+
+Endereço público previsto após uma execução de deploy bem-sucedida: **https://ttamosauskas.github.io/logica/**.
