@@ -510,7 +510,7 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       }
       return `<g class="venn-witness" pointer-events="none"><circle cx="${cx}" cy="${cy}" r="17" fill="var(--panel)" stroke="var(--teal)" stroke-width="2.4"/><text x="${cx}" y="${cy+5}" text-anchor="middle" fill="var(--teal)" font-size="17" font-weight="900">×${witnessSelections.length>1?i+1:''}</text></g>`;
     }).join('');
-    return `<svg class="venn-svg" viewBox="0 0 480 330" role="img" aria-label="Três conjuntos S, M e P, com regiões numeradas; áreas hachuradas são vazias e X indica existência." xmlns="http://www.w3.org/2000/svg"><defs>${clips}<pattern id="venn-stripes" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(40)"><rect width="10" height="10" fill="var(--accent-bg)"/><path d="M0 0V10" stroke="var(--accent)" stroke-opacity=".8" stroke-width="4"/></pattern></defs><rect x="8" y="7" width="464" height="316" rx="16" fill="var(--input)" stroke="var(--border)"/>${shaped}${Object.entries(circles).map(([n,[x,y,r]])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${n==='S'?'#83a7ff':n==='M'?'#65dab0':'#e2b66e'}" stroke-width="2.5"/>`).join('')}<text x="112" y="62" fill="#83a7ff" font-weight="800" font-size="17">S</text><text x="366" y="62" fill="#65dab0" font-weight="800" font-size="17">M</text><text x="241" y="310" fill="#e2b66e" font-weight="800" font-size="17" text-anchor="middle">P</text>${Object.entries(VENN_POINTS).map(([n,[x,y]])=>`<g data-venn-region="${n}" class="venn-hotspot" role="button" tabindex="0" aria-label="Região ${Number(n)+1}: ${vennRegName(Number(n))}"><circle cx="${x}" cy="${y}" r="24" fill="var(--panel)" stroke="${shade.includes(Number(n))?'var(--accent)':'var(--border-hi)'}" stroke-width="2"/><text x="${x}" y="${y+5}" text-anchor="middle" fill="var(--text)" font-size="14" font-weight="800" pointer-events="none">${Number(n)+1}</text></g>`).join('')}${xs}</svg>`;
+    return `<svg class="venn-svg" viewBox="0 0 480 330" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs>${clips}<pattern id="venn-stripes" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(40)"><rect width="10" height="10" fill="var(--accent-bg)"/><path d="M0 0V10" stroke="var(--accent)" stroke-opacity=".8" stroke-width="4"/></pattern></defs><rect x="8" y="7" width="464" height="316" rx="16" fill="var(--input)" stroke="var(--border)"/>${shaped}${Object.entries(circles).map(([n,[x,y,r]])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${n==='S'?'#83a7ff':n==='M'?'#65dab0':'#e2b66e'}" stroke-width="2.5"/>`).join('')}<text x="112" y="62" fill="#83a7ff" font-weight="800" font-size="17">S</text><text x="366" y="62" fill="#65dab0" font-weight="800" font-size="17">M</text><text x="241" y="310" fill="#e2b66e" font-weight="800" font-size="17" text-anchor="middle">P</text>${Object.entries(VENN_POINTS).map(([n,[x,y]])=>`<g data-venn-region="${n}" class="venn-hotspot"><circle cx="${x}" cy="${y}" r="24" fill="var(--panel)" stroke="${shade.includes(Number(n))?'var(--accent)':'var(--border-hi)'}" stroke-width="2"/><text x="${x}" y="${y+5}" text-anchor="middle" fill="var(--text)" font-size="14" font-weight="800" pointer-events="none">${Number(n)+1}</text></g>`).join('')}${xs}</svg>`;
   }
   // Reutilizada no Venn de premissas e no Venn de cada modelo concreto.
   function vennTermsLegend(terms){
@@ -567,6 +567,13 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       html+=`<div class="venn-task-card"><div class="venn-progress">Premissa ${active.index+1} · Exercício visual ${phase+1} de ${tasks.length}</div><span class="venn-step-label">${how}</span><div class="venn-statement">“${escapeHTML(cat.texts[active.index])}”</div><p class="venn-instruction">${escapeHTML(vennTaskPrompt(f,cat.terms))}</p></div>`;
     }else html+='<div class="venn-task-card"><span class="venn-step-label">DIAGRAMA COMPLETO</span><div class="venn-statement">As duas premissas já estão representadas.</div><p class="venn-instruction">Agora examine o desenho e avalie se a conclusão é obrigatória.</p></div>';
     html+=`<div class="venn-simple-board"><div class="venn-diagram"><p class="venn-diagram-guide">${active?.kind==='shade'?'Toque nos números dentro dos círculos para marcar ou desmarcar uma região.':'Observe as regiões marcadas no desenho.'}</p>${vennSvg(shade,witnesses)}${vennTermsLegend(cat.terms)}<div class="venn-legend"><span><span class="stripe-sample"></span> Impossível</span><span><span class="x-sample">X</span> Existe alguém</span></div></div>`;
+    // Alternativa nativa, sincronizada ao mesmo estado do desenho.
+    if(active?.kind==='shade'){
+      const selected=vennUnion(v.shaded,v.workingShade);
+      html+='<div class="venn-text-alternative"><strong>Regiões por texto e teclado</strong><p>Use Tab para percorrer as oito regiões e espaço ou Enter para marcar. Os mesmos estados aparecem no desenho.</p><div class="venn-text-region-grid" role="group" aria-label="Selecionar regiões do Diagrama de Venn">';
+      html+=Array.from({length:8},(_,n)=>`<button type="button" class="venn-text-region ${selected.includes(n)?'selected':''}" data-venn-region-text="${n}" aria-pressed="${selected.includes(n)}" aria-label="Região ${n+1}: ${escapeHTML(vennPlainRegion(n,cat.terms))}${v.shaded.includes(n)?' Já marcada na premissa anterior.':''}">${n+1}. ${escapeHTML(vennRegName(n))}${selected.includes(n)?' · Marcada':''}</button>`).join('');
+      html+='</div></div>';
+    }
     html+='<div class="venn-simple-tools">';
     if(active?.kind==='shade'){
       const selected=v.workingShade||[],already=v.shaded||[];
@@ -595,6 +602,19 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     }
     html+=`<p class="venn-gate">${v.verdictVerified||ex.revealed?'PASSO 4 LIBERADO · AGORA TESTE MODELOS CONCRETOS':'A tabela de modelos será liberada depois de concluir o desenho e avaliar a conclusão.'}</p>`;
     area.innerHTML=html;
+  }
+  function rerenderVennWithFocus(trigger){
+    const textRegion=trigger?.dataset?.vennRegionText;
+    const choice=trigger?.dataset?.vennWitnessChoice;
+    const verdict=trigger?.dataset?.vennVerdict;
+    const id=trigger?.id;
+    renderVenn();
+    let replacement=null;
+    if(textRegion!==undefined)replacement=[...$('vennArea').querySelectorAll('[data-venn-region-text]')].find(b=>b.dataset.vennRegionText===textRegion);
+    else if(choice!==undefined)replacement=[...$('vennArea').querySelectorAll('[data-venn-witness-choice]')].find(b=>b.dataset.vennWitnessChoice===choice);
+    else if(verdict!==undefined)replacement=[...$('vennArea').querySelectorAll('[data-venn-verdict]')].find(b=>b.dataset.vennVerdict===verdict);
+    else if(id)replacement=document.getElementById(id);
+    replacement?.focus({preventScroll:true});
   }
   function validateVenn(){
     const ex=exercise;if(ex?.mode!=='categoricos'||!ex.cat.unlocked||ex.revealed)return;
@@ -1121,25 +1141,25 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
   $('vennArea').addEventListener('click',e=>{
     if(exercise?.mode!=='categoricos'||exercise.revealed)return;
     const v=exercise.cat.venn,task=vennTasks(exercise)[v.phase||0];
-    const reg=e.target.closest('[data-venn-region]');
+    const reg=e.target.closest('[data-venn-region], [data-venn-region-text]');
     if(reg&&task?.kind==='shade'&&!v.verified){
-      const p=Number(reg.dataset.vennRegion);v.lastRegion=p;
-      if(v.shaded.includes(p)){v.feedback='Esta região já foi marcada pela premissa anterior.';renderVenn();return}
+      const p=Number(reg.dataset.vennRegionText??reg.dataset.vennRegion);v.lastRegion=p;
+      if(v.shaded.includes(p)){v.feedback='Esta região já foi marcada pela premissa anterior.';rerenderVennWithFocus(e.target);return}
       const cur=v.workingShade||[];
       v.workingShade=cur.includes(p)?cur.filter(x=>x!==p):[...cur,p].sort((a,b)=>a-b);
-      v.feedback='';renderVenn();return;
+      v.feedback='';rerenderVennWithFocus(e.target);return;
     }
     const choice=e.target.closest('[data-venn-witness-choice]');
     if(choice&&task?.kind==='witness'&&!v.verified){
       v.witnessChoices[Number(choice.dataset.vennWitnessIndex)]=choice.dataset.vennWitnessChoice;
-      v.feedback='';renderVenn();return;
+      v.feedback='';rerenderVennWithFocus(e.target);return;
     }
-    if(e.target.closest('#clearVenn')&&!v.verified){v.workingShade=[];v.lastRegion=null;v.feedback='';renderVenn();return}
-    const verdict=e.target.closest('[data-venn-verdict]');if(verdict&&v.verified&&!v.verdictVerified){v.verdict=verdict.dataset.vennVerdict;v.verdictFeedback='';renderVenn();return}
+    if(e.target.closest('#clearVenn')&&!v.verified){v.workingShade=[];v.lastRegion=null;v.feedback='';rerenderVennWithFocus(e.target);return}
+    const verdict=e.target.closest('[data-venn-verdict]');if(verdict&&v.verified&&!v.verdictVerified){v.verdict=verdict.dataset.vennVerdict;v.verdictFeedback='';rerenderVennWithFocus(e.target);return}
     if(e.target.closest('#validateVenn'))validateVenn();
     if(e.target.closest('#validateVennVerdict'))validateVennVerdict();
   });
-  $('vennArea').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('[data-venn-region]')){e.preventDefault();e.target.click()}});
+  // O desenho responde a cliques; a seleção por teclado usa os botões textuais nativos.
   $('specialArea').addEventListener('change',onSpecialChange);$('checkButton').addEventListener('click',gradeExercise);$('hintButton').addEventListener('click',requestHint);$('independentHintDecision').addEventListener('click',handleHintDecision);$('clearButton').addEventListener('click',clear);$('undoClearButton').addEventListener('click',undoClear);$('revealButton').addEventListener('click',reveal);$('newButton').addEventListener('click',()=>nextExercise());$('newTopButton').addEventListener('click',()=>nextExercise());
   $('backButton').addEventListener('click',()=>courseAttempt?openCourse(true,courseAttempt.id):goHome());$('topHome').addEventListener('click',()=>goHome());$('brand').addEventListener('click',e=>{e.preventDefault();goHome()});$('howButton').addEventListener('click',showGuide);$('topGuide').addEventListener('click',showGuide);$('themeButton').addEventListener('click',toggleTheme);$('resetButton').addEventListener('click',resetProgress);
   $('deductionArea').addEventListener('click',e=>{if(e.target.closest('#toggleDeductionTable')&&exercise?.mode==='deducao'){exercise.metadata.tableOpened=!exercise.metadata.tableOpened;renderDeduction();}});
