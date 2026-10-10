@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="LogicLab: curso guiado de lógica formal, provas, predicados, Venn, tabelas-verdade e exercícios offline.">
+  <title>LogicLab — Curso Completo de Lógica Formal</title>
+    <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/translation-deduction.css">
+  <link rel="stylesheet" href="./styles/venn.css">
+  <link rel="stylesheet" href="./styles/categorical-models.css">
+  <link rel="stylesheet" href="./styles/learning.css">
+</head>
+<body>
+  <header class="shell topbar">
+    <a href="#inicio" id="brand" class="brand" aria-label="LogicLab, voltar ao início"><span class="brandmark" aria-hidden="true">∴</span><span>LogicLab<small>laboratório de lógica</small></span></a>
+    <div class="header-actions">
+      <button class="button ghost small" id="topCourse" type="button">Curso Guiado</button><button class="button ghost small hide-mobile" id="topHome" type="button">⌂ &nbsp;Início</button>
+      <button class="button ghost small hide-mobile" id="topGuide" type="button">Guia rápido</button>
+      <button class="button small" id="themeButton" type="button" aria-label="Alternar tema">☀ &nbsp;Tema</button>
+    </div>
+  </header>
+  <main class="shell">
+    <section id="homeView" aria-label="Página inicial">
+      <div class="hero">
+        <div><span class="eyebrow"><span class="dot"></span> CURSO DE LÓGICA FORMAL</span><h1>Aprenda a pensar.<br><span class="gradient-text">E a demonstrar.</span></h1><p>Um percurso de lógica formal com aulas, demonstrações, exercícios interativos, diagramas, quantificadores e avaliação de domínio. Estude na ordem guiada ou explore livremente os desafios.</p></div>
+        <div class="hero-visual" aria-hidden="true"><div class="mini-top">VISUALIZE A LÓGICA</div><div class="mini-equation">(p ∧ q) → p</div><table class="mini-table"><thead><tr><th>p</th><th>q</th><th>p ∧ q</th><th>→ p</th></tr></thead><tbody><tr><td>V</td><td>V</td><td>V</td><td>V</td></tr><tr><td>V</td><td>F</td><td>F</td><td>V</td></tr><tr><td>F</td><td>V</td><td>F</td><td>V</td></tr><tr><td>F</td><td>F</td><td>F</td><td>V</td></tr></tbody></table></div>
+      </div>
+      <div class="overview" id="overview" aria-label="Meu progresso"></div>
+      <section class="course-promo" aria-label="Curso guiado de lógica formal"><div><span class="eyebrow">CURSO COMPLETO DE LÓGICA FORMAL</span><h2>Aprenda em uma sequência que faz sentido.</h2><p>Seis unidades, aulas com exemplos resolvidos, exercícios assistidos, prática independente e avaliações. Seu avanço fica salvo neste navegador.</p><div class="course-promo-progress"><span id="courseHomeSummary">Seu percurso começa aqui</span><div class="course-meter"><span id="courseHomeMeter"></span></div></div></div><button id="startCourseButton" type="button" class="button primary">Iniciar Curso Guiado →</button></section>
+      <div class="section-heading"><div><span class="inline-label">TRILHA DE APRENDIZAGEM</span><h2>Escolha seu desafio</h2><p>Módulos práticos do básico aos fundamentos avançados, com revisão misturada.</p></div></div>
+      <div class="mode-grid" id="modeGrid"></div>
+      <div class="bottom-note"><p><strong>Como funciona?</strong> Selecione um módulo, clique nas células vazias para alternar entre V e F e use “Corrigir”. Cada nova rodada traz um desafio.</p><button class="button small" id="howButton" type="button">Consultar operadores ↗</button></div>
+    </section>
+    <section id="workView" class="hide" aria-label="Área de exercícios">
+      <button class="back" id="backButton" type="button">← Voltar aos módulos</button>
+      <div class="work-head"><div><span class="eyebrow"><span class="dot"></span> SALA DE EXERCÍCIOS</span><h1 id="workTitle">Teste de operadores</h1><p id="workDescription"></p></div><button class="button small" id="newTopButton" type="button">↻ Novo exercício</button></div>
+      <div class="level-bar"><span>Dificuldade</span><div id="levelSegments" class="segments" role="group" aria-label="Dificuldade"><button class="segment" data-level="easy" type="button">Fácil</button><button class="segment" data-level="medium" type="button">Médio</button><button class="segment" data-level="hard" type="button">Difícil</button></div><span id="exerciseIndex" class="exercise-index"></span></div>
+      <div class="work-grid">
+        <article class="panel main-panel">
+          <div class="task-head"><span class="task-kicker" id="taskKicker">EXERCÍCIO</span><h2 id="taskTitle"></h2><p id="taskInstruction"></p></div>
+          <div id="deductionArea" class="deduction-area hide" aria-label="Enunciado e pistas do desafio de dedução"></div>
+          <div id="translationArea" class="translation-area hide" aria-label="Tradução para lógica simbólica"></div>
+          <div id="categoricalArea" class="translation-area categorical-area hide" aria-label="Tradução categórica com quantificadores"></div>
+          <section id="vennArea" class="venn-area hide" aria-label="Etapa interativa: Diagrama de Venn"></section>
+          <div id="tableStage"><div id="categoricalModelsHelp" class="categorical-model-help hide"></div><section id="categoricalModelWorkbench" class="cat-workbench hide" aria-label="Tabela de modelos, avaliação guiada"></section><div class="table-header" id="tableHeaderBar"><h3 id="tableHeaderTitle">Tabela-verdade <span id="lineCount"></span></h3><small>Toque na célula: vazio → V → F</small></div>
+          <div class="table-scroll" id="tableScrollWrap" role="region" aria-label="Tabela-verdade, role horizontalmente se necessário" tabindex="0"><table id="truthTable" class="truth-table"></table></div>
+          <div class="table-legend" id="tableLegendBar"><span><span class="legend-dot"></span> Para preencher</span><span><span class="legend-dot green"></span> Correto</span><span><span class="legend-dot red"></span> Revisar</span></div></div>
+          <div id="decisionArea"></div><section id="specialArea" class="special-area hide" aria-label="Atividade de formação avançada"></section><div id="courseExerciseBanner" class="course-exercise-banner hide"></div>
+          <div class="task-actions"><button class="button primary" id="checkButton" type="button">✓ Corrigir tabela</button><button class="button" id="hintButton" type="button">✧ Dica</button><button class="button" id="clearButton" type="button">Limpar</button><button class="button" id="revealButton" type="button">Ver resolução</button><button class="button" id="newButton" type="button">↻ Próximo</button></div>
+          <div id="feedbackArea" role="status" aria-live="polite"></div>
+        </article>
+        <aside class="sidebar"><div class="panel side-panel"><div class="side-head"><h3>Como resolver</h3><span aria-hidden="true">✦</span></div><div class="side-list" id="stepsPanel"></div><div id="hintArea" aria-live="polite"></div></div><div class="panel side-panel"><div class="side-head"><h3>Seu progresso</h3><span aria-hidden="true">◎</span></div><div id="modeProgress"></div><p class="side-footer">O desempenho é salvo neste navegador. A pontuação registra a primeira correção de cada exercício.</p></div></aside>
+      </div>
+    </section>
+
+    <section id="courseView" class="hide" aria-label="Curso Guiado de Lógica Formal">
+      <button class="back" id="courseHomeBack" type="button">← Página inicial</button>
+      <div class="course-head"><div><span class="eyebrow"><span class="dot"></span> FORMAÇÃO EM LÓGICA FORMAL</span><h1>Curso Guiado</h1><p>Aprenda → observe uma resolução → pratique com ajuda → resolva sozinho → demonstre domínio.</p></div><button type="button" id="courseMapButton" class="button">Mapa das unidades</button></div>
+      <div id="courseMap" class="course-map"></div>
+      <div id="courseLesson" class="course-lesson hide"></div>
+      <div id="courseExam" class="course-exam hide"></div>
+    </section>
+    <details class="reference" id="reference"><summary>📖 &nbsp; Guia rápido dos operadores e das tabelas</summary><div class="reference-content"><div class="ref-item"><strong><code>¬p</code> — Negação</strong>Inverte V e F.</div><div class="ref-item"><strong><code>p ∧ q</code> — E</strong>V somente quando ambos são V.</div><div class="ref-item"><strong><code>p ∨ q</code> — OU inclusivo</strong>V quando ao menos um é V.</div><div class="ref-item"><strong><code>p ⊕ q</code> — OU exclusivo</strong>V quando os valores são diferentes.</div><div class="ref-item"><strong><code>p → q</code> — Condicional</strong>F somente em V → F.</div><div class="ref-item"><strong><code>p ↔ q</code> — Bicondicional</strong>V quando os valores coincidem.</div><div class="ref-item"><strong>Quantidade de linhas</strong>Com n variáveis, existem 2<sup>n</sup> combinações.</div><div class="ref-item"><strong>Leis de De Morgan</strong>¬(p ∧ q) ≡ ¬p ∨ ¬q; ¬(p ∨ q) ≡ ¬p ∧ ¬q.</div><div class="ref-item"><strong>Silogismo</strong>Traduza as premissas e a conclusão. Busque uma interpretação que torne todas as premissas V e a conclusão F.</div><div class="ref-item"><strong>Validade de argumento</strong>Procure uma linha em que todas as premissas sejam V e a conclusão seja F. Essa linha refuta a validade.</div></div></details>
+    <details class="reference reference-quantifiers" id="quantifierReference">
+      <summary>∀ ∃ &nbsp; Guia rápido dos quantificadores — Todos, Alguns e Nenhum</summary>
+      <div class="reference-content" style="display:block">
+        <p class="quantifier-intro">Quantificadores descrevem pessoas ou objetos de um domínio. Nos exemplos abaixo, <code>E(x)</code> significa “x é estudante” e <code>A(x)</code> significa “x foi aprovado”. <strong>∀x</strong> significa “para todo x”; <strong>∃x</strong> significa “existe pelo menos um x”.</p>
+        <div class="quantifier-grid">
+          <div class="quantifier-example"><strong>Todos</strong><p class="quantifier-sentence">Todos os estudantes foram aprovados.</p><code>∀x(E(x) → A(x))</code><small>Cada estudante é aprovado.</small></div>
+          <div class="quantifier-example"><strong>Alguns / Algum / Existe pelo menos um</strong><p class="quantifier-sentence">Alguns estudantes foram aprovados.</p><code>∃x(E(x) ∧ A(x))</code><small>Existe ao menos um estudante aprovado; pode haver vários.</small></div>
+          <div class="quantifier-example"><strong>Nenhum</strong><p class="quantifier-sentence">Nenhum estudante foi aprovado.</p><code>∀x(E(x) → ¬A(x))</code><small>Equivale a ¬∃x(E(x) ∧ A(x)).</small></div>
+          <div class="quantifier-example"><strong>Alguns ... não</strong><p class="quantifier-sentence">Alguns estudantes não foram aprovados.</p><code>∃x(E(x) ∧ ¬A(x))</code><small>Existe ao menos um estudante que ficou sem aprovação.</small></div>
+          <div class="quantifier-example"><strong>Nem todos</strong><p class="quantifier-sentence">Nem todos os estudantes foram aprovados.</p><code>¬∀x(E(x) → A(x))</code><small>Equivale a ∃x(E(x) ∧ ¬A(x)).</small></div>
+          <div class="quantifier-example"><strong>Negar “alguns”</strong><p class="quantifier-sentence">É falso que alguns estudantes foram aprovados.</p><code>¬∃x(E(x) ∧ A(x))</code><small>Equivale a dizer que nenhum estudante foi aprovado.</small></div>
+        </div>
+        <div class="quantifier-note"><strong>Negação dos quantificadores:</strong> ¬∀x P(x) ≡ ∃x ¬P(x) e ¬∃x P(x) ≡ ∀x ¬P(x).<br><strong>Atenção ao conjunto vazio:</strong> “Todos os estudantes foram aprovados” pode ser verdadeira quando o conjunto de estudantes está vazio; “Alguns estudantes foram aprovados” exige a existência de pelo menos um estudante aprovado.</div>
+      </div>
+    </details>
+    <details class="reference reference-venn" id="vennReference">
+      <summary>◯ ◯ ◯ &nbsp; Guia rápido do Diagrama de Venn — sombrear, X e fronteiras</summary>
+      <div class="venn-guide-content"><p><strong>Três círculos:</strong> S é o sujeito, M é o termo médio e P é o predicado. Existem oito regiões, incluindo a região fora dos três círculos.</p><p><strong>Hachurar uma região</strong> significa que ela precisa estar vazia pelas premissas; <strong>X</strong> significa que pelo menos um indivíduo existe ali. Um <strong>X na linha entre duas regiões</strong> indica que a terceira categoria permanece desconhecida. Dois marcadores X representam duas exigências existenciais que podem ser satisfeitas pelo mesmo indivíduo.</p><div class="venn-guide-grid"><div><b>Todos os S são P</b><code>∀x(S(x) → P(x))</code><span>Hachure toda a parte de S que está fora de P.</span></div><div><b>Nenhum S é P</b><code>∀x(S(x) → ¬P(x))</code><span>Hachure a interseção S ∩ P.</span></div><div><b>Alguns S são P</b><code>∃x(S(x) ∧ P(x))</code><span>Insira X em S ∩ P. Se M estiver indeterminado, posicione X na fronteira entre suas duas partes.</span></div><div><b>Alguns S não são P</b><code>∃x(S(x) ∧ ¬P(x))</code><span>Insira X na parte de S fora de P, respeitando outras regiões vazias.</span></div></div><p><strong>Ordem para resolver:</strong> traduza as premissas; hachure regiões exigidas pelas universais; marque existências; avalie se a conclusão é obrigatória; depois teste modelos concretos. Premissas universais admitem conjuntos vazios.</p></div>
+    </details>
+  </main>
+  <footer class="shell footer"><span>LogicLab · Curso guiado de lógica formal · Site estático modular · Progresso local</span><button id="resetButton" type="button">Apagar progresso salvo</button></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script type="module" src="./src/app.js"></script>
+</body>
+</html>
