@@ -21,23 +21,24 @@ export const UNIT12_READINGS={
     check:{question:'As vendas aumentaram depois de uma campanha. Qual conclusão é justificável apenas com esse dado?',options:['A campanha certamente causou o aumento.','O aumento ocorreu depois da campanha; a causa ainda precisa ser investigada.','A campanha não teve nenhum efeito.'],correct:1,why:'A sequência temporal não isola a causa. Outras variáveis, como preço ou sazonalidade, podem explicar parte ou todo o aumento.'}
   },
   categoricos2:{
-    objective:'Testar inferências entre categorias, distinguir conversões válidas de inversões inválidas, reconhecer pressupostos de existência e construir contraexemplos com conjuntos.',
+    objective:'Distinguir as quatro formas A, E, I e O, explicar cada relação do quadrado das oposições e testar conclusões sob interpretações com ou sem integrantes de S.',
     sections:[
-      {heading:'Uma relação entre grupos permite qual conclusão?',paragraphs:[
-        'Imagine três grupos: estudantes, pesquisadores e leitores. Se todos os estudantes são pesquisadores e todos os pesquisadores são leitores, então todos os estudantes são leitores. Cada inclusão preserva a anterior: S está dentro de M e M está dentro de P.',
-        'Agora mude a segunda premissa: todos os professores são leitores. Saber que estudantes e professores pertencem ao grupo dos leitores não permite concluir que sejam o mesmo grupo. Grupos diferentes podem compartilhar uma categoria mais ampla sem coincidirem.'
+      {heading:'Quatro formas para falar de duas categorias',paragraphs:[
+        'Imagine S como o conjunto de estudantes e P como o de músicos. “Todos os estudantes são músicos” afirma que não há estudantes fora do grupo dos músicos. “Nenhum estudante é músico” afirma que os dois grupos não têm integrantes em comum. São duas maneiras diferentes de fazer afirmações universais.',
+        'O quadrado das oposições compara quatro frases com o mesmo sujeito S e predicado P: A — “Todos os S são P”; E — “Nenhum S é P”; I — “Alguns S são P”; O — “Alguns S não são P”. As letras são nomes das formas, não valores de verdade. A e E são universais; I e O exigem a existência de pelo menos um integrante de S na interpretação moderna.'
       ]},
-      {heading:'Oposição e conversão exigem cuidado',paragraphs:[
-        'As afirmações categóricas básicas são: A, “Todos S são P”; E, “Nenhum S é P”; I, “Alguns S são P”; O, “Alguns S não são P”. A negação de A é O, e a negação de E é I. Negar “todos” não é o mesmo que afirmar “nenhum”.',
-        'Algumas inversões preservam a verdade: “Nenhum S é P” autoriza “Nenhum P é S”; “Alguns S são P” autoriza “Alguns P são S”. Mas “Todos S são P” não autoriza “Todos P são S”. Para conferir, imagine um conjunto pequeno contido em outro maior.'
+      {heading:'Como ler as quatro relações do quadrado',paragraphs:[
+        'As diagonais indicam contradição: A e O sempre têm valores opostos; E e I também. Por exemplo, negar “Todos os estudantes são músicos” é afirmar que pelo menos um estudante não é músico. Não é afirmar que nenhum estudante seja músico. Essa negação continua correta mesmo que o grupo S seja vazio.',
+        'Se sabemos que S tem ao menos um integrante, A e E são contrárias (não podem ser ambas verdadeiras, mas podem ser ambas falsas); I e O são subcontrárias (não podem ser ambas falsas, mas podem ser ambas verdadeiras). Nessa mesma condição, a subalternação permite passar de A verdadeira para I verdadeira e de E verdadeira para O verdadeira. O movimento inverso não é autorizado.'
       ]},
-      {heading:'Construa um cenário que põe a inferência à prova',paragraphs:[
-        'Para testar validade, represente cada grupo por seus membros e exija que as premissas sejam verdadeiras. Um contraexemplo existe quando, nessa mesma distribuição, a conclusão é falsa. Por exemplo, todos os cães são mamíferos, mas alguns mamíferos não são cães: a inclusão não é reversível.',
-        'A existência também importa. Na interpretação moderna, “Todos os S são P” pode ser verdadeira quando não há nenhum S; ela não garante “Alguns S são P”. Certas relações do quadrado tradicional pressupõem a existência de S. Por isso, ao decidir se um argumento é válido, declare qual interpretação está utilizando.'
+      {heading:'O papel decisivo dos grupos vazios',paragraphs:[
+        'Agora considere S como o grupo dos unicórnios realmente existentes. Se não há nenhum, a lógica de predicados moderna considera A (“Todos os unicórnios são P”) e E (“Nenhum unicórnio é P”) verdadeiras; I e O são falsas. Portanto, A e E deixam de ser contrárias, I e O deixam de ser subcontrárias e as universais deixam de implicar as particulares. As duas contradições diagonais continuam válidas.',
+        'No diagrama e no exercício desta aula, “quadrado tradicional” é uma convenção didática explícita: supomos S não vazio e usamos os quantificadores modernos. Ela recupera as quatro relações conhecidas do quadrado, mas não resume todas as interpretações historicamente propostas para os termos vazios. Compare os dois regimes e procure sempre o modelo que justifica ou refuta a inferência.'
       ]}
     ],
-    misconception:'Não conclua existência a partir de duas premissas universais nem inverta uma inclusão. Para rejeitar uma inferência, basta encontrar um modelo com premissas verdadeiras e conclusão falsa.',
-    summary:'Use as formas A/E/I/O, confira a direção das inclusões e procure modelos concretos. Modos clássicos como Barbara e Celarent são exemplos úteis, não nomes a decorar.',
-    check:{question:'De “Todos os gatos são mamíferos”, qual conclusão é necessariamente válida?',options:['Todos os mamíferos são gatos.','Nenhum mamífero é gato.','Nenhum gato é não mamífero.'],correct:2,why:'A afirmação universal exclui gatos fora dos mamíferos. Ela não permite inverter a inclusão ou afirmar que não existem gatos.'}
+    misconception:'Não use a subalternação A → I ou E → O sem verificar se existe algum S. A negação de “Todos S são P” é O (“Alguns S não são P”), não E (“Nenhum S é P”).',
+    summary:'As diagonais A–O e E–I expressam contradição em ambos os regimes. Contrariedade, subcontrariedade e subalternação exigem, nesta convenção, que S não esteja vazio. Alterar essa hipótese altera as inferências permitidas.',
+    check:{question:'Na semântica moderna, se S não tem integrantes, quais valores são corretos?',options:['A e E verdadeiras; I e O falsas.','A e I verdadeiras; E e O falsas.','A e E falsas; I e O verdadeiras.'],correct:0,why:'Com S vazio, não há contraexemplo às universais A e E; já as particulares I e O precisam de pelo menos um integrante e por isso são falsas.'}
+
   }
 };
