@@ -51,6 +51,17 @@ function describeModel(mask,terms){
   }
   return people.join('; ')+'. Não há outras pessoas no cenário.';
 }
+/** Baralha as alternativas preservando a resposta e os modelos correspondentes. */
+export function randomizeOptions(question,random=Math.random){
+  const order=question.options.map((_,i)=>i);
+  for(let i=order.length-1;i>0;i--){
+    const j=Math.floor(random()*(i+1));
+    [order[i],order[j]]=[order[j],order[i]];
+  }
+  return {...question,options:order.map(i=>question.options[i]),
+    correct:order.indexOf(question.correct),
+    ...(question.modelMasks?{modelMasks:order.map(i=>question.modelMasks[i])}:{})};
+}
 const kindText=(f,terms)=>{
   const a=terms[f.a],b=terms[f.b];
   switch(f.kind){
@@ -85,7 +96,7 @@ export function buildCategoricalQuestions(caseData,terms){
     'Verificar se as três frases soam razoáveis em situações familiares.',
     'Tomar uma premissa como verdadeira e dispensar as demais.'
   ],correct:0,why:'Um único contraexemplo demonstra invalidade; se nenhum modelo possível satisfaz premissas verdadeiras e conclusão falsa, a inferência é válida.'};
-  return [q1,q2,q3];
+  return [q1,q2,q3].map(q=>randomizeOptions(q));
 }
 
 export const ASSUMPTION_CASES=[
@@ -111,5 +122,5 @@ export function buildAssumptionQuestions(item){
     {question:'Sem novos dados, qual conclusão está melhor justificada?',options:[
       'A hipótese causal já foi demonstrada sem incerteza.',item.limit,'A hipótese causal é definitivamente falsa.'
     ],correct:1,why:'A observação não identifica sozinha uma causa. A conclusão responsável descreve o que foi observado e reconhece a necessidade de investigação.'}
-  ];
+  ].map(q=>randomizeOptions(q));
 }
