@@ -22,6 +22,7 @@ import { UNIT3_READINGS } from './content/reading-unit3.js';
 import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
 import { UNIT12_READINGS } from './content/reading-unit12.js';
 import { ASSUMPTION_CASES, CATEGORICAL_CASES, CATEGORICAL_CONTEXTS, buildAssumptionQuestions, buildCategoricalQuestions } from './core/argument-lab.js';
+import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, buildSquareQuestions } from './core/opposition-square.js';
 
 
 (()=>{
@@ -1267,13 +1268,13 @@ import { ASSUMPTION_CASES, CATEGORICAL_CASES, CATEGORICAL_CONTEXTS, buildAssumpt
   }
   function categoricalReasoningMode(level){
     const allowed=CATEGORICAL_CASES.filter(c=>c.level<=(level==='easy'?1:level==='medium'?2:3));
-    const item=pick(allowed),terms=pick(CATEGORICAL_CONTEXTS);
-    const questions=buildCategoricalQuestions(item,terms);
-    return makeSpecial('categoricos2','Avalie uma inferência entre categorias',
-      'Leia as duas premissas e a conclusão. Julgue a validade, encontre um contraexemplo quando possível e explique o método.',
+    const item=pick(allowed),terms=pick(CATEGORICAL_CONTEXTS),regime=pick(['modern','traditional']);
+    const questions=[...buildSquareQuestions(regime),...buildCategoricalQuestions(item,terms).slice(0,2)];
+    return makeSpecial('categoricos2','Quadrado das oposições e inferências entre categorias',
+      'Interprete as relações A/E/I/O sob o regime informado, julgue o silogismo e escolha uma justificativa ou contraexemplo.',
       {type:'concept',questions},
-      'A invalidez exige um modelo com as duas premissas verdadeiras e a conclusão falsa. Considere inclusive grupos vazios.',
-      item.explanation);
+      'No quadrado, verifique se S pode estar vazio. Em um silogismo inválido, procure premissas V com conclusão F.',
+      'As relações A–O e E–I são sempre contraditórias. '+item.explanation);
   }
   function advancedConceptMode(level,id){id=id||mode;const bank=LESSONS[id]?.quiz||LESSONS.metateoria.quiz;const count=level==='easy'?2:3;const questions=shuffle(bank).slice(0,count);return makeSpecial(id,'Interprete o conceito e justifique a escolha','Selecione a resposta de cada questão. Ao corrigir, você verá a explicação da alternativa correta.',{type:'concept',questions},'Releia a definição na miniaula do tema e busque um exemplo que diferencie as alternativas.','Cada questão exige aplicar a definição com precisão. Confira as justificativas de cada resposta.');}
   function onSpecialChange(e){const s=exercise?.special;if(!s||exercise.revealed)return;const field=e.target.closest('[data-special-field]');if(!field)return;s.values[field.dataset.specialField]=field.value;exercise.grade=null;const key=field.dataset.specialField;renderSpecial();renderFeedback();[...$('specialArea').querySelectorAll('[data-special-field]')].find(el=>el.dataset.specialField===key)?.focus({preventScroll:true});}
@@ -1379,10 +1380,76 @@ import { ASSUMPTION_CASES, CATEGORICAL_CASES, CATEGORICAL_CONTEXTS, buildAssumpt
     ).join('');
     return `<div class="pedagogical-reading"><p class="reading-objective"><strong>Ao final desta explicação, você será capaz de:</strong> ${escapeHTML(reading.objective)}</p>${sections}<div class="reading-distinction"><strong>Uma confusão comum</strong><p>${escapeHTML(reading.misconception)}</p></div><p class="reading-summary"><strong>Em resumo:</strong> ${escapeHTML(reading.summary)}</p><fieldset class="reading-check" data-reading-check><legend>Confira o essencial</legend><p>Uma pergunta para refletir sobre o conceito. Não vale nota e você pode tentar novamente.</p><strong class="reading-check-question">${escapeHTML(reading.check.question)}</strong><div class="reading-check-options">${choices}</div><button type="button" class="button small" data-caction="reading-check">Conferir resposta</button><p class="reading-check-feedback" data-reading-feedback role="status" aria-live="polite"></p></fieldset></div>`;
   }
+  function renderOppositionSquare(){
+    const nodes=[['A',58,66],['E',482,66],['I',58,322],['O',482,322]];
+    const shape=`<div class="square-diagram-scroll"><svg class="square-diagram" viewBox="0 0 640 390" role="img" aria-label="Quadrado das oposições: A e E na linha superior, I e O na inferior; A com O e E com I são contraditórias; outras relações dependem de S não vazio.">
+      <line class="square-edge square-conditional" x1="130" y1="67" x2="510" y2="67"/>
+      <line class="square-edge square-conditional" x1="130" y1="316" x2="510" y2="316"/>
+      <line class="square-edge square-conditional" x1="94" y1="103" x2="94" y2="285"/>
+      <line class="square-edge square-conditional" x1="546" y1="103" x2="546" y2="285"/>
+      <line class="square-edge square-contradiction" x1="120" y1="97" x2="520" y2="295"/>
+      <line class="square-edge square-contradiction" x1="520" y1="97" x2="120" y2="295"/>
+      <rect class="square-center" x="244" y="178" rx="8" width="152" height="35"/>
+      <text class="square-center-text" x="320" y="201" text-anchor="middle">Contradição (sempre)</text>
+      <text class="square-relation-label" x="320" y="54" text-anchor="middle">Contrariedade*</text>
+      <text class="square-relation-label" x="320" y="358" text-anchor="middle">Subcontrariedade*</text>
+      <text class="square-relation-label" x="73" y="197" text-anchor="middle" transform="rotate(-90 73 197)">Subalternação*</text>
+      <text class="square-relation-label" x="568" y="197" text-anchor="middle" transform="rotate(90 568 197)">Subalternação*</text>
+      ${nodes.map(([key,x,y])=>`<g><rect class="square-node" x="${x}" y="${y-30}" width="72" height="58" rx="12"/><text class="square-node-letter" x="${x+36}" y="${y+9}" text-anchor="middle">${key}</text></g>`).join('')}
+    </svg></div>`;
+    const forms=Object.entries(SQUARE_FORMS).map(([key,form])=>`<div class="square-form"><strong>${key}</strong><span>${escapeHTML(form.sentence)}</span><code>${escapeHTML(form.formula)}</code></div>`).join('');
+    const assumptions=Object.entries(SQUARE_FORMS).flatMap(([key,form])=>
+      [true,false].map(v=>`<option value="${key}:${v?'1':'0'}">${key} · ${v?'verdadeira':'falsa'} — ${escapeHTML(form.sentence)}</option>`)).join('');
+    const answerOptions=`<option value="">Escolha...</option><option value="V">Necessariamente V</option><option value="F">Necessariamente F</option><option value="?">Não é possível determinar</option>`;
+    return `<div class="opposition-lab" data-square-lab data-mode="modern">
+      <h4>Quadrado das oposições: veja, compare e teste</h4>
+      <p>As diagonais representam contradição em qualquer regime. As linhas marcadas com * dependem de S não vazio na convenção estudada. No celular, deslize o diagrama para o lado.</p>
+      ${shape}<div class="square-form-grid">${forms}</div>
+      <div class="square-controls">
+        <label for="squareMode">1. Qual interpretação será utilizada?<select id="squareMode" data-square-mode><option value="modern">${SQUARE_MODES.modern.label}</option><option value="traditional">${SQUARE_MODES.traditional.label}</option></select></label>
+        <p class="square-mode-description" data-square-mode-description>${escapeHTML(SQUARE_MODES.modern.description)}</p>
+        <p data-square-relations class="square-relations-summary">Com S possivelmente vazio, apenas as duas contradições diagonais são incondicionais.</p>
+        <label for="squareGiven">2. O que já sabemos?<select id="squareGiven" data-square-given>${assumptions}</select></label>
+        <fieldset class="square-answers"><legend>3. O que isso obriga a concluir sobre as outras formas?</legend><div data-square-targets></div></fieldset>
+        <button type="button" class="button" data-caction="square-check">Conferir minhas inferências</button>
+        <p role="status" aria-live="polite" data-square-feedback class="square-feedback"></p>
+      </div>
+    </div>`;
+  }
+  function updateSquareLab(lab){
+    const mode=lab.querySelector('[data-square-mode]').value;
+    const [known,flag]=lab.querySelector('[data-square-given]').value.split(':');
+    lab.dataset.mode=mode;
+    lab.querySelector('[data-square-mode-description]').textContent=SQUARE_MODES[mode].description;
+    const optional=['AE','IO','AI','EO'].map(k=>squarePairRelation(mode,k).valid).every(Boolean);
+    lab.querySelector('[data-square-relations]').textContent=optional
+      ?'Com S não vazio: contrariedade (A–E), subcontrariedade (I–O) e subalternação (A→I, E→O) também são válidas.'
+      :'Com S possivelmente vazio: apenas A–O e E–I são contraditórias em todos os cenários; as outras relações dependem de uma hipótese de existência.';
+    lab.querySelector('[data-square-targets]').innerHTML=Object.entries(SQUARE_FORMS).filter(([k])=>k!==known).map(([k,form])=>
+      `<label class="square-answer" for="squareAnswer${k}"><span>${k} · ${escapeHTML(form.sentence)}</span><select id="squareAnswer${k}" data-square-answer="${k}"><option value="">Escolha...</option><option value="V">Necessariamente V</option><option value="F">Necessariamente F</option><option value="?">Não é possível determinar</option></select></label>`
+    ).join('');
+    const feedback=lab.querySelector('[data-square-feedback]');feedback.textContent='';delete feedback.dataset.result;
+  }
+  function checkSquareLab(lab){
+    const [known,flag]=lab.querySelector('[data-square-given]').value.split(':');
+    const mode=lab.querySelector('[data-square-mode]').value;
+    const expected=squareConsequences(mode,known,flag==='1');
+    const selected=[...lab.querySelectorAll('[data-square-answer]')];
+    const feedback=lab.querySelector('[data-square-feedback]');
+    if(selected.some(s=>!s.value)){feedback.textContent='Escolha um resultado para as três formas antes de conferir.';return}
+    let correct=0;
+    const explanation=selected.map(s=>{
+      const key=s.dataset.squareAnswer,want=expected[key];
+      if(s.value===want)correct++;
+      return key+': '+(want==='?'?'não é possível determinar':want==='V'?'necessariamente verdadeira':'necessariamente falsa');
+    });
+    feedback.dataset.result=correct===selected.length?'correct':'retry';
+    feedback.textContent=correct+' de '+selected.length+' inferências corretas. '+explanation.join('; ')+'. '+(mode==='modern'?'Experimente S vazio e depois S com integrantes dentro e fora de P.':'Neste regime sabemos que S tem ao menos um integrante.')+(correct===selected.length?' Você pode prosseguir.':' Compare com o diagrama e tente outra combinação.');
+  }
   function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
     const flags=[p.read,p.example,p.guided,p.independent,p.mastered],labels=['1. Compreender','2. Observar','3. Praticar com ajuda','4. Resolver sozinho','5. Aprovar avaliação inicial'];let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><div class="course-lesson-flow">${labels.map((l,i)=>`<span class="${flags[i]?'done':''}">${flags[i]?'✓ ':''}${l}</span>`).join('')}</div><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
     const reading=COURSE_READINGS[id];
-    html+=`<section class="course-lesson-panel"><h3>1. Compreender</h3>${reading?renderPedagogicalReading(reading):`<p>${escapeHTML(lesson.theory)}</p>`}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
+    html+=`<section class="course-lesson-panel"><h3>1. Compreender</h3>${reading?renderPedagogicalReading(reading):`<p>${escapeHTML(lesson.theory)}</p>`}${id==='categoricos2'?renderOppositionSquare():''}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
     if(p.read){html+=`<section class="course-lesson-panel"><h3>2. Observar um exemplo resolvido</h3><div class="course-example"><strong>${escapeHTML(lesson.example)}</strong><ol>${lesson.steps.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol></div><div class="course-lesson-actions"><button type="button" class="button ${p.example?'':'primary'}" data-caction="example">${p.example?'✓ Exemplo estudado':'Entendi a resolução →'}</button></div></section>`}
     if(p.example&&THEORY_CARDS[id]){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
     if(p.example){html+=`<section class="course-lesson-panel"><h3>3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
@@ -1397,6 +1464,7 @@ import { ASSUMPTION_CASES, CATEGORICAL_CASES, CATEGORICAL_CONTEXTS, buildAssumpt
       html+='</section>';
     }
     $('courseLesson').innerHTML=html;
+    if(id==='categoricos2')updateSquareLab($('courseLesson').querySelector('[data-square-lab]'));
   }
   function beginCourseExercise(id,stage){
     if(stage==='review'&&reviewStatus(courseProgress(id)).status!=='due'){toast('Esta revisão ainda não está disponível. Consulte o calendário do tema.');return}
@@ -1447,6 +1515,7 @@ import { ASSUMPTION_CASES, CATEGORICAL_CASES, CATEGORICAL_CONTEXTS, buildAssumpt
       if(previous?.courseAttempt&&hasPendingWork(previous.exercise)&&!confirm('Esta aula possui uma tentativa guiada salva. Iniciar a prática livre substituirá essa tentativa. Deseja continuar?'))return;
       courseAttempt=null;openMode(courseActive,true,!!previous?.courseAttempt);return
     }
+    if(action==='square-check'){const lab=$('courseLesson').querySelector('[data-square-lab]');if(lab)checkSquareLab(lab);return}
     if(action==='reading-check'){
       const reading=COURSE_READINGS[courseActive],group=$('courseLesson').querySelector('[data-reading-check]');
       if(!reading||!group)return;
@@ -1535,7 +1604,7 @@ import { ASSUMPTION_CASES, CATEGORICAL_CASES, CATEGORICAL_CONTEXTS, buildAssumpt
   $('nextLessonButton').addEventListener('click',openRecommendedLesson);
   $('heroStartButton').addEventListener('click',()=>openCourse());
   $('heroPracticeButton').addEventListener('click',()=>{const section=$('practiceSection');section.scrollIntoView({behavior:'smooth',block:'start'});section.focus({preventScroll:true})});
-  $('topCourse').addEventListener('click',()=>openCourse());$('startCourseButton').addEventListener('click',()=>openCourse());$('courseHomeBack').addEventListener('click',()=>goHome());$('courseMapButton').addEventListener('click',()=>openCourse());$('courseMap').addEventListener('click',courseClick);$('courseLesson').addEventListener('click',courseClick);$('courseExam').addEventListener('click',courseClick);
+  $('topCourse').addEventListener('click',()=>openCourse());$('startCourseButton').addEventListener('click',()=>openCourse());$('courseHomeBack').addEventListener('click',()=>goHome());$('courseMapButton').addEventListener('click',()=>openCourse());$('courseMap').addEventListener('click',courseClick);$('courseLesson').addEventListener('click',courseClick);$('courseLesson').addEventListener('change',e=>{if(e.target.matches('[data-square-mode],[data-square-given]'))updateSquareLab(e.target.closest('[data-square-lab]'));});$('courseExam').addEventListener('click',courseClick);
   function syncRouteFromLocation(){
     const route=routeFromHash(location.hash,MODULES.map(m=>m.id),Object.keys(LESSONS));
     if(route.view==='exam'){
