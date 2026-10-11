@@ -492,20 +492,59 @@ try{
       await applied.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await applied.locator('#courseLesson .reading-section').count(),3);
       assert.match(await applied.locator('#courseLocation').innerText(),/AULA/);
+      if(id==='categoricos2'){
+        const lab=applied.locator('[data-square-lab]');
+        assert.equal(await lab.isVisible(),true);
+        assert.equal(await lab.locator('svg[role="img"]').count(),1);
+        assert.equal(await lab.locator('.square-form').count(),4);
+        assert.equal(await lab.locator('[data-square-answer]').count(),3);
+        await applied.locator('[data-caction="square-check"]').click();
+        assert.match(await lab.locator('[data-square-feedback]').innerText(),/Escolha um resultado/);
+        for(const select of await lab.locator('[data-square-answer]').all())await select.selectOption('V');
+        await applied.locator('[data-caction="square-check"]').click();
+        assert.match(await lab.locator('[data-square-feedback]').innerText(),/inferências corretas/);
+        const selectAnswers=async()=>{
+          const values=await applied.evaluate(async()=>{
+            const m=await import('./src/core/opposition-square.js');
+            const lab=document.querySelector('[data-square-lab]');
+            const [known,flag]=lab.querySelector('[data-square-given]').value.split(':');
+            return m.squareConsequences(lab.querySelector('[data-square-mode]').value,known,flag==='1');
+          });
+          for(const [key,value] of Object.entries(values)){
+            const select=lab.locator(`[data-square-answer="${key}"]`);
+            if(await select.count())await select.selectOption(value);
+          }
+        };
+        await selectAnswers();
+        await applied.locator('[data-caction="square-check"]').click();
+        assert.match(await lab.locator('[data-square-feedback]').innerText(),/3 de 3 inferências corretas/);
+        await lab.locator('[data-square-mode]').selectOption('traditional');
+        assert.equal(await lab.getAttribute('data-mode'),'traditional');
+        assert.match(await lab.locator('[data-square-relations]').innerText(),/subalternação/);
+        await selectAnswers();
+        await applied.locator('[data-caction="square-check"]').click();
+        assert.match(await lab.locator('[data-square-feedback]').innerText(),/3 de 3 inferências corretas/);
+        const readState=await applied.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2'))?.lessons?.categoricos2?.read||false);
+        assert.equal(readState,false,'laboratório não valida a leitura nem concede aprovação automaticamente');
+        await lab.locator('[data-square-mode]').selectOption('modern');
+        assert.match(await lab.locator('[data-square-relations]').innerText(),/apenas A–O e E–I/);
+      }
       await applied.locator('[data-caction="read"]').click();
       await applied.locator('[data-caction="example"]').click();
       await applied.locator('[data-caction="guided"]').click();
       assert.match(await applied.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
       assert.equal(await applied.locator('#specialArea').isVisible(),true);
-      assert.equal(await applied.locator('#specialArea [data-special-field]').count(),3);
+      const questionCount=id==='categoricos2'?4:3;
+      assert.equal(await applied.locator('#specialArea [data-special-field]').count(),questionCount);
+      if(id==='categoricos2')assert.match(await applied.locator('#specialArea').innerText(),/No regime/);
       assert.match(await applied.locator('#workDescription').innerText(),/Corrigir/);
-      for(let j=0;j<3;j++){
+      for(let j=0;j<questionCount;j++){
         const select=applied.locator(`#specialArea [data-special-field="${j}"]`);
         await select.selectOption({index:1});
       }
       await applied.locator('#checkButton').click();
       assert.equal(await applied.locator('#feedbackArea').isVisible(),true);
-      assert.equal(await applied.locator('#specialArea .course-question-explanation').count(),3);
+      assert.equal(await applied.locator('#specialArea .course-question-explanation').count(),questionCount);
       await applied.locator('#backButton').click();
       assert.equal(await applied.locator('#courseLesson').isVisible(),true);
     }
