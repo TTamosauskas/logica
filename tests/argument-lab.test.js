@@ -47,14 +47,14 @@ test('os 10 silogismos têm validade demonstrável por exame exaustivo de modelo
       const qs=buildCategoricalQuestions(item,terms);
       assert.equal(qs.length,3,item.id);
       assert.ok(qs.every(q=>q.correct>=0&&q.correct<q.options.length),item.id);
-      assert.equal(qs[0].correct,valid?0:1,item.id);
+      assert.equal(qs[0].options[qs[0].correct],valid?'Sim, em todos os modelos das premissas.':'Não, existe contraexemplo.',item.id);
       if(!valid){
         const evidence=qs[1];
         assert.equal(evidence.options.length,3);
         assert.equal(new Set(evidence.options).size,3);
         assert.equal(evidence.modelMasks.length,3);
-        assert.deepEqual(evidence.modelMasks.map(mask=>categoricalCounterexample(item.forms,mask)),[true,false,false],item.id);
-        assert.equal(evidence.correct,0);
+        assert.equal(evidence.modelMasks.filter(mask=>categoricalCounterexample(item.forms,mask)).length,1,item.id);
+        assert.equal(categoricalCounterexample(item.forms,evidence.modelMasks[evidence.correct]),true,item.id);
       }
     }
   }
@@ -79,9 +79,9 @@ test('cenários de pressupostos pedem hipótese, alternativa e conclusão cautel
   for(const item of ASSUMPTION_CASES){
     const qs=buildAssumptionQuestions(item);
     assert.equal(qs.length,3);
-    assert.deepEqual(qs.map(q=>q.correct),[0,0,1]);
+    assert.deepEqual(qs.map(q=>q.options[q.correct]),[item.assumption,item.alternative,item.limit]);
     assert.ok(qs.every(q=>q.options.length===3&&q.why.length>60));
-    assert.ok(qs[1].options[0].includes(item.alternative));
-    assert.ok(qs[2].options[1].includes(item.limit));
+    assert.ok(qs[1].options[qs[1].correct].includes(item.alternative));
+    assert.ok(qs[2].options[qs[2].correct].includes(item.limit));
   }
 });
