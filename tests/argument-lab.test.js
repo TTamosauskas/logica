@@ -11,10 +11,10 @@ import {
 import {getNextLearningStep} from '../src/core/learning-path.js';
 import {learningOverview} from '../src/core/learning-feedback.js';
 
-test('duas aulas novas mantêm os IDs e elevam o curso a 19 temas em seis unidades',()=>{
+test('duas aulas do ciclo 12 mantêm seus IDs no curso ampliado',()=>{
   const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
-  assert.equal(ids.length,19);
-  assert.equal(new Set(ids).size,19);
+  assert.equal(ids.length,23);
+  assert.equal(new Set(ids).size,23);
   assert.deepEqual(COURSE_UNITS[0].ids.slice(-2),['falacias','pressupostos']);
   assert.deepEqual(COURSE_UNITS[3].ids,['categoricos','categoricos2','predicados2']);
   for(const id of ['pressupostos','categoricos2']){
@@ -25,10 +25,10 @@ test('duas aulas novas mantêm os IDs e elevam o curso a 19 temas em seis unidad
   }
 });
 test('progresso aprovado das 17 aulas antigas é preservado; só faltam os dois temas novos',()=>{
-  const previousIds=COURSE_UNITS.flatMap(u=>u.ids).filter(id=>!['pressupostos','categoricos2'].includes(id));
+  const previousIds=COURSE_UNITS.flatMap(u=>u.ids).filter(id=>!['pressupostos','categoricos2','inducao','abducao','probabilidade','causalidade'].includes(id));
   const previous=Object.fromEntries(previousIds.map(id=>[id,{mastered:true}]));
   const overview=learningOverview(COURSE_UNITS,previous);
-  assert.equal(overview.total,19);
+  assert.equal(overview.total,23);
   assert.equal(overview.approved,17);
   assert.equal(overview.consolidated,0);
   assert.equal(getNextLearningStep(COURSE_UNITS,previous).id,'pressupostos');
