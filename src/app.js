@@ -20,6 +20,8 @@ import { UNIT1_READINGS } from './content/reading-unit1.js';
 import { UNIT2_READINGS } from './content/reading-unit2.js';
 import { UNIT3_READINGS } from './content/reading-unit3.js';
 import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
+import { UNIT12_READINGS } from './content/reading-unit12.js';
+import { ASSUMPTION_CASES, CATEGORICAL_CASES, CATEGORICAL_CONTEXTS, buildAssumptionQuestions, buildCategoricalQuestions } from './core/argument-lab.js';
 
 
 (()=>{
@@ -768,7 +770,7 @@ import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
     return '';
   }
 
-  const GENERATORS={provas:proofMode,predicados2:advancedConceptMode,arvores:advancedConceptMode,metateoria:theoremMode,falacias:advancedConceptMode,modais:semanticsMode,categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalences,argumentos:argumentsMode};
+  const GENERATORS={pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:advancedConceptMode,arvores:advancedConceptMode,metateoria:theoremMode,falacias:advancedConceptMode,modais:semanticsMode,categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalences,argumentos:argumentsMode};
   const STORE_KEY='logiclab_progress_v1',THEME_KEY='logiclab_theme_v1';
   function blankStats(){return {tries:0,perfect:0,correct:0,total:0,byMode:{},translationTypes:{},deductionLevels:{}}}
   function loadStats(){try{const saved=JSON.parse(localStorage.getItem(STORE_KEY));if(saved&&typeof saved.tries==='number'&&saved.byMode)return saved}catch(e){}return blankStats()}
@@ -1254,6 +1256,25 @@ import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
     });
     return makeSpecial('provas','Construa uma prova formal','Complete as linhas derivadas. Indique a fórmula e a regra aplicada às linhas de origem. Cada justificativa pode ser conferida.',{type:'proof',premises:model.premises,steps,ruleOptions:[['MP','Modus ponens (→E)'],['MT','Modus tollens'],['SH','Silogismo hipotético'],['DS','Silogismo disjuntivo'],['AND_E','Eliminar conjunção (∧E)'],['AND_I','Introduzir conjunção (∧I)'],['OR_I','Introduzir disjunção (∨I)'],['DN','Eliminar dupla negação']]},'Leia as linhas de origem de cada passo. Identifique a regra e a fórmula que ela autoriza.',`A demonstração conclui ${pretty(steps.at(-1).target)} a partir das premissas, usando regras explícitas de inferência.`);
   }
+  function assumptionsMode(level){
+    const item=pick(ASSUMPTION_CASES);
+    const questions=buildAssumptionQuestions(item);
+    return makeSpecial('pressupostos','Descubra o pressuposto e teste uma explicação',
+      'Leia a situação. Identifique a hipótese oculta, escolha uma explicação alternativa e formule a conclusão justificável.',
+      {type:'concept',questions},
+      'Pergunte que outro acontecimento poderia produzir o mesmo resultado, sem que a conclusão original fosse necessária.',
+      'Uma explicação alternativa mostra que a causa proposta ainda não foi demonstrada; isso não prova que ela seja falsa.');
+  }
+  function categoricalReasoningMode(level){
+    const allowed=CATEGORICAL_CASES.filter(c=>c.level<=(level==='easy'?1:level==='medium'?2:3));
+    const item=pick(allowed),terms=pick(CATEGORICAL_CONTEXTS);
+    const questions=buildCategoricalQuestions(item,terms);
+    return makeSpecial('categoricos2','Avalie uma inferência entre categorias',
+      'Leia as duas premissas e a conclusão. Julgue a validade, encontre um contraexemplo quando possível e explique o método.',
+      {type:'concept',questions},
+      'A invalidez exige um modelo com as duas premissas verdadeiras e a conclusão falsa. Considere inclusive grupos vazios.',
+      item.explanation);
+  }
   function advancedConceptMode(level,id){id=id||mode;const bank=LESSONS[id]?.quiz||LESSONS.metateoria.quiz;const count=level==='easy'?2:3;const questions=shuffle(bank).slice(0,count);return makeSpecial(id,'Interprete o conceito e justifique a escolha','Selecione a resposta de cada questão. Ao corrigir, você verá a explicação da alternativa correta.',{type:'concept',questions},'Releia a definição na miniaula do tema e busque um exemplo que diferencie as alternativas.','Cada questão exige aplicar a definição com precisão. Confira as justificativas de cada resposta.');}
   function onSpecialChange(e){const s=exercise?.special;if(!s||exercise.revealed)return;const field=e.target.closest('[data-special-field]');if(!field)return;s.values[field.dataset.specialField]=field.value;exercise.grade=null;const key=field.dataset.specialField;renderSpecial();renderFeedback();[...$('specialArea').querySelectorAll('[data-special-field]')].find(el=>el.dataset.specialField===key)?.focus({preventScroll:true});}
   function renderSpecial(){const area=$('specialArea');if(!exercise?.special){area.classList.add('hide');$('tableStage').classList.remove('hide');$('checkButton').textContent='✓ Corrigir tabela';return;}
@@ -1348,7 +1369,7 @@ import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
     $('courseLocation').textContent=context.location;
     $('courseDescription').textContent=context.description;
   }
-  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS};
+  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS};
   function renderPedagogicalReading(reading){
     const sections=reading.sections.map(section=>
       `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>`
@@ -1461,8 +1482,13 @@ import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
     finalExamSession=finalExamSession||savedExam();
     if(!finalExamSession){
       let questions=[];const ids=new Set();
-      COURSE_UNITS.forEach(unit=>{const id=pick(unit.ids);ids.add(id);questions.push({...pick(LESSONS[id].quiz),id})});
-      shuffle(COURSE_UNITS.flatMap(u=>u.ids.filter(id=>!ids.has(id)))).slice(0,6).forEach(id=>questions.push({...pick(LESSONS[id].quiz),id}));
+      // Cada uma das seis áreas aparece; os dois novos temas também são obrigatórios.
+      for(const id of ['pressupostos','categoricos2']){ids.add(id);questions.push({...pick(LESSONS[id].quiz),id})}
+      COURSE_UNITS.forEach(unit=>{
+        const id=pick(unit.ids.filter(id=>!ids.has(id)));
+        ids.add(id);questions.push({...pick(LESSONS[id].quiz),id});
+      });
+      shuffle(COURSE_UNITS.flatMap(u=>u.ids.filter(id=>!ids.has(id)))).slice(0,12-questions.length).forEach(id=>questions.push({...pick(LESSONS[id].quiz),id}));
       finalExamSession={questions:shuffle(questions),answers:Array(12).fill(null),result:null};
     }
     if(updateHash)setRouteHash('avaliacao-final');
@@ -1471,7 +1497,7 @@ import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
   function renderFinalExam(){
     updateCourseContext('exam');
     const ses=finalExamSession;
-    let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Um problema de cada área — e mais seis desafios</h2><p>Doze questões que cruzam conteúdos das seis unidades. <strong>Critério de aprovação: 10 de 12 acertos.</strong> A aprovação da prova integrada não substitui as revisões espaçadas dos temas.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section>`;
+    let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Um problema de cada área — e mais seis desafios</h2><p>Doze questões que cruzam conteúdos das seis unidades, incluindo pressupostos e inferências entre categorias. <strong>Critério de aprovação: 10 de 12 acertos.</strong> A aprovação da prova integrada não substitui as revisões espaçadas dos temas.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section>`;
     html+=`<section class="course-lesson-panel"><div class="course-assessment">${ses.questions.map((q,i)=>`<div class="course-question"><small>${escapeHTML(MODULES.find(m=>m.id===q.id).name)}</small><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((a,j)=>`<label class="course-option"><input type="radio" name="finalq-${i}" value="${j}" ${(ses.result?.answers?.[i]??ses.answers?.[i])===String(j)?'checked':''} ${ses.result?'disabled':''}><span>${escapeHTML(a)}</span></label>`).join('')}${ses.result?`<div class="course-question-explanation">${ses.result.answers[i]===String(q.correct)?'✓ Correto.':'Revisar.'} ${escapeHTML(q.why)}</div>`:''}</div>`).join('')}</div>`;
     if(ses.result){
       const weak=examWeakAreas(ses.questions,ses.result.answers),approved=ses.result.score>=10;

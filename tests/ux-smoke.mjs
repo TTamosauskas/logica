@@ -255,7 +255,7 @@ try{
     }));
   });
   await progressPage.reload({waitUntil:'networkidle'});
-  assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 17 avaliações aprovadas · 0 consolidados/);
+  assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 19 avaliações aprovadas · 0 consolidados/);
   assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO DISPONÍVEL/);
   await progressPage.locator('#continueButton').click();
   assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
@@ -300,18 +300,18 @@ try{
   indicatorPage.on('pageerror',error=>indicatorErrors.push(error.message));
   await indicatorPage.goto(root,{waitUntil:'networkidle'});
   await indicatorPage.evaluate(()=>{
-    const ids=['fundamentos','operadores','traducao','falacias','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','predicados2','metateoria','modais'];
+    const ids=['fundamentos','operadores','traducao','falacias','pressupostos','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','categoricos2','predicados2','metateoria','modais'];
     const dueAt=Date.now()+86400000;
     const lessons=Object.fromEntries(ids.map(id=>[id,{read:true,example:true,guided:true,independent:true,mastered:true,best:1,review:{completed:0,dueAt,consolidated:false}}]));
     localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({lessons,final:{}}));
   });
   await indicatorPage.reload({waitUntil:'networkidle'});
-  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'17');
+  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'19');
   assert.equal(await indicatorPage.locator('#courseHomeConsolidatedBar').getAttribute('aria-valuenow'),'0');
   assert.match(await indicatorPage.locator('#continueTitle').innerText(),/Consolidação em andamento/);
   assert.match(await indicatorPage.locator('#continueDescription').innerText(),/Próxima revisão/);
   await indicatorPage.locator('#continueButton').click();
-  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),17);
+  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),19);
   assert.match(await indicatorPage.locator('.course-review-schedule-item').first().innerText(),/\d\d:\d\d/);
   await indicatorPage.locator('#courseMap [data-caction="exam-open"]').click();
   const examDraft=await indicatorPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
@@ -426,14 +426,14 @@ try{
   }
 
 
-  // Ciclos 10 e 11: todas as 17 aulas devem ensinar antes de avaliar.
+  // Ciclos 10–12: todas as 19 aulas devem ensinar antes de avaliar.
   // A pergunta formativa permite errar, compreender e tentar novamente sem alterar a nota.
   for(const width of [375,1280]){
     const pedagogyContext=await browser.newContext({viewport:{width,height:812}});
     const pedagogy=await pedagogyContext.newPage();
     const errors=[];
     pedagogy.on('pageerror',error=>errors.push(error.message));
-    for(const id of ['fundamentos','operadores','traducao','falacias','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','predicados2','metateoria','modais']){
+    for(const id of ['fundamentos','operadores','traducao','falacias','pressupostos','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','categoricos2','predicados2','metateoria','modais']){
       await pedagogy.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await pedagogy.locator('#courseLesson').isVisible(),true);
       assert.equal(await pedagogy.locator('#courseLesson .reading-section').count(),3);
@@ -449,7 +449,8 @@ try{
         const unit1=new Set(['fundamentos','operadores','traducao','falacias']);
         const unit2=new Set(['compostas','demorgan','classificacao','equivalencias','argumentos','arvores']);
         const unit3=new Set(['silogismos','provas','deducao']);
-        const path=unit1.has(id)?'./src/content/reading-unit1.js'
+        const path=['pressupostos','categoricos2'].includes(id)?'./src/content/reading-unit12.js'
+          :unit1.has(id)?'./src/content/reading-unit1.js'
           :unit2.has(id)?'./src/content/reading-unit2.js'
           :unit3.has(id)?'./src/content/reading-unit3.js'
           :'./src/content/reading-units4to6.js';
@@ -475,6 +476,47 @@ try{
     }
     assert.deepEqual(errors,[]);
     await pedagogyContext.close();
+  }
+
+  // Ciclo 12: duas novas competências com prática e avaliação integradas.
+  for(const width of [375,1280]){
+    const context12=await browser.newContext({viewport:{width,height:812},isMobile:width===375,hasTouch:width===375});
+    const applied=await context12.newPage();
+    const errors12=[];
+    applied.on('pageerror',error=>errors12.push(error.message));
+    await applied.goto(root,{waitUntil:'networkidle'});
+    assert.match(await applied.locator('#courseHomeApprovedLabel').innerText(),/0 de 19/);
+    await applied.goto(root+'#curso',{waitUntil:'networkidle'});
+    assert.equal(await applied.locator('#courseMap .course-unit-item').count(),19);
+    for(const id of ['pressupostos','categoricos2']){
+      await applied.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
+      assert.equal(await applied.locator('#courseLesson .reading-section').count(),3);
+      assert.match(await applied.locator('#courseLocation').innerText(),/AULA/);
+      await applied.locator('[data-caction="read"]').click();
+      await applied.locator('[data-caction="example"]').click();
+      await applied.locator('[data-caction="guided"]').click();
+      assert.match(await applied.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
+      assert.equal(await applied.locator('#specialArea').isVisible(),true);
+      assert.equal(await applied.locator('#specialArea [data-special-field]').count(),3);
+      assert.match(await applied.locator('#workDescription').innerText(),/Corrigir/);
+      for(let j=0;j<3;j++){
+        const select=applied.locator(`#specialArea [data-special-field="${j}"]`);
+        await select.selectOption({index:1});
+      }
+      await applied.locator('#checkButton').click();
+      assert.equal(await applied.locator('#feedbackArea').isVisible(),true);
+      assert.equal(await applied.locator('#specialArea .course-question-explanation').count(),3);
+      await applied.locator('#backButton').click();
+      assert.equal(await applied.locator('#courseLesson').isVisible(),true);
+    }
+    await applied.goto(root+'#avaliacao-final',{waitUntil:'networkidle'});
+    const covered=await applied.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')).questions.map(q=>q.id));
+    assert.equal(covered.length,12);
+    assert.ok(covered.includes('pressupostos'));
+    assert.ok(covered.includes('categoricos2'));
+    assert.equal(new Set(covered).size,12);
+    assert.deepEqual(errors12,[]);
+    await context12.close();
   }
 
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');

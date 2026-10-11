@@ -57,7 +57,7 @@ test('cada unidade aponta para uma aula existente e um módulo', () => {
     assert.ok(ids.has(id),`módulo ausente: ${id}`);
     assert.equal(LESSONS[id].quiz.length,4);
   }
-  assert.equal(MODULES.length,18);
+  assert.equal(MODULES.length,flat.length+1); // todos os temas mais a prática mista
 });
 
 test('todos os modelos de tradução geram árvores avaliáveis', () => {
