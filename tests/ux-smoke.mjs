@@ -425,6 +425,51 @@ try{
     await journeyContext.close();
   }
 
+
+  // Ciclo 10: a primeira unidade precisa ensinar antes de avaliar.
+  // A pergunta formativa permite errar, compreender e tentar novamente sem alterar a nota.
+  for(const width of [375,1280]){
+    const pedagogyContext=await browser.newContext({viewport:{width,height:812}});
+    const pedagogy=await pedagogyContext.newPage();
+    const errors=[];
+    pedagogy.on('pageerror',error=>errors.push(error.message));
+    for(const id of ['fundamentos','operadores','traducao','falacias']){
+      await pedagogy.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
+      assert.equal(await pedagogy.locator('#courseLesson').isVisible(),true);
+      assert.equal(await pedagogy.locator('#courseLesson .reading-section').count(),3);
+      assert.equal(await pedagogy.locator('#courseLesson .reading-check-option').count(),3);
+      assert.equal(await pedagogy.locator('#courseLesson .reading-objective').isVisible(),true);
+      assert.equal(await pedagogy.locator('#courseLesson .reading-summary').isVisible(),true);
+      assert.equal(await pedagogy.locator('#courseLesson .reading-distinction').isVisible(),true);
+      assert.equal(await pedagogy.locator('#courseNext').count(),0);
+
+      await pedagogy.locator('[data-caction="reading-check"]').click();
+      assert.match(await pedagogy.locator('[data-reading-feedback]').innerText(),/Selecione uma alternativa/);
+      const lesson=await pedagogy.evaluate(async id=>{
+        const m=await import('./src/content/reading-unit1.js');
+        return m.UNIT1_READINGS[id].check;
+      },id);
+      const wrong=(lesson.correct+1)%lesson.options.length;
+      await pedagogy.locator(`input[name="reading-check"][value="${wrong}"]`).check();
+      await pedagogy.locator('[data-caction="reading-check"]').click();
+      assert.match(await pedagogy.locator('[data-reading-feedback]').innerText(),/Ainda não/);
+      await pedagogy.locator(`input[name="reading-check"][value="${lesson.correct}"]`).check();
+      await pedagogy.locator('[data-caction="reading-check"]').click();
+      assert.match(await pedagogy.locator('[data-reading-feedback]').innerText(),/Isso mesmo/);
+      assert.equal(await pedagogy.locator('[data-reading-feedback]').getAttribute('data-result'),'correct');
+      const before=await pedagogy.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2'))?.lessons?.[id]?.read||false,id);
+      assert.equal(before,false,'a checagem sem nota não registra conclusão da leitura');
+      await pedagogy.locator('[data-caction="read"]').click();
+      assert.equal(await pedagogy.locator('[data-caction="example"]').isVisible(),true);
+      const order=await pedagogy.locator('#courseLesson > section').evaluateAll(els=>els.map(x=>x.querySelector('h3')?.textContent||''));
+      const exampleIndex=order.findIndex(x=>x.includes('2. Observar'));
+      const advancedIndex=order.findIndex(x=>x.includes('Para ir além:'));
+      if(advancedIndex>=0)assert.ok(advancedIndex>exampleIndex,'aprofundamento deve vir depois do exemplo básico');
+    }
+    assert.deepEqual(errors,[]);
+    await pedagogyContext.close();
+  }
+
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
   await context.close();
 }catch(error){
