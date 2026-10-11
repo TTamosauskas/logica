@@ -1,17 +1,20 @@
-/** Seis unidades e roteiro pedagógico de cada aula. */
+/** Unidades do percurso de raciocínio rigoroso e roteiro pedagógico de cada aula. */
+import { COURSE_UNIT13_LESSONS } from './course-unit13.js';
 
 export const COURSE_UNITS=[
     {title:'I — Linguagem, proposições e argumentos',note:'Conceitos básicos, conectivos, tradução e leitura crítica.',ids:['fundamentos','operadores','traducao','falacias','pressupostos']},
     {title:'II — Semântica proposicional',note:'Expressões, equivalências, classificação, validade e árvores semânticas.',ids:['compostas','demorgan','classificacao','equivalencias','argumentos','arvores']},
     {title:'III — Inferência e demonstração',note:'Silogismos, provas em linhas e resolução de problemas.',ids:['silogismos','provas','deducao']},
     {title:'IV — Lógica de primeira ordem',note:'Quantificadores, diagramas, relações e interpretação de modelos.',ids:['categoricos','categoricos2','predicados2']},
-    {title:'V — Fundamentos teóricos',note:'Sintaxe, semântica, consequência e limites dos sistemas.',ids:['metateoria']},
-    {title:'VI — Outras lógicas',note:'Necessidade, possibilidade e raciocínio temporal.',ids:['modais']}
+    {title:'V — Evidências e raciocínio sob incerteza',note:'Indução, hipóteses explicativas, taxas de base, probabilidade condicional e causalidade.',ids:['inducao','abducao','probabilidade','causalidade']},
+    {title:'VI — Fundamentos teóricos',note:'Sintaxe, semântica, consequência e limites dos sistemas.',ids:['metateoria']},
+    {title:'VII — Outras lógicas',note:'Necessidade, possibilidade e raciocínio temporal.',ids:['modais']}
   ];
 
 export const cq=(question,options,correct,why)=>({question,options,correct,why});
 
 export const LESSONS={
+    ...COURSE_UNIT13_LESSONS,
     pressupostos:{lead:'Como distinguir o que foi observado de uma conclusão que depende de pressupostos não declarados?',
       theory:'Um argumento pode omitir uma ideia necessária para chegar à conclusão. Identifique as premissas explícitas, procure o pressuposto oculto e imagine outras explicações compatíveis com os mesmos fatos. Uma sequência temporal não demonstra sozinha uma relação causal.',
       example:'As notas subiram depois da mudança de horário escolar. A direção afirma que o horário foi a causa.',
