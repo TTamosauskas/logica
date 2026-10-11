@@ -241,3 +241,35 @@
 .reading-check-feedback[data-result]{margin:14px 0 0;color:var(--text);font-size:13px;line-height:1.65}
 .reading-check-feedback[data-result="correct"]{font-weight:600}
 @media(max-width:520px){.reading-section p{font-size:14px;line-height:1.75}.reading-check{padding:12px}.reading-check-option{font-size:13px}}
+
+/* Complemento do ciclo 12 — quadrado das oposições sem alterar as etapas do curso. */
+.opposition-lab{max-width:77ch;margin:24px 0;padding:22px 0 10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.opposition-lab h4{font-size:17px;line-height:1.4;margin:0 0 9px;color:var(--text)}
+.opposition-lab>p{font-size:13px;line-height:1.7;color:var(--muted)}
+.square-diagram-scroll{max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain}
+.square-diagram{display:block;min-width:570px;width:100%;height:auto}
+.square-edge{stroke:var(--text);stroke-width:2;fill:none;stroke-linecap:round}
+.square-conditional{stroke:var(--accent);stroke-width:2.5}
+.opposition-lab[data-mode="modern"] .square-conditional{stroke-dasharray:7 7;opacity:.55}
+.square-contradiction{stroke:var(--teal);stroke-width:2.5}
+.square-node{fill:var(--panel);stroke:var(--border-hi);stroke-width:2}
+.square-node-letter{font-size:26px;fill:var(--text);font-weight:800}
+.square-relation-label{font-size:17px;font-weight:650;fill:var(--text)}
+.square-center{fill:var(--panel);stroke:var(--border)}
+.square-center-text{font-size:13px;font-weight:650;fill:var(--text)}
+.square-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0 22px}
+.square-form{display:grid;grid-template-columns:24px minmax(0,1fr);column-gap:9px;row-gap:3px;padding:12px;border:1px solid var(--border);border-radius:10px;min-width:0}
+.square-form strong{grid-row:span 2;font-size:20px;color:var(--text)}
+.square-form span{font-size:13px;line-height:1.5}
+.square-form code{font-size:12px;overflow-wrap:anywhere}
+.square-controls{display:grid;gap:12px;padding:15px 0 6px}
+.square-controls>label{display:grid;gap:7px;font-size:14px;font-weight:650}
+.square-controls select,.square-answer select{width:100%;max-width:100%;min-height:44px;border:1px solid var(--border-hi);border-radius:8px;padding:8px 10px;background:var(--panel);color:var(--text);font-size:14px}
+.square-controls select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.square-mode-description,.square-relations-summary{font-size:13px;line-height:1.7;color:var(--muted);margin:0}
+.square-answers{min-width:0;border:1px solid var(--border);border-radius:10px;padding:13px}
+.square-answers legend{font-size:14px;font-weight:700;padding:0 5px}
+.square-answer{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,220px);gap:9px;align-items:center;margin:9px 0;font-size:13px;line-height:1.5}
+.square-feedback{min-height:0;font-size:13px;line-height:1.7;margin:0;color:var(--text)}
+.square-feedback[data-result="correct"]{font-weight:650}
+@media(max-width:640px){.opposition-lab{padding-top:16px}.square-form-grid{grid-template-columns:1fr}.square-answer{grid-template-columns:1fr}.square-diagram{min-width:560px}}
