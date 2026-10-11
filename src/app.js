@@ -1346,8 +1346,8 @@ import { UNIT1_READINGS } from './content/reading-unit1.js';
     $('courseDescription').textContent=context.description;
   }
   function renderPedagogicalReading(reading){
-    const sections=reading.sections.map((section,index)=>
-      `<section class="reading-section"><h4>${index+1}. ${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>`
+    const sections=reading.sections.map(section=>
+      `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>`
     ).join('');
     const choices=reading.check.options.map((label,i)=>
       `<label class="reading-check-option"><input type="radio" name="reading-check" value="${i}"><span>${escapeHTML(label)}</span></label>`
