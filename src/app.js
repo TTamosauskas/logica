@@ -21,6 +21,8 @@ import { UNIT2_READINGS } from './content/reading-unit2.js';
 import { UNIT3_READINGS } from './content/reading-unit3.js';
 import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
 import { UNIT12_READINGS } from './content/reading-unit12.js';
+import { UNIT13_READINGS } from './content/reading-unit13.js';
+import { INDUCTION_CASES, ABDUCTION_CASES, CAUSAL_CASES, PROBABILITY_CASES, buildInductionQuestions, buildAbductionQuestions, buildCausalQuestions, buildProbabilityQuestions } from './core/evidence-lab.js';
 import { ASSUMPTION_CASES, CATEGORICAL_CASES, CATEGORICAL_CONTEXTS, buildAssumptionQuestions, buildCategoricalQuestions } from './core/argument-lab.js';
 import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, buildSquareQuestions } from './core/opposition-square.js';
 
@@ -771,7 +773,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     return '';
   }
 
-  const GENERATORS={pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:advancedConceptMode,arvores:advancedConceptMode,metateoria:theoremMode,falacias:advancedConceptMode,modais:semanticsMode,categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalences,argumentos:argumentsMode};
+  const GENERATORS={inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:advancedConceptMode,arvores:advancedConceptMode,metateoria:theoremMode,falacias:advancedConceptMode,modais:semanticsMode,categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalences,argumentos:argumentsMode};
   const STORE_KEY='logiclab_progress_v1',THEME_KEY='logiclab_theme_v1';
   function blankStats(){return {tries:0,perfect:0,correct:0,total:0,byMode:{},translationTypes:{},deductionLevels:{}}}
   function loadStats(){try{const saved=JSON.parse(localStorage.getItem(STORE_KEY));if(saved&&typeof saved.tries==='number'&&saved.byMode)return saved}catch(e){}return blankStats()}
@@ -1257,6 +1259,16 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     });
     return makeSpecial('provas','Construa uma prova formal','Complete as linhas derivadas. Indique a fórmula e a regra aplicada às linhas de origem. Cada justificativa pode ser conferida.',{type:'proof',premises:model.premises,steps,ruleOptions:[['MP','Modus ponens (→E)'],['MT','Modus tollens'],['SH','Silogismo hipotético'],['DS','Silogismo disjuntivo'],['AND_E','Eliminar conjunção (∧E)'],['AND_I','Introduzir conjunção (∧I)'],['OR_I','Introduzir disjunção (∨I)'],['DN','Eliminar dupla negação']]},'Leia as linhas de origem de cada passo. Identifique a regra e a fórmula que ela autoriza.',`A demonstração conclui ${pretty(steps.at(-1).target)} a partir das premissas, usando regras explícitas de inferência.`);
   }
+  function evidenceMode(id){
+    const configs={
+      inducao:{bank:INDUCTION_CASES,build:buildInductionQuestions,title:'Teste uma generalização',instruction:'Compare população e amostra, localize o possível viés e formule uma conclusão proporcional à evidência.',hint:'Pergunte quem ficou fora da pesquisa e qual grupo a conclusão pretende descrever.',resolution:'O alcance da generalização depende da seleção, do tamanho e da qualidade dos dados.'},
+      abducao:{bank:ABDUCTION_CASES,build:buildAbductionQuestions,title:'Compare hipóteses concorrentes',instruction:'Identifique explicações possíveis, procure previsões diferentes e atualize sua hipótese com novas observações.',hint:'Uma informação útil favorece hipóteses diferentes de modos diferentes; repetir o fato inicial não basta.',resolution:'Abdução seleciona explicações provisórias; não demonstra causas por necessidade lógica.'},
+      probabilidade:{bank:PROBABILITY_CASES,build:buildProbabilityQuestions,title:'Calcule com frequências naturais',instruction:'Conte positivos verdadeiros, positivos falsos, total de positivos e calcule as taxas com o denominador certo.',hint:'A taxa de base usa toda a população. Já a proporção de casos reais entre positivos usa o total de positivos.',resolution:'P(condição | positivo) = positivos verdadeiros ÷ todos os positivos; não inverta o condicionamento.'},
+      causalidade:{bank:CAUSAL_CASES,build:buildCausalQuestions,title:'Investigue uma hipótese causal',instruction:'Distinga associação de causalidade, identifique confundidores e proponha comparações relevantes.',hint:'Considere uma causa comum capaz de afetar tanto a exposição quanto o resultado.',resolution:'Uma associação pode justificar investigar causalidade, mas precisa de comparação e controle de alternativas.'}
+    };
+    const c=configs[id],item=pick(c.bank),questions=c.build(item);
+    return makeSpecial(id,c.title,c.instruction,{type:'concept',questions},c.hint,c.resolution);
+  }
   function assumptionsMode(level){
     const item=pick(ASSUMPTION_CASES);
     const questions=buildAssumptionQuestions(item);
@@ -1370,7 +1382,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('courseLocation').textContent=context.location;
     $('courseDescription').textContent=context.description;
   }
-  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS};
+  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS};
   function renderPedagogicalReading(reading){
     const sections=reading.sections.map(section=>
       `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>`
@@ -1551,13 +1563,17 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     finalExamSession=finalExamSession||savedExam();
     if(!finalExamSession){
       let questions=[];const ids=new Set();
-      // Cada uma das seis áreas aparece; os dois novos temas também são obrigatórios.
-      for(const id of ['pressupostos','categoricos2']){ids.add(id);questions.push({...pick(LESSONS[id].quiz),id})}
+      // Todas as novas competências aparecem; as outras seis unidades têm uma questão cada.
+      for(const id of ['pressupostos','categoricos2','inducao','abducao','probabilidade','causalidade']){
+        ids.add(id);questions.push({...pick(LESSONS[id].quiz),id});
+      }
       COURSE_UNITS.forEach(unit=>{
-        const id=pick(unit.ids.filter(id=>!ids.has(id)));
+        const candidates=unit.ids.filter(id=>!ids.has(id));
+        if(!candidates.length)return;
+        const id=pick(candidates);
         ids.add(id);questions.push({...pick(LESSONS[id].quiz),id});
       });
-      shuffle(COURSE_UNITS.flatMap(u=>u.ids.filter(id=>!ids.has(id)))).slice(0,12-questions.length).forEach(id=>questions.push({...pick(LESSONS[id].quiz),id}));
+      if(questions.length!==12)throw Error('Composição da prova integrada incompleta.');
       finalExamSession={questions:shuffle(questions),answers:Array(12).fill(null),result:null};
     }
     if(updateHash)setRouteHash('avaliacao-final');
@@ -1566,7 +1582,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   function renderFinalExam(){
     updateCourseContext('exam');
     const ses=finalExamSession;
-    let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Um problema de cada área — e mais seis desafios</h2><p>Doze questões que cruzam conteúdos das seis unidades, incluindo pressupostos e inferências entre categorias. <strong>Critério de aprovação: 10 de 12 acertos.</strong> A aprovação da prova integrada não substitui as revisões espaçadas dos temas.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section>`;
+    let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Sete áreas de estudo · 12 desafios</h2><p>Doze questões das sete unidades: as quatro competências de evidências e as duas novas aulas de argumentação estão representadas, junto aos fundamentos formais. <strong>Critério de aprovação: 10 de 12 acertos.</strong> A aprovação da prova integrada não substitui as revisões espaçadas dos temas.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section>`;
     html+=`<section class="course-lesson-panel"><div class="course-assessment">${ses.questions.map((q,i)=>`<div class="course-question"><small>${escapeHTML(MODULES.find(m=>m.id===q.id).name)}</small><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((a,j)=>`<label class="course-option"><input type="radio" name="finalq-${i}" value="${j}" ${(ses.result?.answers?.[i]??ses.answers?.[i])===String(j)?'checked':''} ${ses.result?'disabled':''}><span>${escapeHTML(a)}</span></label>`).join('')}${ses.result?`<div class="course-question-explanation">${ses.result.answers[i]===String(q.correct)?'✓ Correto.':'Revisar.'} ${escapeHTML(q.why)}</div>`:''}</div>`).join('')}</div>`;
     if(ses.result){
       const weak=examWeakAreas(ses.questions,ses.result.answers),approved=ses.result.score>=10;
