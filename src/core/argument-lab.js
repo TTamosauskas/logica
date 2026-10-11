@@ -2,15 +2,15 @@
 const form=(kind,a,b)=>({kind,a,b});
 export const CATEGORICAL_CASES=[
   {id:'barbara',level:1,forms:[form('all','M','P'),form('all','S','M'),form('all','S','P')],explanation:'Se S está contido em M e M em P, então S está contido em P. A cadeia de inclusões garante a conclusão.'},
-  {id:'celarent',level:1,forms:[form('none','M','P'),form('all','S','M'),form('none','S','P')],explanation:'Nenhum integrante de M pertence a P; como todo S está em M, nenhum S pode estar em P.'},
+  {id:'celarent',level:1,forms:[form('none','M','P'),form('all','S','M'),form('none','S','P')],explanation:'Nenhum integrante de M pertence a P; como todo S está em M, nenhum S pode estar em P. A conclusão vale em qualquer configuração de conjuntos compatível com as duas premissas.'},
   {id:'converse',level:1,forms:[form('all','M','P'),form('all','S','P'),form('all','S','M')],explanation:'Ter P em comum não obriga S a estar dentro de M: são grupos que podem se sobrepor sem coincidir.'},
   {id:'existence',level:1,forms:[form('all','M','P'),form('all','S','M'),form('some','S','P')],explanation:'Duas premissas universais são compatíveis com S vazio. Elas não garantem que exista alguém em S ∩ P.'},
-  {id:'darii',level:2,forms:[form('all','M','P'),form('some','S','M'),form('some','S','P')],explanation:'A testemunha que está em S ∩ M também está em P, pois todo M é P.'},
-  {id:'ferio',level:2,forms:[form('none','M','P'),form('some','S','M'),form('somenot','S','P')],explanation:'Alguém pertence a S ∩ M e nenhum M pertence a P; essa pessoa está em S, mas fora de P.'},
-  {id:'particular-to-all',level:2,forms:[form('all','M','P'),form('some','S','M'),form('all','S','P')],explanation:'A testemunha em S ∩ M pertence a P, mas outros integrantes de S podem ficar fora de P.'},
+  {id:'darii',level:2,forms:[form('all','M','P'),form('some','S','M'),form('some','S','P')],explanation:'A testemunha que está em S ∩ M também está em P, pois todo M é P. Assim, a mesma pessoa satisfaz as duas condições exigidas pela conclusão existencial.'},
+  {id:'ferio',level:2,forms:[form('none','M','P'),form('some','S','M'),form('somenot','S','P')],explanation:'Alguém pertence a S ∩ M e nenhum M pertence a P; essa pessoa está em S, mas fora de P. A testemunha da premissa particular garante a conclusão particular negativa.'},
+  {id:'particular-to-all',level:2,forms:[form('all','M','P'),form('some','S','M'),form('all','S','P')],explanation:'A testemunha em S ∩ M pertence a P, mas outros integrantes de S podem ficar fora de P. Um único caso favorável não autoriza afirmar algo universal sobre todos os membros de S.'},
   {id:'existential-confusion',level:2,forms:[form('some','M','P'),form('some','S','M'),form('some','S','P')],explanation:'As duas premissas podem se referir a pessoas diferentes de M. Nada obriga a mesma pessoa a integrar S e P.'},
-  {id:'disamis',level:3,forms:[form('some','M','P'),form('all','M','S'),form('some','S','P')],explanation:'A pessoa que testemunha M ∩ P também está em S, porque todos os M são S.'},
-  {id:'bocardo',level:3,forms:[form('somenot','M','P'),form('all','M','S'),form('somenot','S','P')],explanation:'Há alguém em M fora de P; como todo M é S, há alguém em S fora de P.'}
+  {id:'disamis',level:3,forms:[form('some','M','P'),form('all','M','S'),form('some','S','P')],explanation:'A pessoa que testemunha M ∩ P também está em S, porque todos os M são S. A existência dessa pessoa é suficiente para demonstrar que alguns S também são P.'},
+  {id:'bocardo',level:3,forms:[form('somenot','M','P'),form('all','M','S'),form('somenot','S','P')],explanation:'Há alguém em M fora de P; como todo M é S, há alguém em S fora de P. A testemunha particular da primeira premissa preserva sua existência na conclusão.'}
 ];
 export const CATEGORICAL_CONTEXTS=[
   {S:'pesquisadores',M:'cientistas',P:'leitores'},
