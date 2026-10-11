@@ -219,3 +219,25 @@
 .exam-study-links .button{min-height:44px;white-space:normal}
 .exam-all-correct{color:var(--text);font-size:13px}
 @media(max-width:700px){.course-promo-progress,.learning-progress-pair,.course-review-schedule{grid-template-columns:1fr}.exam-study-links{flex-direction:column}.exam-study-links .button{width:100%}}
+
+/* Ciclo 10 — texto didático progressivo sem cartões redundantes de navegação. */
+.pedagogical-reading{max-width:77ch}
+.reading-objective{font-size:14px;line-height:1.7;margin:8px 0 22px;color:var(--text)}
+.reading-section{margin:0 0 23px}
+.reading-section h4{font-size:16px;line-height:1.4;letter-spacing:-.1px;color:var(--text);margin:0 0 10px}
+.reading-section p{font-size:14px;line-height:1.8;color:var(--text);margin:0 0 11px}
+.reading-distinction{border-left:3px solid var(--border-hi);padding:3px 0 3px 15px;margin:5px 0 23px}
+.reading-distinction strong{font-size:14px}
+.reading-distinction p{font-size:14px;line-height:1.75;margin:7px 0 0;color:var(--muted)}
+.reading-summary{padding:14px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);line-height:1.7;font-size:14px;margin:0 0 23px;color:var(--text)}
+.reading-check{border:1px solid var(--border);border-radius:12px;padding:14px 16px 16px;min-width:0;margin:0 0 20px}
+.reading-check legend{font-size:15px;font-weight:700;padding:0 6px}
+.reading-check>p{font-size:13px;color:var(--muted);line-height:1.6;margin:4px 0 12px}
+.reading-check-question{display:block;font-size:14px;line-height:1.6;margin-bottom:10px}
+.reading-check-options{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+.reading-check-option{display:flex;align-items:flex-start;gap:11px;min-height:44px;border:1px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;line-height:1.55;font-size:14px}
+.reading-check-option:has(input:checked){border-color:var(--accent-strong);background:var(--accent-bg)}
+.reading-check-option input{margin-top:4px;flex:none;accent-color:var(--accent-strong)}
+.reading-check-feedback[data-result]{margin:14px 0 0;color:var(--text);font-size:13px;line-height:1.65}
+.reading-check-feedback[data-result="correct"]{font-weight:600}
+@media(max-width:520px){.reading-section p{font-size:14px;line-height:1.75}.reading-check{padding:12px}.reading-check-option{font-size:13px}}
