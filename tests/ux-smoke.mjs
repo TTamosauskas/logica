@@ -597,6 +597,7 @@ try{
       localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify(state));
     });
     await applied13.goto(root+'#aula-probabilidade',{waitUntil:'networkidle'});
+    await applied13.reload({waitUntil:'networkidle'}); // recarrega progresso simulado da persistência
     await applied13.locator('[data-caction="independent"]').click();
     assert.match(await applied13.locator('#workLocation').innerText(),/PRÁTICA INDEPENDENTE/);
     assert.equal(await applied13.locator('#specialArea [data-special-field]').count(),4);
