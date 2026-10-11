@@ -5,23 +5,25 @@ import {UNIT1_READINGS} from '../src/content/reading-unit1.js';
 import {UNIT2_READINGS} from '../src/content/reading-unit2.js';
 import {UNIT3_READINGS} from '../src/content/reading-unit3.js';
 import {UNIT4_TO_6_READINGS} from '../src/content/reading-units4to6.js';
+import {UNIT12_READINGS} from '../src/content/reading-unit12.js';
 
-const units=[UNIT1_READINGS,UNIT2_READINGS,UNIT3_READINGS,UNIT4_TO_6_READINGS];
+const units=[UNIT1_READINGS,UNIT2_READINGS,UNIT3_READINGS,UNIT4_TO_6_READINGS,UNIT12_READINGS];
 const readings=Object.assign({},...units);
 const expected=COURSE_UNITS.flatMap(unit=>unit.ids);
 const ids=units.flatMap(unit=>Object.keys(unit));
 
-test('todas as 17 aulas recebem leitura progressiva, sem duplicação ou omissão',()=>{
+test('todas as 19 aulas recebem leitura progressiva, sem duplicação ou omissão',()=>{
   assert.equal(COURSE_UNITS.length,6);
-  assert.equal(expected.length,17);
-  assert.equal(Object.keys(LESSONS).length,17);
-  assert.equal(ids.length,17);
-  assert.equal(new Set(ids).size,17);
+  assert.equal(expected.length,19);
+  assert.equal(Object.keys(LESSONS).length,19);
+  assert.equal(ids.length,19);
+  assert.equal(new Set(ids).size,19);
   assert.deepEqual(new Set(ids),new Set(expected));
-  assert.deepEqual(Object.keys(UNIT1_READINGS),COURSE_UNITS[0].ids);
+  assert.deepEqual(Object.keys(UNIT1_READINGS),COURSE_UNITS[0].ids.filter(id=>id!=='pressupostos'));
+  assert.deepEqual(Object.keys(UNIT12_READINGS),['pressupostos','categoricos2']);
   assert.deepEqual(Object.keys(UNIT2_READINGS),COURSE_UNITS[1].ids);
   assert.deepEqual(Object.keys(UNIT3_READINGS),COURSE_UNITS[2].ids);
-  assert.deepEqual(Object.keys(UNIT4_TO_6_READINGS),COURSE_UNITS.slice(3).flatMap(unit=>unit.ids));
+  assert.deepEqual(Object.keys(UNIT4_TO_6_READINGS),COURSE_UNITS.slice(3).flatMap(unit=>unit.ids).filter(id=>id!=='categoricos2'));
 });
 
 test('explicações têm objetivos, exemplos desenvolvidos, contraste e síntese',()=>{
@@ -53,7 +55,7 @@ test('autoverificações são formativas e têm alternativa correta com justific
 });
 
 test('aulas e perguntas da unidade I não perdem seus IDs com a expansão',()=>{
-  for(const id of COURSE_UNITS[0].ids){
+  for(const id of Object.keys(UNIT1_READINGS)){
     assert.ok(UNIT1_READINGS[id]);
     assert.ok(readings[id]);
     assert.equal(readings[id],UNIT1_READINGS[id]);
