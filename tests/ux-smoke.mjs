@@ -426,14 +426,14 @@ try{
   }
 
 
-  // Ciclo 10: a primeira unidade precisa ensinar antes de avaliar.
+  // Ciclos 10 e 11: todas as 17 aulas devem ensinar antes de avaliar.
   // A pergunta formativa permite errar, compreender e tentar novamente sem alterar a nota.
   for(const width of [375,1280]){
     const pedagogyContext=await browser.newContext({viewport:{width,height:812}});
     const pedagogy=await pedagogyContext.newPage();
     const errors=[];
     pedagogy.on('pageerror',error=>errors.push(error.message));
-    for(const id of ['fundamentos','operadores','traducao','falacias']){
+    for(const id of ['fundamentos','operadores','traducao','falacias','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','predicados2','metateoria','modais']){
       await pedagogy.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await pedagogy.locator('#courseLesson').isVisible(),true);
       assert.equal(await pedagogy.locator('#courseLesson .reading-section').count(),3);
@@ -446,8 +446,15 @@ try{
       await pedagogy.locator('[data-caction="reading-check"]').click();
       assert.match(await pedagogy.locator('[data-reading-feedback]').innerText(),/Selecione uma alternativa/);
       const lesson=await pedagogy.evaluate(async id=>{
-        const m=await import('./src/content/reading-unit1.js');
-        return m.UNIT1_READINGS[id].check;
+        const unit1=new Set(['fundamentos','operadores','traducao','falacias']);
+        const unit2=new Set(['compostas','demorgan','classificacao','equivalencias','argumentos','arvores']);
+        const unit3=new Set(['silogismos','provas','deducao']);
+        const path=unit1.has(id)?'./src/content/reading-unit1.js'
+          :unit2.has(id)?'./src/content/reading-unit2.js'
+          :unit3.has(id)?'./src/content/reading-unit3.js'
+          :'./src/content/reading-units4to6.js';
+        const module=await import(path);
+        return Object.values(module)[0][id].check;
       },id);
       const wrong=(lesson.correct+1)%lesson.options.length;
       await pedagogy.locator(`input[name="reading-check"][value="${wrong}"]`).check();
