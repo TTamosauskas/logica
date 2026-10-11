@@ -29,7 +29,7 @@ try{
   // A recomendação é útil na página inicial, não deve aparecer de novo dentro do curso.
   assert.equal(await page.locator('#continueLearning').isVisible(),true);
   assert.equal(await page.locator('#courseNext').count(),0);
-  assert.equal(await page.locator('.practice-group').count(),7);
+  assert.equal(await page.locator('.practice-group').count(),8);
   assert.equal(await page.locator('.practice-group').first().getAttribute('open'),'');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
   assert.ok(overflow<=2,'A página inicial excedeu o viewport móvel em '+overflow+'px');
