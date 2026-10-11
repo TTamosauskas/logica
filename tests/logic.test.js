@@ -51,7 +51,7 @@ test('geradores proposicionais preservam respostas matemáticas válidas', () =>
 test('cada unidade aponta para uma aula existente e um módulo', () => {
   const ids = new Set(MODULES.map(x=>x.id));
   const flat = COURSE_UNITS.flatMap(u=>u.ids);
-  assert.equal(COURSE_UNITS.length,6);
+  assert.equal(COURSE_UNITS.length,7);
   assert.equal(new Set(flat).size,flat.length);
   for (const id of flat) {
     assert.ok(ids.has(id),`módulo ausente: ${id}`);
