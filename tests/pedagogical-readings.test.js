@@ -2,40 +2,60 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {COURSE_UNITS,LESSONS} from '../src/content/course.js';
 import {UNIT1_READINGS} from '../src/content/reading-unit1.js';
+import {UNIT2_READINGS} from '../src/content/reading-unit2.js';
+import {UNIT3_READINGS} from '../src/content/reading-unit3.js';
+import {UNIT4_TO_6_READINGS} from '../src/content/reading-units4to6.js';
 
-const expected=['fundamentos','operadores','traducao','falacias'];
+const units=[UNIT1_READINGS,UNIT2_READINGS,UNIT3_READINGS,UNIT4_TO_6_READINGS];
+const readings=Object.assign({},...units);
+const expected=COURSE_UNITS.flatMap(unit=>unit.ids);
+const ids=units.flatMap(unit=>Object.keys(unit));
 
-test('todas as aulas da Unidade I têm explicações progressivas',()=>{
- assert.deepEqual(Object.keys(UNIT1_READINGS),expected);
- assert.deepEqual(COURSE_UNITS[0].ids,expected);
- for(const id of expected){
-   const reading=UNIT1_READINGS[id];
-   assert.ok(reading.objective.length>=90,id+' objetivo insuficiente');
-   assert.ok(reading.sections.length>=3,id+' não tem progressão');
-   const text=reading.sections.flatMap(s=>s.paragraphs).join(' ');
-   assert.ok(text.split(/\s+/).length>=170,id+' leitura continua muito resumida');
-   assert.ok(reading.sections.every(s=>s.heading&&s.paragraphs.length>=2),id+' seções sem desenvolvimento');
-   assert.ok(reading.misconception.length>=100,id+' falta contraste conceitual');
-   assert.ok(reading.summary.length>=110,id+' falta síntese');
-   assert.ok(LESSONS[id].quiz.length>=3,id+' avaliação original não pode desaparecer');
- }
+test('todas as 17 aulas recebem leitura progressiva, sem duplicação ou omissão',()=>{
+  assert.equal(COURSE_UNITS.length,6);
+  assert.equal(expected.length,17);
+  assert.equal(Object.keys(LESSONS).length,17);
+  assert.equal(ids.length,17);
+  assert.equal(new Set(ids).size,17);
+  assert.deepEqual(new Set(ids),new Set(expected));
+  assert.deepEqual(Object.keys(UNIT1_READINGS),COURSE_UNITS[0].ids);
+  assert.deepEqual(Object.keys(UNIT2_READINGS),COURSE_UNITS[1].ids);
+  assert.deepEqual(Object.keys(UNIT3_READINGS),COURSE_UNITS[2].ids);
+  assert.deepEqual(Object.keys(UNIT4_TO_6_READINGS),COURSE_UNITS.slice(3).flatMap(unit=>unit.ids));
 });
-test('autoverificações formativas possuem alternativas e justificativas coerentes',()=>{
- for(const [id,r] of Object.entries(UNIT1_READINGS)){
-   const q=r.check;
-   assert.equal(typeof q.question,'string',id);
-   assert.equal(q.options.length,3,id);
-   assert.ok(Number.isInteger(q.correct)&&q.correct>=0&&q.correct<q.options.length,id);
-   assert.ok(q.why.length>55,id+' resposta sem explicação');
-   assert.equal(new Set(q.options).size,q.options.length,id+' alternativas repetidas');
- }
+
+test('explicações têm objetivos, exemplos desenvolvidos, contraste e síntese',()=>{
+  for(const id of expected){
+    const r=readings[id];
+    assert.ok(r.objective.length>=90,id+': objetivo insuficiente');
+    assert.equal(r.sections.length,3,id+': sequência didática de 3 seções');
+    assert.ok(r.sections.every(s=>s.heading.length>=15&&s.paragraphs.length===2),id+': desenvolvimento incompleto');
+    const prose=r.sections.flatMap(s=>s.paragraphs);
+    assert.ok(prose.every(x=>x.length>=100),id+': parágrafo não desenvolvido');
+    assert.ok(prose.join(' ').split(/\s+/).length>=170,id+': explicação curta demais para a etapa');
+    assert.ok(r.misconception.length>=100,id+': falta explicação de erro comum');
+    assert.ok(r.summary.length>=100,id+': falta síntese do aprendizado');
+    assert.ok(LESSONS[id]?.theory?.length>80,id+': compatibilidade com conteúdo base');
+    assert.ok(LESSONS[id]?.quiz?.length>=3,id+': avaliação original não pode desaparecer');
+  }
 });
-test('demais 13 aulas continuam disponíveis com o conteúdo original',()=>{
- assert.equal(Object.keys(LESSONS).length,17);
- for(const unit of COURSE_UNITS.slice(1)){
-   for(const id of unit.ids){
-     assert.ok(LESSONS[id].theory.length>90,id);
-     assert.equal(UNIT1_READINGS[id],undefined);
-   }
- }
+
+test('autoverificações são formativas e têm alternativa correta com justificativa',()=>{
+  for(const [id,reading] of Object.entries(readings)){
+    const q=reading.check;
+    assert.equal(typeof q.question,'string',id);
+    assert.ok(q.question.length>25,id);
+    assert.equal(q.options.length,3,id);
+    assert.ok(Number.isInteger(q.correct)&&q.correct>=0&&q.correct<q.options.length,id);
+    assert.equal(new Set(q.options).size,q.options.length,id+': alternativas repetidas');
+    assert.ok(q.why.length>=55,id+': feedback pouco explicativo');
+  }
+});
+
+test('aulas e perguntas da unidade I não perdem seus IDs com a expansão',()=>{
+  for(const id of COURSE_UNITS[0].ids){
+    assert.ok(UNIT1_READINGS[id]);
+    assert.ok(readings[id]);
+    assert.equal(readings[id],UNIT1_READINGS[id]);
+  }
 });
