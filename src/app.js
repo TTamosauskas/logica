@@ -16,6 +16,7 @@ import { DEDUCTION_CONTEXTS, DEDUCTION_NAMES, DEDUCTION_LEVELS } from './content
 import { CATEGORICAL_TERMS } from './content/categorical.js';
 import { THEOREM_WORKSHOPS, THEORY_CARDS } from './content/advanced.js';
 import { COURSE_UNITS, LESSONS } from './content/course.js';
+import { UNIT1_READINGS } from './content/reading-unit1.js';
 
 
 (()=>{
@@ -1344,11 +1345,21 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
     $('courseLocation').textContent=context.location;
     $('courseDescription').textContent=context.description;
   }
+  function renderPedagogicalReading(reading){
+    const sections=reading.sections.map((section,index)=>
+      `<section class="reading-section"><h4>${index+1}. ${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>`
+    ).join('');
+    const choices=reading.check.options.map((label,i)=>
+      `<label class="reading-check-option"><input type="radio" name="reading-check" value="${i}"><span>${escapeHTML(label)}</span></label>`
+    ).join('');
+    return `<div class="pedagogical-reading"><p class="reading-objective"><strong>Ao final desta explicação, você será capaz de:</strong> ${escapeHTML(reading.objective)}</p>${sections}<div class="reading-distinction"><strong>Uma confusão comum</strong><p>${escapeHTML(reading.misconception)}</p></div><p class="reading-summary"><strong>Em resumo:</strong> ${escapeHTML(reading.summary)}</p><fieldset class="reading-check" data-reading-check><legend>Confira o essencial</legend><p>Uma pergunta para refletir sobre o conceito. Não vale nota e você pode tentar novamente.</p><strong class="reading-check-question">${escapeHTML(reading.check.question)}</strong><div class="reading-check-options">${choices}</div><button type="button" class="button small" data-caction="reading-check">Conferir resposta</button><p class="reading-check-feedback" data-reading-feedback role="status" aria-live="polite"></p></fieldset></div>`;
+  }
   function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
     const flags=[p.read,p.example,p.guided,p.independent,p.mastered],labels=['1. Compreender','2. Observar','3. Praticar com ajuda','4. Resolver sozinho','5. Aprovar avaliação inicial'];let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><div class="course-lesson-flow">${labels.map((l,i)=>`<span class="${flags[i]?'done':''}">${flags[i]?'✓ ':''}${l}</span>`).join('')}</div><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
-    html+=`<section class="course-lesson-panel"><h3>1. Compreender</h3><p>${escapeHTML(lesson.theory)}</p><div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Aula lida':'Concluí a leitura →'}</button></div></section>`;
-    if(p.read&&THEORY_CARDS[id]){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Teoremas e demonstrações comentadas</h3><p>Abra cada teorema. Identifique suas hipóteses, acompanhe os passos da prova e observe onde o resultado se aplica.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
+    const reading=UNIT1_READINGS[id];
+    html+=`<section class="course-lesson-panel"><h3>1. Compreender</h3>${reading?renderPedagogicalReading(reading):`<p>${escapeHTML(lesson.theory)}</p>`}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
     if(p.read){html+=`<section class="course-lesson-panel"><h3>2. Observar um exemplo resolvido</h3><div class="course-example"><strong>${escapeHTML(lesson.example)}</strong><ol>${lesson.steps.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol></div><div class="course-lesson-actions"><button type="button" class="button ${p.example?'':'primary'}" data-caction="example">${p.example?'✓ Exemplo estudado':'Entendi a resolução →'}</button></div></section>`}
+    if(p.example&&THEORY_CARDS[id]){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
     if(p.example){html+=`<section class="course-lesson-panel"><h3>3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
     if(p.guided){html+=`<section class="course-lesson-panel"><h3>4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
     if(p.independent){html+=`<section class="course-lesson-panel"><h3>5. Aprovar a avaliação inicial</h3><p>Responda às três perguntas de compreensão. Três acertos aprovam a avaliação inicial; o domínio consolidado será registrado após duas revisões espaçadas independentes.</p><div class="course-assessment">${lesson.quiz.slice(0,3).map((q,i)=>`<div class="course-question"><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((option,j)=>`<label class="course-option"><input type="radio" name="courseq-${i}" value="${j}"><span>${escapeHTML(option)}</span></label>`).join('')}</div>`).join('')}</div>${lessonFeedback&&lessonFeedback.id===id?`<div class="course-course-result ${lessonFeedback.score<3?'warn':''}" tabindex="-1" role="status"><strong>${lessonFeedback.score}/3 acertos.</strong> ${lessonFeedback.score===3?'Avaliação inicial aprovada!':'Revise as explicações e faça outra tentativa.'}${lessonFeedback.details.map(x=>`<p>${escapeHTML(x)}</p>`).join('')}</div>`:''}<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="lesson-quiz">Corrigir avaliação</button></div></section>`}
@@ -1410,6 +1421,17 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
       const previous=savedDrafts[courseActive];
       if(previous?.courseAttempt&&hasPendingWork(previous.exercise)&&!confirm('Esta aula possui uma tentativa guiada salva. Iniciar a prática livre substituirá essa tentativa. Deseja continuar?'))return;
       courseAttempt=null;openMode(courseActive,true,!!previous?.courseAttempt);return
+    }
+    if(action==='reading-check'){
+      const reading=UNIT1_READINGS[courseActive],group=$('courseLesson').querySelector('[data-reading-check]');
+      if(!reading||!group)return;
+      const selected=group.querySelector('input[name="reading-check"]:checked');
+      const feedback=group.querySelector('[data-reading-feedback]');
+      if(!selected){feedback.textContent='Selecione uma alternativa para conferir sua compreensão.';return}
+      const correct=Number(selected.value)===reading.check.correct;
+      feedback.textContent=(correct?'Isso mesmo! ':'Ainda não. ')+reading.check.why+(correct?' Quando estiver pronto, continue para o exemplo resolvido.':' Releia a explicação e tente novamente.');
+      feedback.dataset.result=correct?'correct':'retry';
+      return;
     }
     if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="example"]')?.focus({preventScroll:true});return}
     if(action==='example'){courseProgress(courseActive).example=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="guided"]')?.focus({preventScroll:true});return}
