@@ -17,6 +17,9 @@ import { CATEGORICAL_TERMS } from './content/categorical.js';
 import { THEOREM_WORKSHOPS, THEORY_CARDS } from './content/advanced.js';
 import { COURSE_UNITS, LESSONS } from './content/course.js';
 import { UNIT1_READINGS } from './content/reading-unit1.js';
+import { UNIT2_READINGS } from './content/reading-unit2.js';
+import { UNIT3_READINGS } from './content/reading-unit3.js';
+import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
 
 
 (()=>{
@@ -1345,6 +1348,7 @@ import { UNIT1_READINGS } from './content/reading-unit1.js';
     $('courseLocation').textContent=context.location;
     $('courseDescription').textContent=context.description;
   }
+  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS};
   function renderPedagogicalReading(reading){
     const sections=reading.sections.map(section=>
       `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>`
@@ -1356,7 +1360,7 @@ import { UNIT1_READINGS } from './content/reading-unit1.js';
   }
   function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
     const flags=[p.read,p.example,p.guided,p.independent,p.mastered],labels=['1. Compreender','2. Observar','3. Praticar com ajuda','4. Resolver sozinho','5. Aprovar avaliação inicial'];let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><div class="course-lesson-flow">${labels.map((l,i)=>`<span class="${flags[i]?'done':''}">${flags[i]?'✓ ':''}${l}</span>`).join('')}</div><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
-    const reading=UNIT1_READINGS[id];
+    const reading=COURSE_READINGS[id];
     html+=`<section class="course-lesson-panel"><h3>1. Compreender</h3>${reading?renderPedagogicalReading(reading):`<p>${escapeHTML(lesson.theory)}</p>`}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
     if(p.read){html+=`<section class="course-lesson-panel"><h3>2. Observar um exemplo resolvido</h3><div class="course-example"><strong>${escapeHTML(lesson.example)}</strong><ol>${lesson.steps.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol></div><div class="course-lesson-actions"><button type="button" class="button ${p.example?'':'primary'}" data-caction="example">${p.example?'✓ Exemplo estudado':'Entendi a resolução →'}</button></div></section>`}
     if(p.example&&THEORY_CARDS[id]){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
@@ -1423,7 +1427,7 @@ import { UNIT1_READINGS } from './content/reading-unit1.js';
       courseAttempt=null;openMode(courseActive,true,!!previous?.courseAttempt);return
     }
     if(action==='reading-check'){
-      const reading=UNIT1_READINGS[courseActive],group=$('courseLesson').querySelector('[data-reading-check]');
+      const reading=COURSE_READINGS[courseActive],group=$('courseLesson').querySelector('[data-reading-check]');
       if(!reading||!group)return;
       const selected=group.querySelector('input[name="reading-check"]:checked');
       const feedback=group.querySelector('[data-reading-feedback]');
