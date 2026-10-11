@@ -1,0 +1,87 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {COURSE_UNITS,LESSONS} from '../src/content/course.js';
+import {MODULES} from '../src/content/modules.js';
+import {UNIT12_READINGS} from '../src/content/reading-unit12.js';
+import {
+  CATEGORICAL_CASES,CATEGORICAL_CONTEXTS,ASSUMPTION_CASES,
+  categoricalValue,categoricalCounterexample,categoricalCaseValidity,
+  buildCategoricalQuestions,buildAssumptionQuestions
+} from '../src/core/argument-lab.js';
+import {getNextLearningStep} from '../src/core/learning-path.js';
+import {learningOverview} from '../src/core/learning-feedback.js';
+
+test('duas aulas novas mantêm os IDs e elevam o curso a 19 temas em seis unidades',()=>{
+  const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
+  assert.equal(ids.length,19);
+  assert.equal(new Set(ids).size,19);
+  assert.deepEqual(COURSE_UNITS[0].ids.slice(-2),['falacias','pressupostos']);
+  assert.deepEqual(COURSE_UNITS[3].ids,['categoricos','categoricos2','predicados2']);
+  for(const id of ['pressupostos','categoricos2']){
+    assert.ok(LESSONS[id]?.quiz?.length>=4);
+    assert.ok(MODULES.some(m=>m.id===id));
+    assert.ok(UNIT12_READINGS[id]?.sections?.length===3);
+    assert.ok(UNIT12_READINGS[id].check.why.length>60);
+  }
+});
+test('progresso aprovado das 17 aulas antigas é preservado; só faltam os dois temas novos',()=>{
+  const previousIds=COURSE_UNITS.flatMap(u=>u.ids).filter(id=>!['pressupostos','categoricos2'].includes(id));
+  const previous=Object.fromEntries(previousIds.map(id=>[id,{mastered:true}]));
+  const overview=learningOverview(COURSE_UNITS,previous);
+  assert.equal(overview.total,19);
+  assert.equal(overview.approved,17);
+  assert.equal(overview.consolidated,0);
+  assert.equal(getNextLearningStep(COURSE_UNITS,previous).id,'pressupostos');
+});
+test('os 10 silogismos têm validade demonstrável por exame exaustivo de modelos',()=>{
+  assert.ok(CATEGORICAL_CASES.length>=8);
+  let validCount=0,invalidCount=0;
+  for(const item of CATEGORICAL_CASES){
+    const valid=categoricalCaseValidity(item.forms);
+    valid?validCount++:invalidCount++;
+    const masks=Array.from({length:255},(_,i)=>i+1);
+    const hasCounter=masks.some(mask=>categoricalCounterexample(item.forms,mask));
+    assert.equal(valid,!hasCounter,item.id);
+    assert.ok(item.explanation.length>=95,item.id);
+    for(const terms of CATEGORICAL_CONTEXTS){
+      const qs=buildCategoricalQuestions(item,terms);
+      assert.equal(qs.length,3,item.id);
+      assert.ok(qs.every(q=>q.correct>=0&&q.correct<q.options.length),item.id);
+      assert.equal(qs[0].correct,valid?0:1,item.id);
+      if(!valid){
+        const evidence=qs[1];
+        assert.equal(evidence.options.length,3);
+        assert.equal(new Set(evidence.options).size,3);
+        assert.equal(evidence.modelMasks.length,3);
+        assert.deepEqual(evidence.modelMasks.map(mask=>categoricalCounterexample(item.forms,mask)),[true,false,false],item.id);
+        assert.equal(evidence.correct,0);
+      }
+    }
+  }
+  assert.ok(validCount>=4);
+  assert.ok(invalidCount>=4);
+});
+test('afirmações universais não criam existência e negações respeitam A E I O',()=>{
+  const all={kind:'all',a:'S',b:'P'};
+  const some={kind:'some',a:'S',b:'P'};
+  const someNot={kind:'somenot',a:'S',b:'P'};
+  // Modelo não vazio: alguém fora de S e P (perfil 000).
+  assert.equal(categoricalValue(all,1),true);
+  assert.equal(categoricalValue(some,1),false);
+  assert.equal(categoricalValue(someNot,1),false);
+  const models=Array.from({length:255},(_,i)=>i+1);
+  for(const mask of models)assert.equal(!categoricalValue(all,mask),categoricalValue(someNot,mask));
+  const none={kind:'none',a:'S',b:'P'};
+  for(const mask of models)assert.equal(!categoricalValue(none,mask),categoricalValue(some,mask));
+});
+test('cenários de pressupostos pedem hipótese, alternativa e conclusão cautelosa',()=>{
+  assert.ok(ASSUMPTION_CASES.length>=5);
+  for(const item of ASSUMPTION_CASES){
+    const qs=buildAssumptionQuestions(item);
+    assert.equal(qs.length,3);
+    assert.deepEqual(qs.map(q=>q.correct),[0,0,1]);
+    assert.ok(qs.every(q=>q.options.length===3&&q.why.length>60));
+    assert.ok(qs[1].options[0].includes(item.alternative));
+    assert.ok(qs[2].options[1].includes(item.limit));
+  }
+});
