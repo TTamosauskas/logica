@@ -255,7 +255,7 @@ try{
     }));
   });
   await progressPage.reload({waitUntil:'networkidle'});
-  assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 19 avaliações aprovadas · 0 consolidados/);
+  assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 23 avaliações aprovadas · 0 consolidados/);
   assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO DISPONÍVEL/);
   await progressPage.locator('#continueButton').click();
   assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
@@ -300,18 +300,18 @@ try{
   indicatorPage.on('pageerror',error=>indicatorErrors.push(error.message));
   await indicatorPage.goto(root,{waitUntil:'networkidle'});
   await indicatorPage.evaluate(()=>{
-    const ids=['fundamentos','operadores','traducao','falacias','pressupostos','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','categoricos2','predicados2','metateoria','modais'];
+    const ids=['fundamentos','operadores','traducao','falacias','pressupostos','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','categoricos2','predicados2','inducao','abducao','probabilidade','causalidade','metateoria','modais'];
     const dueAt=Date.now()+86400000;
     const lessons=Object.fromEntries(ids.map(id=>[id,{read:true,example:true,guided:true,independent:true,mastered:true,best:1,review:{completed:0,dueAt,consolidated:false}}]));
     localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({lessons,final:{}}));
   });
   await indicatorPage.reload({waitUntil:'networkidle'});
-  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'19');
+  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'23');
   assert.equal(await indicatorPage.locator('#courseHomeConsolidatedBar').getAttribute('aria-valuenow'),'0');
   assert.match(await indicatorPage.locator('#continueTitle').innerText(),/Consolidação em andamento/);
   assert.match(await indicatorPage.locator('#continueDescription').innerText(),/Próxima revisão/);
   await indicatorPage.locator('#continueButton').click();
-  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),19);
+  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),23);
   assert.match(await indicatorPage.locator('.course-review-schedule-item').first().innerText(),/\d\d:\d\d/);
   await indicatorPage.locator('#courseMap [data-caction="exam-open"]').click();
   const examDraft=await indicatorPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
@@ -426,14 +426,14 @@ try{
   }
 
 
-  // Ciclos 10–12: todas as 19 aulas devem ensinar antes de avaliar.
+  // Ciclos 10–13: todas as 23 aulas devem ensinar antes de avaliar.
   // A pergunta formativa permite errar, compreender e tentar novamente sem alterar a nota.
   for(const width of [375,1280]){
     const pedagogyContext=await browser.newContext({viewport:{width,height:812}});
     const pedagogy=await pedagogyContext.newPage();
     const errors=[];
     pedagogy.on('pageerror',error=>errors.push(error.message));
-    for(const id of ['fundamentos','operadores','traducao','falacias','pressupostos','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','categoricos2','predicados2','metateoria','modais']){
+    for(const id of ['fundamentos','operadores','traducao','falacias','pressupostos','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','categoricos2','predicados2','inducao','abducao','probabilidade','causalidade','metateoria','modais']){
       await pedagogy.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await pedagogy.locator('#courseLesson').isVisible(),true);
       assert.equal(await pedagogy.locator('#courseLesson .reading-section').count(),3);
@@ -449,7 +449,8 @@ try{
         const unit1=new Set(['fundamentos','operadores','traducao','falacias']);
         const unit2=new Set(['compostas','demorgan','classificacao','equivalencias','argumentos','arvores']);
         const unit3=new Set(['silogismos','provas','deducao']);
-        const path=['pressupostos','categoricos2'].includes(id)?'./src/content/reading-unit12.js'
+        const path=['inducao','abducao','probabilidade','causalidade'].includes(id)?'./src/content/reading-unit13.js'
+          :['pressupostos','categoricos2'].includes(id)?'./src/content/reading-unit12.js'
           :unit1.has(id)?'./src/content/reading-unit1.js'
           :unit2.has(id)?'./src/content/reading-unit2.js'
           :unit3.has(id)?'./src/content/reading-unit3.js'
@@ -485,9 +486,9 @@ try{
     const errors12=[];
     applied.on('pageerror',error=>errors12.push(error.message));
     await applied.goto(root,{waitUntil:'networkidle'});
-    assert.match(await applied.locator('#courseHomeApprovedLabel').innerText(),/0 de 19/);
+    assert.match(await applied.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
     await applied.goto(root+'#curso',{waitUntil:'networkidle'});
-    assert.equal(await applied.locator('#courseMap .course-unit-item').count(),19);
+    assert.equal(await applied.locator('#courseMap .course-unit-item').count(),23);
     for(const id of ['pressupostos','categoricos2']){
       await applied.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await applied.locator('#courseLesson .reading-section').count(),3);
@@ -556,6 +557,66 @@ try{
     assert.equal(new Set(covered).size,12);
     assert.deepEqual(errors12,[]);
     await context12.close();
+  }
+
+  // Ciclo 13: prática guiada e autônoma das quatro novas competências e cobertura da prova.
+  for(const width of [375,1280]){
+    const newContext=await browser.newContext({viewport:{width,height:812}});
+    const applied13=await newContext.newPage(),pageErrors=[];
+    applied13.on('pageerror',err=>pageErrors.push(err.message));
+    await applied13.goto(root,{waitUntil:'networkidle'});
+    assert.match(await applied13.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
+    await applied13.goto(root+'#curso',{waitUntil:'networkidle'});
+    assert.equal(await applied13.locator('#courseMap .course-unit').count()>=7,true);
+    for(const id of ['inducao','abducao','probabilidade','causalidade']){
+      await applied13.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
+      assert.equal(await applied13.locator('#courseLesson').isVisible(),true);
+      assert.equal(await applied13.locator('.reading-section').count(),3);
+      assert.match(await applied13.locator('#courseLocation').innerText(),/AULA/);
+      await applied13.locator('[data-caction="read"]').click();
+      assert.equal(await applied13.locator('#courseLesson [data-caction="example"]').count(),1);
+      await applied13.locator('[data-caction="example"]').click();
+      await applied13.locator('[data-caction="guided"]').click();
+      assert.match(await applied13.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
+      assert.equal(await applied13.locator('#specialArea [data-special-field]').count(),4);
+      if(id==='probabilidade'){
+        assert.match(await applied13.locator('#specialArea').innerText(),/positivos/);
+        assert.match(await applied13.locator('#specialArea').innerText(),/proporção/);
+      }
+      for(let i=0;i<4;i++)await applied13.locator(`#specialArea [data-special-field="${i}"]`).selectOption({index:1});
+      await applied13.locator('#checkButton').click();
+      assert.equal(await applied13.locator('#specialArea .course-question-explanation').count(),4);
+      assert.equal(await applied13.locator('#feedbackArea').isVisible(),true);
+      await applied13.locator('#backButton').click();
+      assert.equal(await applied13.locator('#courseLesson').isVisible(),true);
+    }
+    // Uma atividade independente também é acessível a quem já concluiu a prática guiada.
+    await applied13.evaluate(()=>{
+      const state=JSON.parse(localStorage.getItem('logiclab_curso_formal_v2'));
+      state.lessons.probabilidade={read:true,example:true,guided:true,independent:false,mastered:false,best:0};
+      localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify(state));
+    });
+    await applied13.goto(root+'#aula-probabilidade',{waitUntil:'networkidle'});
+    await applied13.locator('[data-caction="independent"]').click();
+    assert.match(await applied13.locator('#workLocation').innerText(),/PRÁTICA INDEPENDENTE/);
+    assert.equal(await applied13.locator('#specialArea [data-special-field]').count(),4);
+    await applied13.locator('#backButton').click();
+    // Aluno com as 19 aulas anteriores aprovadas mantém o histórico.
+    await applied13.evaluate(()=>{
+      const old=['fundamentos','operadores','traducao','falacias','pressupostos','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','categoricos2','predicados2','metateoria','modais'];
+      localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({lessons:Object.fromEntries(old.map(id=>[id,{read:true,example:true,guided:true,independent:true,mastered:true,best:1}])),final:{}}));
+    });
+    await applied13.goto(root,{waitUntil:'networkidle'});
+    await applied13.reload({waitUntil:'networkidle'});
+    assert.match(await applied13.locator('#courseHomeSummary').innerText(),/19 de 23 avaliações aprovadas/);
+    await applied13.goto(root+'#avaliacao-final',{waitUntil:'networkidle'});
+    const exam=await applied13.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
+    assert.equal(exam.questions.length,12);
+    const represented=new Set(exam.questions.map(q=>q.id));
+    for(const id of ['pressupostos','categoricos2','inducao','abducao','probabilidade','causalidade'])assert.ok(represented.has(id),'Tema ausente da prova: '+id);
+    assert.equal(represented.size,12);
+    assert.deepEqual(pageErrors,[]);
+    await newContext.close();
   }
 
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
