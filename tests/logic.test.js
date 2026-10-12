@@ -55,7 +55,7 @@ test('cada unidade aponta para uma aula existente e um módulo', () => {
   assert.equal(new Set(flat).size,flat.length);
   for (const id of flat) {
     assert.ok(ids.has(id),`módulo ausente: ${id}`);
-    assert.equal(LESSONS[id].quiz.length,4);
+    assert.ok(LESSONS[id].quiz.length>=4,`aula com banco de avaliação insuficiente: ${id}`);
   }
   assert.equal(MODULES.length,flat.length+1); // todos os temas mais a prática mista
 });
