@@ -45,7 +45,7 @@ export function makePredicateQuestions(description,identity,relation,random=Math
  const identityFact=identity.same?'Os nomes '+identity.a+' e '+identity.b+' indicam a mesma pessoa.':'Os nomes '+identity.a+' e '+identity.b+' indicam pessoas diferentes.';
  const relFact=relation.relations.map(([i,j])=>relation.people[i]+' ajuda '+relation.people[j]).join('; ')||'ninguém ajuda ninguém';
  return [
-  {question:intro+'Quantas pessoas exercem esse papel?',options:[String(d.count),String(description.acted.length),'Não é possível contar as pessoas indicadas.'],correct:0,why:'Conte quem satisfaz a descrição, não quem realizou a ação. Há '+d.count+' integrante(s) no papel indicado.'},
+  {question:intro+'Quantas pessoas exercem esse papel?',options:[d.count===0?'Ninguém exerce esse papel.':d.count===1?'Uma única pessoa exerce esse papel.':'Há '+d.count+' pessoas diferentes exercendo esse papel.',d.count===0?'Duas pessoas exercem esse papel.':'Ninguém exerce esse papel.',d.count===1?'Mais de uma pessoa exerce esse papel.':'Uma única pessoa exerce esse papel.'],correct:0,why:'Conte quem satisfaz a descrição, não quem realizou a ação. Há '+d.count+' integrante(s) no papel indicado.'},
   {question:'Dado o mesmo cenário, vale “Existe exatamente uma pessoa que é '+description.role+'”?',options:[d.unique?'Sim: há exatamente uma.':'Não: não há exatamente uma.','Toda expressão singular garante automaticamente um indivíduo único.',d.unique?'Não: é necessário que todos tenham o papel.':'Sim: basta existir pelo menos uma pessoa.'],correct:0,why:'Existência e unicidade são condições distintas: o papel contém '+d.count+' pessoas. “Exatamente uma” exige uma e somente uma.'},
   {question:intro+'Na análise de Russell (existência, unicidade e predicação), '+claim+' é verdadeira?',options:[d.statement?'Sim, as três condições são satisfeitas.':'Não: pelo menos uma das três condições falha.','Sim, basta existir alguém que realize a ação.','Não se pode avaliar nenhuma descrição definida por quantificadores.'],correct:0,why:'A análise conjuntiva requer exatamente um titular e que esse titular realize a ação. Temos '+d.count+' titulares e a afirmação é '+(d.statement?'verdadeira.':'falsa.')},
   {question:identityFact+' Se '+identity.a+' '+identity.property+', podemos concluir que '+identity.b+' '+identity.property+'?',options:[identity.same?'Sim, pela substituição de idênticos.':'Não necessariamente: compartilhar propriedades não demonstra identidade.','Sim, quaisquer duas pessoas possuem sempre as mesmas propriedades.','Não: identidade nunca autoriza substituir nomes.'],correct:0,why:identity.same?'Ambos os nomes designam o mesmo indivíduo; a verdade do predicado se preserva em contextos extensionais.':'Os nomes designam indivíduos diferentes. Mesmo que compartilhem uma propriedade, a conclusão sobre um não decorre apenas de informações sobre outro.'},
@@ -66,9 +66,10 @@ export const META_CASES=[
  {id:'prova',question:'Um método enumera provas possíveis e termina quando encontra uma prova de φ. Qual é o limite dessa estratégia?',options:['Pode encontrar uma prova se houver, mas não promete terminar quando não houver prova.','Decide automaticamente qualquer pergunta de validade com resposta negativa garantida.','Toda tentativa de enumerar provas é logicamente impossível.'],correct:0,why:'Encontrar uma testemunha de demonstração é diferente de ter um procedimento que termina sempre com sim ou não; prova buscada e decisão geral são objetivos distintos.'}
 ];
 export function makeMetatheoryQuestions(random=Math.random){
- const items=META_CASES.slice();
+ // Núcleo garantido em cada tentativa; quinto item alterna análise de programas concretos.
+ const items=[...META_CASES.slice(0,4),META_CASES[4+Math.floor(random()*3)]];
  for(let i=items.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[items[i],items[j]]=[items[j],items[i]]}
- return items.slice(0,5).map(q=>shuffled(q,random));
+ return items.map(q=>shuffled(q,random));
 }
 export const REWRITE_CHAINS=[
  {id:'implicacao',original:'p → q',middle:'¬p ∨ q',final:'¬(p ∧ ¬q)',rule1:'Eliminação da condicional',rule2:'Lei de De Morgan e dupla negação',wrong:'¬p ∧ q'},
