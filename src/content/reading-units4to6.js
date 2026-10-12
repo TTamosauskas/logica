@@ -53,7 +53,7 @@ export const UNIT4_TO_6_READINGS={
       ]},
       {heading:'Um procedimento que procura não é necessariamente um decisor',paragraphs:[
         'Um algoritmo de decisão deve terminar em todas as entradas com resposta correta. Um método de busca por provas pode encontrar uma demonstração quando ela existe, mas continuar procurando indefinidamente quando não há prova. Encontrar evidência positiva e decidir todos os casos são tarefas diferentes.',
-        'Turing mostrou que não existe algoritmo geral capaz de decidir, para qualquer programa e entrada, se a execução terminará. Isso não impede demonstrar a parada de um programa simples que repete três vezes, nem demonstrar que um laço sem saída não termina. Evite transformar a impossibilidade de um método universal em incapacidade de analisar casos concretos.'
+        'Turing demonstrou a indecidibilidade do problema geral da parada: não existe algoritmo geral capaz de decidir, para qualquer programa e entrada, se a execução terminará. Isso não impede demonstrar a parada de um programa simples que repete três vezes, nem demonstrar que um laço sem saída não termina. Evite transformar a impossibilidade de um método universal em incapacidade de analisar casos concretos.'
       ]}
     ],
     misconception:'“Provável” não significa “demonstrável”: correção liga ⊢ a ⊨. A completude da lógica de primeira ordem não torna toda teoria aritmética completa, e a indecidibilidade geral da parada não impede resolver casos particulares.',
