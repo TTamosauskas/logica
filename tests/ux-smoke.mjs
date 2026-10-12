@@ -641,20 +641,43 @@ try{
       assert.equal(await app14.locator('#specialArea .course-question-explanation').count(),5);
       await app14.locator('#backButton').click();
       assert.equal(await app14.locator('#courseLesson').isVisible(),true);
-      // Prepara um aluno que concluiu a etapa autônoma; a avaliação não deve dar aprovação sem três acertos.
+      // Aluno concluiu prática autônoma; nova rubrica mede conceito e aplicação.
       await app14.evaluate(id=>{
         const k='logiclab_curso_formal_v2',s=JSON.parse(localStorage.getItem(k));
         s.lessons[id]={read:true,example:true,guided:true,independent:true,mastered:false,best:0};
         localStorage.setItem(k,JSON.stringify(s));
       },id);
       await app14.reload({waitUntil:'networkidle'});
-      const quiz=await app14.evaluate(async id=>(await import('./src/content/course.js')).LESSONS[id].quiz.slice(0,3),id);
-      assert.equal(await app14.locator('#courseLesson input[name^="courseq-"]').count(),9);
-      for(let i=0;i<3;i++)await app14.locator(`input[name="courseq-${i}"][value="${quiz[i].correct}"]`).check();
+      let assessment=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id].assessmentV2.draft.questions,id);
+      assert.equal(assessment.length,5);
+      assert.equal(assessment.filter(q=>q.dimension==='concept').length,2);
+      assert.equal(await app14.locator('#courseLesson input[name^="courseq-"]').count(),15);
+      // Escolhas já realizadas devem sobreviver ao recarregamento.
+      await app14.locator('input[name="courseq-0"][value="'+assessment[0].correct+'"]').check();
+      await app14.reload({waitUntil:'networkidle'});
+      assert.equal(await app14.locator('input[name="courseq-0"]:checked').inputValue(),String(assessment[0].correct));
+      // Um erro conceitual reprova mesmo que o aluno consiga 4/5 no total.
+      const wrong=assessment.findIndex(q=>q.dimension==='concept');
+      for(let i=0;i<5;i++){
+        const correct=assessment[i].correct;
+        const value=i===wrong?(correct+1)%assessment[i].options.length:correct;
+        await app14.locator('input[name="courseq-'+i+'"][value="'+value+'"]').check();
+      }
       await app14.locator('[data-caction="lesson-quiz"]').click();
-      assert.match(await app14.locator('.course-course-result').innerText(),/3\/3 acertos/);
+      assert.match(await app14.locator('.course-course-result').innerText(),/4\/5 no total · 1\/2 no conceito central/);
+      const rejected=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id],id);
+      assert.equal(rejected.mastered,false);
+      assert.equal(rejected.assessmentV2.history.length,1);
+      // Nova rodada, acerto geral e acerto conceitual.
+      assessment=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id].assessmentV2.draft.questions,id);
+      for(let i=0;i<5;i++)await app14.locator('input[name="courseq-'+i+'"][value="'+assessment[i].correct+'"]').check();
+      await app14.locator('[data-caction="lesson-quiz"]').click();
+      assert.match(await app14.locator('.course-course-result').innerText(),/5\/5 no total · 2\/2 no conceito central/);
       assert.match(await app14.locator('#courseLesson').innerText(),/6. Consolidar com revisões espaçadas/);
-    }
+      const approved=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id],id);
+      assert.equal(approved.mastered,true);
+      assert.equal(approved.assessmentV2.history.length,2);
+      }
     await app14.goto(root+'#aula-equivalencias',{waitUntil:'networkidle'});
     await app14.evaluate(()=>{
       const k='logiclab_curso_formal_v2',s=JSON.parse(localStorage.getItem(k));
