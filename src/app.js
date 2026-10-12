@@ -17,6 +17,11 @@ import { CATEGORICAL_TERMS } from './content/categorical.js';
 import { THEOREM_WORKSHOPS, THEORY_CARDS } from './content/advanced.js';
 import { COURSE_UNITS, LESSONS } from './content/course.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
+import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
+import { UNIT2_ASSESSMENTS } from './content/assessment-unit2.js';
+import { UNIT3_ASSESSMENTS } from './content/assessment-unit3.js';
+import { UNIT4_ASSESSMENTS } from './content/assessment-unit4.js';
+import { UNIT5_TO_7_ASSESSMENTS } from './content/assessment-unit5to7.js';
 import { ASSESSMENT_VERSION, prepareBank, composeAssessment, gradeAssessment } from './core/assessment.js';
 import { UNIT1_READINGS } from './content/reading-unit1.js';
 import { UNIT2_READINGS } from './content/reading-unit2.js';
@@ -1412,13 +1417,14 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('courseDescription').textContent=context.description;
   }
   const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS};
+  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS};
   function assessmentForLesson(id){
     const p=courseProgress(id);
     p.assessmentV2=p.assessmentV2||{version:ASSESSMENT_VERSION,history:[]};
     const a=p.assessmentV2;
     if(!Array.isArray(a.history))a.history=[];
     if(!a.draft||!Array.isArray(a.draft.questions)||a.draft.questions.length!==5){
-      const bank=prepareBank(id,LESSONS[id],COURSE_READINGS[id],PILOT_ASSESSMENTS[id]||[]);
+      const bank=prepareBank(id,LESSONS[id],COURSE_READINGS[id],EXTENDED_ASSESSMENTS[id]||[]);
       a.draft={questions:composeAssessment(bank,a.history),startedAt:Date.now(),answers:{}};
       saveCourseState();
     }
