@@ -1,84 +1,51 @@
-# LogicLab — versão estática modular
+# LogicLab — laboratório de raciocínio rigoroso
 
-O LogicLab é uma aplicação educacional de lógica formal organizada como site estático. A interface, os exercícios, as aulas e o progresso local permanecem no navegador. A aplicação utiliza JavaScript moderno (`type="module"`), CSS nativo e HTML sem dependências externas, compiladores ou servidor de aplicação.
+Aplicação educacional estática em HTML, CSS e JavaScript ES Modules, sem backend, dependências externas nem telemetria. O progresso é armazenado localmente no navegador e pode ser exportado e importado.
+
+## Currículo e atividades
+
+O curso guiado contém **23 aulas, organizadas em sete unidades**: (I) linguagem, proposições e argumentos; (II) semântica proposicional; (III) inferência e demonstração; (IV) lógica de primeira ordem; (V) evidência e incerteza; (VI) fundamentos teóricos; e (VII) outras lógicas. Há também treino livre e misto.
+
+Cada aula articula leitura progressiva, exemplo resolvido, prática com ajuda, resolução independente, avaliação inicial e duas revisões espaçadas. A avaliação de compreensão V2 contém cinco questões: duas conceituais e três de aplicação. O aluno precisa acertar **4/5 no total e 2/2 nas questões conceituais** para obter aprovação. Questões e alternativas variam por tentativa; o resultado é registrado separadamente para cada dimensão.
+
+**Todos os 23 temas possuem pelo menos 12 itens de avaliação**, totalizando **277 questões** (12 por aula, com 13 em metateoria). Quatro temas — tradução, validade de argumentos, probabilidade e causalidade — iniciaram a ampliação editorial, posteriormente estendida às demais 19 aulas. As questões de autoverificação da leitura permanecem exclusivamente formativas e não são reutilizadas na avaliação inicial.
+
+Leia [Pedagogia](docs/PEDAGOGY.md), [Avaliação](docs/ASSESSMENT.md) e [Bancos de questões](docs/QUESTION_BANKS.md) para rubricas, limitações e critérios editoriais.
 
 ## Execução local
 
-A partir da pasta que contém `index.html`, execute:
+A partir da raiz, execute:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Abra `http://localhost:8000/` no navegador. O servidor local oferece os arquivos diretamente. Para hospedagem, publique a pasta inteira em um serviço de sites estáticos.
-
-Os módulos ES são carregados via HTTP/HTTPS. Abrir `index.html` usando `file://` pode produzir restrições de CORS dependendo do navegador. Para uso totalmente offline e instalável, o próximo aprimoramento recomendado é incluir um service worker com cache versionado.
-
-## Organização dos arquivos
-
-```text
-logiclab-modular/
-├── index.html
-├── styles/
-│   ├── base.css
-│   ├── translation-deduction.css
-│   ├── venn.css
-│   ├── categorical-models.css
-│   └── learning.css
-├── src/
-│   ├── app.js
-│   ├── core/
-│   │   ├── logic.js
-│   │   ├── parser.js
-│   │   └── html.js
-│   ├── content/
-│   │   ├── modules.js
-│   │   ├── translation.js
-│   │   ├── deduction.js
-│   │   ├── categorical.js
-│   │   ├── advanced.js
-│   │   └── course.js
-│   └── modes/
-│       └── propositional.js
-├── tests/
-│   └── logic.test.js
-├── package.json
-├── ARCHITECTURE.md
-└── README.md
-```
-
-`index.html` contém a estrutura semântica das três telas. `styles/` preserva a ordem da cascata original. `src/core/` concentra operações matemáticas e o parser de fórmulas. `src/content/` contém catálogos e materiais didáticos. `src/modes/propositional.js` contém os geradores sem dependência do DOM. `src/app.js` centraliza temporariamente a navegação, os demais modos interativos, os eventos e a persistência do usuário.
+Abra `http://localhost:8000/`. É necessário usar HTTP/HTTPS para carregar corretamente os módulos ES; abrir diretamente via `file://` pode ser bloqueado pelo navegador.
 
 ## Testes
 
-Execute:
-
 ```bash
+npm test
+# ou
 node --test tests/*.test.js
 ```
 
-Os testes unitários verificam: número de linhas de tabelas-verdade, equivalências, contraexemplos, parsing com conectivos Unicode e palavras em português, geração repetida de exercícios proposicionais, integridade dos 18 módulos e das seis unidades, e construção dos modelos de tradução.
+A suíte automatizada cobre núcleo lógico, progresso, material pedagógico e mecanismo de avaliação. Há também testes de navegação e UX em `tests/ux-smoke.mjs` e um workflow de GitHub Actions para testes e GitHub Pages.
 
-Um teste funcional adicional durante a migração carregou os módulos ES no Chromium e percorreu todos os 18 modos, incluindo o botão de nova rodada, o curso guiado e a troca de tema. Uma suíte automatizada de testes ponta a ponta em CI é recomendada antes da publicação definitiva.
+## Estrutura principal
 
-## Persistência e privacidade
+- `index.html`, `styles/`: interface e CSS.
+- `src/app.js`: navegação, apresentação, exercícios e orquestração do curso.
+- `src/core/`: lógica, parser, avaliação, revisões, persistência e mecanismos de exercícios.
+- `src/content/`: material didático, leituras, bancos e unidades.
+- `src/modes/`: atividades proposicionais.
+- `tests/`: verificações unitárias e funcionais.
+- `ARCHITECTURE.md`: decisões e limites arquiteturais.
 
-O progresso permanece no `localStorage`. As chaves existentes foram preservadas para continuidade dos dados já salvos na mesma origem (domínio, protocolo e porta). Ao mudar de domínio, o navegador mantém os dados vinculados ao domínio antigo. Uma futura opção de exportação/importação de progresso pode facilitar a migração para uma origem diferente.
+## Dados e compatibilidade
 
-O projeto continua sem dependências externas, telemetria e backend.
+O progresso fica no `localStorage` do domínio usado, sem envio de respostas. A avaliação V2 usa campos novos e **preserva as aprovações, revisões e pontuações da versão anterior**. O rascunho retém as questões sorteadas e respostas selecionadas, permitindo continuidade após recarregar a página. A funcionalidade existente permite exportar/importar dados.
 
 ## Publicação
 
-Em GitHub Pages, Cloudflare Pages ou Netlify, configure a raiz publicada na pasta que contém o `index.html`. Os caminhos relativos de CSS e JavaScript permitem publicação também em subpastas de repositórios. A navegação por fragmentos de URL (`#curso`, `#aula-fundamentos`, etc.) permanece compatível com hospedagem estática.
-
-## Escopo da modularização
-
-Esta entrega é a primeira etapa de baixo risco: arquivos separados, módulo lógico puro, bancos didáticos apartados, testes básicos, ajuste no tokenizador para a expressão `não` e tratamento seguro de fragmentos de URL malformados. A decomposição do controlador `src/app.js` em controladores e views menores é recomendada após a validação funcional completa. Consulte `ARCHITECTURE.md`.
-
-### Ativação inicial no GitHub Pages
-
-Para este repositório, abra [Settings → Pages](https://github.com/TTamosauskas/logica/settings/pages) e selecione **GitHub Actions** em **Build and deployment → Source**. Esta configuração inicial requer a permissão administrativa de Pages do proprietário do repositório.
-
-Depois, abra [Actions](https://github.com/TTamosauskas/logica/actions/workflows/pages.yml) e execute novamente o workflow **LogicLab - testes e GitHub Pages** (Run workflow). A cada atualização da branch `main`, o pipeline executará os testes e publicará os arquivos estáticos.
-
-Endereço público previsto após uma execução de deploy bem-sucedida: **https://ttamosauskas.github.io/logica/**.
+O site pode ser publicado como arquivos estáticos em GitHub Pages, Cloudflare Pages ou Netlify, sem etapa de build. O repositório possui workflow de testes e publicação. Endereço GitHub Pages: https://ttamosauskas.github.io/logica/ .

@@ -1,25 +1,26 @@
-# Arquitetura e plano de melhoria
+# Arquitetura do LogicLab
 
-## Estado atual do pacote
+## Estado atual
 
-A entrada é `index.html`, que importa cinco folhas de estilos e inicia `src/app.js` como módulo ES. Esse módulo reúne o DOM e a orquestração da experiência e importa conteúdo independente, lógica proposicional e geradores. Os dados do curso, dos exemplos e das atividades continuam embutidos no repositório; o site utiliza apenas arquivos estáticos no navegador.
+O LogicLab é um site estático em ES Modules, HTML e CSS, sem backend. A entrada é `index.html`, que inicia `src/app.js`. O curso guiado apresenta **23 aulas em sete unidades**, mais os modos livres e misto. A interface e as rotas usam hash; o progresso é armazenado em `localStorage`.
 
-O trabalho preserva a identidade visual, os 17 temas de exercícios, o treino misto, as seis unidades de estudo, as rotas por hash e as chaves de `localStorage`. O núcleo proposicional e as fórmulas já podem ser importados e testados isoladamente.
+`src/app.js` ainda concentra renderização, eventos e coordenação do estado. O núcleo proposicional, analisadores, geradores de atividades, conteúdo e serviços pedagógicos possuem módulos separados.
 
-## Próxima evolução recomendada
+## Avaliação de compreensão V2
 
-A prioridade arquitetural é dividir `src/app.js` em uma camada `state/` para o estado de navegação e exercício, `storage/` para persistência versionada, `features/` para tradução, dedução, silogismos categóricos, Venn e curso, e `ui/` para componentes e atualização seletiva do DOM. Cada modo deverá declarar seu gerador, validação, passos e critérios de avaliação por uma interface estável.
+- `src/core/assessment.js`: validação dos itens, composição de avaliações com embaralhamento e correção por dimensões.
+- `src/content/assessment-pilot.js` e `src/content/assessment-unit*.js`: expansão editorial dos 23 bancos, com oito questões suplementares por tema.
+- `src/content/course.js` e `src/content/course-unit13.js`: conteúdos e questões legadas, mantidos em compatibilidade.
+- `src/content/reading-*.js`: materiais de leitura e autoverificações formativas, deliberadamente excluídas dos bancos somativos.
+- `src/app.js`: integra o seletor, preserva as tentativas em `courseState.lessons[id].assessmentV2`, exibe pontuação conceitual e global, mantendo `mastered`, `best` e revisões anteriores.
+- `tests/assessment.test.js`: integridade de bancos, composição, embaralhamento e regras de aprovação.
 
-Os conteúdos pedagógicos podem evoluir para uma coleção editorial validada por esquema. Questões objetivas, enunciados, explicações, exemplos e metadados podem viver em JSON, enquanto funções que geram árvores sintáticas continuam em módulos JavaScript. Isso permitirá adicionar lições sem mexer no renderizador.
+A composição requer dois itens `concept` e três `application`. A aprovação inicial exige desempenho total de 4/5 e 2/2 nas questões centrais. O histórico registra até vinte tentativas por tema e o rascunho persiste perguntas e escolhas em andamento.
 
-## Qualidade do produto
+A expansão editorial cobre as 23 aulas, com pelo menos doze itens por aula, cinco ou mais itens conceituais e sete ou mais de aplicação; o conjunto totaliza 277 itens. As retentativas priorizam questões não utilizadas nas últimas três tentativas, enquanto existirem alternativas disponíveis.
 
-O próximo conjunto de testes deverá cobrir o fluxo de resposta/correção/revelação, casos-limite do diagrama de Venn, unicidade dos desafios de dedução, recuperação do progresso e navegação por teclado. Como a tabela é reconstruída durante a interação, recomendamos atualização focada da célula ou recuperação explícita do foco e anúncios acessíveis do resultado.
+## Evolução técnica
 
-Recomendamos também uma política de escape centralizada para todas as interpolações via `innerHTML`, métricas de desempenho em telas pequenas, validação de dados persistidos com migrações e uma opção para exportar/importar o progresso do curso.
+O próximo passo arquitetural é decompor `src/app.js` em componentes de interface, estado e persistência versionada; ampliar bancos em arquivos por unidade; e fortalecer correção de justificativas abertas e tarefas de transferência. A revisão humana da plausibilidade dos distratores permanece indispensável.
 
-## Distribuição
-
-A hospedagem de arquivos estáticos dispensa API, banco de dados e etapa de build. O uso de módulos ES via HTTP/HTTPS é adequado a GitHub Pages, Cloudflare Pages e Netlify. Para instalação no dispositivo e funcionamento offline garantido após o primeiro acesso, a evolução recomendada é uma PWA com manifesto, service worker e política de atualização do cache.
-
-Após a seleção do repositório, deverão ser definidos branch, diretório publicado, domínio-base, política de deploy e verificação de CI. A partir dessa escolha será possível configurar o fluxo de publicação mais simples para o provedor escolhido.
+A publicação requer apenas hospedagem de arquivos estáticos. Uma PWA offline com cache versionado poderá ser adotada futuramente. O projeto não utiliza rastreamento remoto.

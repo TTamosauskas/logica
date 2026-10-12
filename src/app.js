@@ -16,6 +16,13 @@ import { DEDUCTION_CONTEXTS, DEDUCTION_NAMES, DEDUCTION_LEVELS } from './content
 import { CATEGORICAL_TERMS } from './content/categorical.js';
 import { THEOREM_WORKSHOPS, THEORY_CARDS } from './content/advanced.js';
 import { COURSE_UNITS, LESSONS } from './content/course.js';
+import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
+import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
+import { UNIT2_ASSESSMENTS } from './content/assessment-unit2.js';
+import { UNIT3_ASSESSMENTS } from './content/assessment-unit3.js';
+import { UNIT4_ASSESSMENTS } from './content/assessment-unit4.js';
+import { UNIT5_TO_7_ASSESSMENTS } from './content/assessment-unit5to7.js';
+import { ASSESSMENT_VERSION, prepareBank, composeAssessment, gradeAssessment } from './core/assessment.js';
 import { UNIT1_READINGS } from './content/reading-unit1.js';
 import { UNIT2_READINGS } from './content/reading-unit2.js';
 import { UNIT3_READINGS } from './content/reading-unit3.js';
@@ -1410,6 +1417,19 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('courseDescription').textContent=context.description;
   }
   const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS};
+  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS};
+  function assessmentForLesson(id){
+    const p=courseProgress(id);
+    p.assessmentV2=p.assessmentV2||{version:ASSESSMENT_VERSION,history:[]};
+    const a=p.assessmentV2;
+    if(!Array.isArray(a.history))a.history=[];
+    if(!a.draft||!Array.isArray(a.draft.questions)||a.draft.questions.length!==5){
+      const bank=prepareBank(id,LESSONS[id],COURSE_READINGS[id],EXTENDED_ASSESSMENTS[id]||[]);
+      a.draft={questions:composeAssessment(bank,a.history),startedAt:Date.now(),answers:{}};
+      saveCourseState();
+    }
+    return a.draft.questions;
+  }
   function renderPedagogicalReading(reading){
     const sections=reading.sections.map(section=>
       `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>`
@@ -1493,7 +1513,10 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     if(p.example&&THEORY_CARDS[id]){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
     if(p.example){html+=`<section class="course-lesson-panel"><h3>3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
     if(p.guided){html+=`<section class="course-lesson-panel"><h3>4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
-    if(p.independent){html+=`<section class="course-lesson-panel"><h3>5. Aprovar a avaliação inicial</h3><p>Responda às três perguntas de compreensão. Três acertos aprovam a avaliação inicial; o domínio consolidado será registrado após duas revisões espaçadas independentes.</p><div class="course-assessment">${lesson.quiz.slice(0,3).map((q,i)=>`<div class="course-question"><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((option,j)=>`<label class="course-option"><input type="radio" name="courseq-${i}" value="${j}"><span>${escapeHTML(option)}</span></label>`).join('')}</div>`).join('')}</div>${lessonFeedback&&lessonFeedback.id===id?`<div class="course-course-result ${lessonFeedback.score<3?'warn':''}" tabindex="-1" role="status"><strong>${lessonFeedback.score}/3 acertos.</strong> ${lessonFeedback.score===3?'Avaliação inicial aprovada!':'Revise as explicações e faça outra tentativa.'}${lessonFeedback.details.map(x=>`<p>${escapeHTML(x)}</p>`).join('')}</div>`:''}<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="lesson-quiz">Corrigir avaliação</button></div></section>`}
+    if(p.independent){
+      const questions=assessmentForLesson(id),last=p.assessmentV2?.last;
+      html+=`<section class="course-lesson-panel"><h3>5. Aprovar a avaliação inicial</h3><p>A avaliação tem cinco questões variáveis: duas conceituais e três de aplicação. Para aprovar, acerte ao menos quatro no total, incluindo ambas as conceituais. As revisões espaçadas continuam separadas.</p>${p.mastered&&!last?.passed?'<p>Sua aprovação anterior foi preservada; a nova aferição conceitual é independente.</p>':''}${lessonFeedback&&lessonFeedback.id===id?`<div class="course-course-result ${lessonFeedback.passed?'':'warn'}" tabindex="-1" role="status"><strong>${lessonFeedback.score}/5 no total · ${lessonFeedback.concepts}/2 no conceito central.</strong> ${escapeHTML(lessonFeedback.reason)}${lessonFeedback.details.map(x=>`<p>${escapeHTML(x)}</p>`).join('')}</div>`:last?`<p class="course-previous-result">Última tentativa: ${last.overall}/5 no total e ${last.concepts}/2 no conceito central. ${escapeHTML(last.reason)}</p>`:''}<div class="course-assessment">${questions.map((q,i)=>`<div class="course-question"><strong>${i+1}. ${escapeHTML(q.question)}</strong><small>${q.dimension==='concept'?'Compreensão conceitual':'Aplicação e interpretação'}</small>${q.options.map((option,j)=>`<label class="course-option"><input type="radio" name="courseq-${i}" value="${j}" ${String(p.assessmentV2.draft.answers?.[i])===String(j)?'checked':''}><span>${escapeHTML(option)}</span></label>`).join('')}</div>`).join('')}</div><div class="course-lesson-actions"><button type="button" class="button primary" data-caction="lesson-quiz">Corrigir avaliação</button></div></section>`;
+    }
     if(p.mastered){
       const state=reviewStatus(p);
       html+=`<section class="course-lesson-panel course-review-panel"><h3>6. Consolidar com revisões espaçadas</h3><p>Você aprovou a avaliação inicial. Domínio consolidado exige duas novas tentativas independentes, corrigidas com pelo menos 80% e sem dicas: uma após 1 dia e outra após mais 7 dias.</p>`;
@@ -1548,6 +1571,15 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     saveCourseState();
     toast(didPass?'Etapa validada na primeira correção. Volte à aula para avançar.':decision.reason);
   }
+  $('courseLesson').addEventListener('change',e=>{
+    if(!courseActive||!e.target.matches('input[type="radio"][name^="courseq-"]'))return;
+    const p=courseProgress(courseActive),a=p.assessmentV2;
+    if(!a?.draft)return;
+    a.draft.answers=a.draft.answers||{};
+    const index=Number(e.target.name.slice('courseq-'.length));
+    if(Number.isInteger(index)&&index>=0&&index<5)a.draft.answers[index]=e.target.value;
+    saveCourseState();
+  });
   function courseClick(e){const btn=e.target.closest('[data-caction]');if(!btn)return;const action=btn.dataset.caction,id=btn.dataset.id;
     if(action==='map'){openCourse(true);return}if(action==='lesson'){openCourse(true,id);return}if(action==='practice-free'){
       const previous=savedDrafts[courseActive];
@@ -1569,7 +1601,22 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="example"]')?.focus({preventScroll:true});return}
     if(action==='example'){courseProgress(courseActive).example=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="guided"]')?.focus({preventScroll:true});return}
     if(action==='guided'||action==='independent'||action==='review'){beginCourseExercise(courseActive,action);return}
-    if(action==='lesson-quiz'){const q=LESSONS[courseActive].quiz.slice(0,3),selected=q.map((_,i)=>$('courseLesson').querySelector(`input[name="courseq-${i}"]:checked`)?.value);if(selected.some(x=>x===undefined)){toast('Marque uma alternativa em cada pergunta.');return}const score=q.reduce((acc,item,i)=>acc+(Number(selected[i])===item.correct?1:0),0),p=courseProgress(courseActive);p.best=Math.max(p.best,score/3);if(score===3){p.mastered=true;beginReviewTracking(p)}saveCourseState();lessonFeedback={id:courseActive,score,details:q.map((item,i)=>`${i+1}. ${Number(selected[i])===item.correct?'Correto.':'Revisar.'} ${item.why}`)};renderCourseLesson();$('courseLesson').querySelector('.course-course-result')?.focus({preventScroll:true});return}
+    if(action==='lesson-quiz'){
+      const questions=assessmentForLesson(courseActive);
+      const answers=questions.map((_,i)=>$('courseLesson').querySelector(`input[name="courseq-${i}"]:checked`)?.value);
+      if(answers.some(x=>x===undefined)){toast('Responda às cinco perguntas antes de corrigir.');return}
+      const result=gradeAssessment(questions,answers),p=courseProgress(courseActive),a=p.assessmentV2;
+      p.best=Math.max(p.best,result.overall/5);
+      if(result.passed){p.mastered=true;beginReviewTracking(p)}
+      a.last={...result,at:Date.now()};
+      a.history.push({at:Date.now(),questionIds:questions.map(x=>x.id),overall:result.overall,concepts:result.concepts,passed:result.passed});
+      a.history=a.history.slice(-20);
+      a.draft=null;
+      lessonFeedback={id:courseActive,score:result.overall,concepts:result.concepts,passed:result.passed,reason:result.reason,details:questions.map((item,i)=>`${i+1}. ${Number(answers[i])===item.correct?'Correto.':'Revisar.'} ${item.why}`)};
+      saveCourseState();renderCourseLesson();
+      $('courseLesson').querySelector('.course-course-result')?.focus({preventScroll:true});
+      return;
+    }
     if(action==='exam-open'){openFinalExam();return}
     if(action==='exam-submit'){gradeFinalExam();return}
     if(action==='exam-new'){openFinalExam(true,true);return}
