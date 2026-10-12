@@ -620,6 +620,58 @@ try{
     await newContext.close();
   }
 
+  // Ciclo 14: verificação das competências refinadas nas seis etapas existentes.
+  for(const width of [375,1280]){
+    const context14=await browser.newContext({viewport:{width,height:812},isMobile:width===375,hasTouch:width===375});
+    const app14=await context14.newPage(),errors14=[];
+    app14.on('pageerror',e=>errors14.push(e.message));
+    await app14.goto(root,{waitUntil:'networkidle'});
+    assert.match(await app14.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
+    for(const id of ['predicados2','metateoria']){
+      await app14.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
+      assert.equal(await app14.locator('#courseLesson .reading-section').count(),3);
+      await app14.locator('[data-caction="read"]').click();
+      await app14.locator('[data-caction="example"]').click();
+      await app14.locator('[data-caction="guided"]').click();
+      assert.equal(await app14.locator('#specialArea [data-special-field]').count(),5);
+      if(id==='predicados2')assert.match(await app14.locator('#specialArea').innerText(),/unicidade|exatamente uma/);
+      if(id==='metateoria')assert.match(await app14.locator('#specialArea').innerText(),/Gödel|sound|parada/);
+      for(let i=0;i<5;i++)await app14.locator(`#specialArea [data-special-field="${i}"]`).selectOption({index:1});
+      await app14.locator('#checkButton').click();
+      assert.equal(await app14.locator('#specialArea .course-question-explanation').count(),5);
+      await app14.locator('#backButton').click();
+      assert.equal(await app14.locator('#courseLesson').isVisible(),true);
+      // Prepara um aluno que concluiu a etapa autônoma; a avaliação não deve dar aprovação sem três acertos.
+      await app14.evaluate(id=>{
+        const k='logiclab_curso_formal_v2',s=JSON.parse(localStorage.getItem(k));
+        s.lessons[id]={read:true,example:true,guided:true,independent:true,mastered:false,best:0};
+        localStorage.setItem(k,JSON.stringify(s));
+      },id);
+      await app14.reload({waitUntil:'networkidle'});
+      const quiz=await app14.evaluate(async id=>(await import('./src/content/course.js')).LESSONS[id].quiz.slice(0,3),id);
+      assert.equal(await app14.locator('#courseLesson input[name^="courseq-"]').count(),9);
+      for(let i=0;i<3;i++)await app14.locator(`input[name="courseq-${i}"][value="${quiz[i].correct}"]`).check();
+      await app14.locator('[data-caction="lesson-quiz"]').click();
+      assert.match(await app14.locator('.course-course-result').innerText(),/3\/3 acertos/);
+      assert.match(await app14.locator('#courseLesson').innerText(),/6. Consolidar com revisões espaçadas/);
+    }
+    await app14.goto(root+'#aula-equivalencias',{waitUntil:'networkidle'});
+    await app14.evaluate(()=>{
+      const k='logiclab_curso_formal_v2',s=JSON.parse(localStorage.getItem(k));
+      s.lessons.equivalencias={read:true,example:true,guided:true,independent:false,mastered:false,best:0};
+      localStorage.setItem(k,JSON.stringify(s));
+    });
+    await app14.reload({waitUntil:'networkidle'});
+    await app14.locator('[data-caction="independent"]').click();
+    assert.equal(await app14.locator('#specialArea [data-special-field]').count(),4);
+    assert.match(await app14.locator('#specialArea').innerText(),/transformação|equivalência|interpretação/);
+    for(let i=0;i<4;i++)await app14.locator(`#specialArea [data-special-field="${i}"]`).selectOption({index:1});
+    await app14.locator('#checkButton').click();
+    assert.equal(await app14.locator('#specialArea .course-question-explanation').count(),4);
+    assert.deepEqual(errors14,[]);
+    await context14.close();
+  }
+
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
   await context.close();
 }catch(error){
