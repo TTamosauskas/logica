@@ -10,4 +10,4 @@ Os itens `concept` verificam o princípio central mesmo quando o estudante recon
 
 ## Cobertura
 
-Meta de publicação: doze itens por cada uma das 23 aulas. O piloto editorial cobre quatro temas; os demais necessitam ampliação antes de afirmar que a meta global foi atingida. A suíte `tests/assessment.test.js` verifica validade, composição e desempenho; a revisão substantiva de distratores exige avaliação humana.
+Cada uma das 23 aulas possui pelo menos doze itens: quatro questões legadas (cinco em metateoria) mais oito questões editoriais novas, totalizando 277. A autoverificação da leitura não é reutilizada nas avaliações somativas. A suíte `tests/assessment.test.js` verifica cobertura, integridade, composição e desempenho; a revisão substantiva de distratores exige avaliação humana.
