@@ -8,7 +8,7 @@ O curso guiado contém **23 aulas, organizadas em sete unidades**: (I) linguagem
 
 Cada aula articula leitura progressiva, exemplo resolvido, prática com ajuda, resolução independente, avaliação inicial e duas revisões espaçadas. A avaliação de compreensão V2 contém cinco questões: duas conceituais e três de aplicação. O aluno precisa acertar **4/5 no total e 2/2 nas questões conceituais** para obter aprovação. Questões e alternativas variam por tentativa; o resultado é registrado separadamente para cada dimensão.
 
-O novo mecanismo foi aplicado a todos os temas. Quatro temas — tradução, validade de argumentos, probabilidade e causalidade — receberam expansão editorial piloto para 13 itens; nos demais, a variedade entre retentativas é limitada pelo banco atual. **A meta de 12 itens por aula ainda não foi atingida globalmente.**
+**Todos os 23 temas possuem pelo menos 12 itens de avaliação**, totalizando **277 questões** (12 por aula, com 13 em metateoria). Quatro temas — tradução, validade de argumentos, probabilidade e causalidade — iniciaram a ampliação editorial, posteriormente estendida às demais 19 aulas. As questões de autoverificação da leitura permanecem exclusivamente formativas e não são reutilizadas na avaliação inicial.
 
 Leia [Pedagogia](docs/PEDAGOGY.md), [Avaliação](docs/ASSESSMENT.md) e [Bancos de questões](docs/QUESTION_BANKS.md) para rubricas, limitações e critérios editoriais.
 
