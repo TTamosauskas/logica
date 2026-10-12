@@ -73,7 +73,7 @@ export const UNIT2_READINGS={
       ]},
       {heading:'Um único contraexemplo rejeita um passo errado',paragraphs:[
         'Agora imagine que alguém transformou p → q em q → p. Com p = F e q = V, a primeira fórmula é verdadeira e a segunda é falsa. Como encontramos uma interpretação em que as expressões divergem, a transformação não é válida. Inverter uma condicional não é uma regra de equivalência.',
-        'Ao construir uma cadeia de transformações, confira cada seta separadamente: se algum passo falha, não podemos chamar a sequência inteira de demonstração de equivalência. É possível localizar precisamente o erro indicando os valores das proposições que refutam o passo.'
+        'Ao construir uma cadeia de transformações, confira cada seta separadamente: se algum passo falha, não podemos chamar a sequência inteira de demonstração de equivalência. Esse cenário que refuta uma equivalência chama-se contraexemplo. É possível localizar precisamente o erro indicando os valores das proposições que refutam o passo.'
       ]}
     ],
     misconception:'Ter os mesmos símbolos ou coincidir em alguns casos não torna duas fórmulas equivalentes. Uma transformação só é segura quando os dois lados coincidem em todas as interpretações possíveis.',
