@@ -61,24 +61,24 @@ export const UNIT2_READINGS={
     check:{question:'A tabela de uma fórmula apresenta V, V, F, V na coluna final. Qual é sua classificação?',options:['Tautologia.','Contradição.','Contingência.'],correct:2,why:'Há pelo menos uma linha verdadeira e uma falsa. Portanto, a fórmula não é sempre verdadeira nem sempre falsa: é contingente.'}
   },
   equivalencias:{
-    objective:'Comparar duas fórmulas por suas condições de verdade e identificar quando uma transformação preserva o significado lógico.',
+    objective:'Transformar expressões por uma sequência de equivalências justificadas, simplificar fórmulas e construir um contraexemplo quando um passo não preserva seu valor.',
     sections:[
-      {heading:'Duas escritas podem expressar a mesma condição?',paragraphs:[
-        'Em linguagem cotidiana, às vezes reformulamos uma frase sem mudar o que ela afirma. A lógica permite investigar essa ideia com precisão: duas fórmulas são equivalentes se recebem o mesmo valor em cada interpretação possível das letras envolvidas.',
-        'Considere “se p, então q” e “não p ou q”. A primeira tem a forma p → q; a segunda, ¬p ∨ q. Embora tenham aparências diferentes, as duas são falsas exatamente quando p é verdadeira e q é falsa.'
+      {heading:'Uma transformação precisa preservar a verdade',paragraphs:[
+        'Às vezes duas expressões parecem diferentes, mas apresentam exatamente os mesmos valores de verdade. A condicional p → q, por exemplo, é falsa apenas quando p é verdadeira e q é falsa. A forma ¬p ∨ q falha exatamente no mesmo caso. Assim, podemos reescrever uma pela outra sem mudar o que a fórmula diz.',
+        'A escrita p → q ≡ ¬p ∨ q registra uma equivalência. Para justificar essa transformação, podemos usar uma tabela-verdade ou uma lei cuja validade já tenha sido estabelecida. Não basta que a nova expressão pareça mais curta ou repita as mesmas letras.'
       ]},
-      {heading:'Compare as condições em vez de confiar na aparência',paragraphs:[
-        'Quando p = V e q = F, a condicional p → q falha; ao mesmo tempo, ¬p = F e q = F, de modo que ¬p ∨ q também é F. Em qualquer outro caso, as duas expressões são verdadeiras. Essa coincidência em todas as linhas justifica a equivalência.',
-        'Podemos escrevê-la p → q ≡ ¬p ∨ q. O sinal ≡ está indicando equivalência lógica entre expressões, e não apenas igualdade dos símbolos escritos. Outra equivalência útil é ¬¬p ≡ p: negar duas vezes recupera o valor inicial.'
+      {heading:'Resolva um problema em dois passos explícitos',paragraphs:[
+        'Considere a expressão p → q. Primeiro substitua a condicional por ¬p ∨ q, usando a eliminação da implicação material. Depois aplique De Morgan na direção inversa: ¬p ∨ q ≡ ¬(p ∧ ¬q). Chegamos a uma terceira forma sem mudar o valor lógico em nenhum passo.',
+        'A sequência registra não só o resultado, mas também a justificativa de cada passagem: p → q ≡ ¬p ∨ q ≡ ¬(p ∧ ¬q). Para simplificar expressões grandes, podemos recorrer também a comutatividade, associatividade, distributividade e dupla negação, sempre respeitando os parênteses.'
       ]},
-      {heading:'Descubra uma transformação que não funciona',paragraphs:[
-        'Nem toda mudança na ordem das letras preserva o significado. Compare p → q e q → p. Se p = F e q = V, a primeira é verdadeira, mas a segunda é falsa: V → F. Uma única interpretação com resultados diferentes basta para mostrar que não são equivalentes.',
-        'Por isso, quando surgir uma dúvida, construa a tabela-verdade das duas fórmulas e compare suas colunas finais linha a linha. As leis de equivalência permitem transformar fórmulas mais rapidamente, mas a tabela mostra por que a transformação é válida.'
+      {heading:'Um único contraexemplo rejeita um passo errado',paragraphs:[
+        'Agora imagine que alguém transformou p → q em q → p. Com p = F e q = V, a primeira fórmula é verdadeira e a segunda é falsa. Como encontramos uma interpretação em que as expressões divergem, a transformação não é válida. Inverter uma condicional não é uma regra de equivalência.',
+        'Ao construir uma cadeia de transformações, confira cada seta separadamente: se algum passo falha, não podemos chamar a sequência inteira de demonstração de equivalência. É possível localizar precisamente o erro indicando os valores das proposições que refutam o passo.'
       ]}
     ],
-    misconception:'Não confunda equivalência com uma coincidência em um único exemplo. Duas fórmulas só são equivalentes quando seus valores coincidem em todas as interpretações possíveis.',
-    summary:'Equivalência lógica significa igualdade de valor em cada interpretação. Para demonstrá-la, compare todas as linhas ou aplique leis já justificadas.',
-    check:{question:'Se duas fórmulas diferem no valor de verdade em uma única linha, o que concluímos?',options:['São equivalentes se as outras linhas coincidirem.','Não são logicamente equivalentes.','Ambas são contradições.'],correct:1,why:'Equivalência exige coincidência em todas as interpretações. Uma única linha diferente é um contraexemplo suficiente.'}
+    misconception:'Ter os mesmos símbolos ou coincidir em alguns casos não torna duas fórmulas equivalentes. Uma transformação só é segura quando os dois lados coincidem em todas as interpretações possíveis.',
+    summary:'Simplifique expressões com passos justificados por leis lógicas. Verifique a equivalência em cada passagem e use um contraexemplo de valores de verdade para rejeitar uma transformação inválida.',
+    check:{question:'Qual sequência preserva a equivalência em todos os passos?',options:['p → q ≡ ¬p ∨ q ≡ ¬(p ∧ ¬q).','p → q ≡ q → p ≡ p ∧ q.','p → q ≡ p ∧ ¬q ≡ ¬p.'],correct:0,why:'A condicional equivale a ¬p ∨ q; pela Lei de De Morgan e dupla negação, isso equivale a ¬(p ∧ ¬q). As outras cadeias falham em algumas interpretações.'}
   },
   argumentos:{
     objective:'Distinguir validade de verdade factual e reconhecer a interpretação que serve de contraexemplo a uma inferência.',
