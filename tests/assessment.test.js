@@ -8,14 +8,24 @@ import {UNIT4_TO_6_READINGS} from '../src/content/reading-units4to6.js';
 import {UNIT12_READINGS} from '../src/content/reading-unit12.js';
 import {UNIT13_READINGS} from '../src/content/reading-unit13.js';
 import {PILOT_ASSESSMENTS} from '../src/content/assessment-pilot.js';
+import {UNIT1_ASSESSMENTS} from '../src/content/assessment-unit1.js';
+import {UNIT2_ASSESSMENTS} from '../src/content/assessment-unit2.js';
+import {UNIT3_ASSESSMENTS} from '../src/content/assessment-unit3.js';
+import {UNIT4_ASSESSMENTS} from '../src/content/assessment-unit4.js';
+import {UNIT5_TO_7_ASSESSMENTS} from '../src/content/assessment-unit5to7.js';
 import {prepareBank,validateBank,composeAssessment,gradeAssessment} from '../src/core/assessment.js';
 const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS};
 const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
-const bank=id=>prepareBank(id,LESSONS[id],readings[id],PILOT_ASSESSMENTS[id]||[]);
+const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS};
+const bank=id=>prepareBank(id,LESSONS[id],readings[id],supplements[id]||[]);
 test('todos os 23 temas possuem banco com competências distintas',()=>{
  assert.equal(ids.length,23);
  for(const id of ids){
    const items=validateBank(bank(id));
+   assert.ok(items.length>=12,id+': menos de 12 questões editoriais');
+   assert.equal(supplements[id]?.length,8,id+': suplemento incompleto');
+   assert.ok(items.filter(q=>q.dimension==='concept').length>=5,id+': poucos itens conceituais');
+   assert.ok(items.filter(q=>q.dimension==='application').length>=7,id+': poucas aplicações');
    assert.ok(items.filter(q=>q.dimension==='concept').length>=2,id+': falta conceito');
    assert.ok(items.filter(q=>q.dimension==='application').length>=3,id+': falta aplicação');
    const assessment=composeAssessment(items,[],()=>0.44);
@@ -25,7 +35,7 @@ test('todos os 23 temas possuem banco com competências distintas',()=>{
    assert.equal(assessment.filter(q=>q.dimension==='application').length,3,id);
  }
 });
-test('pilotos alcançam pelo menos 12 questões com distratores válidos',()=>{
+test('os quatro temas-piloto mantêm pelo menos 12 questões com distratores válidos',()=>{
  for(const id of Object.keys(PILOT_ASSESSMENTS)) assert.ok(bank(id).length>=12,id);
 });
 test('correção separa desempenho geral do conceito central',()=>{
@@ -61,4 +71,18 @@ test('a composição não altera o banco editorial',()=>{
  const original=bank('traducao');const snap=JSON.stringify(original);
  composeAssessment(original,[],()=>0.25);
  assert.equal(JSON.stringify(original),snap);
+});
+
+test('itens de leitura formativa não reaparecem nas provas somativas',()=>{
+ for(const id of ids){
+  const items=bank(id);
+  assert.ok(items.every(q=>q.id!==id+'-leitura'),id);
+  assert.ok(items.every(q=>q.question!==readings[id].check.question),id);
+ }
+});
+test('todas as respostas erradas possuem feedback e são distintas',()=>{
+ for(const id of ids)for(const q of bank(id)){
+   assert.ok(q.why.length>20,id+': justificativa curta');
+   assert.ok(q.options.every(x=>x.trim().length>5),id+': opção inválida');
+ }
 });
