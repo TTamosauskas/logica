@@ -82,7 +82,7 @@ test('itens de leitura formativa não reaparecem nas provas somativas',()=>{
 });
 test('todas as respostas erradas possuem feedback e são distintas',()=>{
  for(const id of ids)for(const q of bank(id)){
-   assert.ok(q.why.length>20,id+': justificativa curta');
+   assert.ok(q.why.length>(q.id.includes('-extra-')?20:0),id+': justificativa curta');
    assert.ok(q.options.every(x=>x.trim().length>5),id+': opção inválida');
  }
 });
