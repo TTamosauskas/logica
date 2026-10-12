@@ -21,44 +21,44 @@ export const UNIT4_TO_6_READINGS={
     check:{question:'Em um Venn, o que precisamos marcar ao afirmar “Alguns estudantes são músicos”?',options:['Um X na interseção entre estudantes e músicos.','Hachurar toda a interseção entre os grupos.','Hachurar a região fora dos dois grupos.'],correct:0,why:'“Alguns” exige ao menos um indivíduo presente nos dois conjuntos. O X registra existência; hachurar a interseção indicaria o oposto.'}
   },
   predicados2:{
-    objective:'Interpretar relações entre indivíduos e distinguir o significado de ∀x∃y e ∃y∀x por meio de exemplos e contraexemplos.',
+    objective:'Interpretar relações e ordem dos quantificadores, substituir nomes de um mesmo indivíduo e distinguir existência, unicidade e descrições definidas.',
     sections:[
-      {heading:'Quando uma qualidade não basta',paragraphs:[
-        'Até aqui, expressões como “Ana é estudante” descreviam uma propriedade de alguém. Agora pense em “Ana ajuda Beto”: não basta saber quem é estudante ou quem é prestativo; precisamos indicar uma relação entre duas pessoas, com papéis diferentes.',
-        'Podemos escrever Ajuda(Ana,Beto). A primeira posição indica quem ajuda, e a segunda indica quem recebe a ajuda. Inverter os nomes, Ajuda(Beto,Ana), descreve outra relação que não é necessariamente verdadeira. Chamamos expressões como Ajuda(x,y) de predicados de dois lugares.'
+      {heading:'Relações, nomes e o significado de identidade',paragraphs:[
+        '“Ana ajuda Beto” representa uma relação com duas posições: Ajuda(Ana,Beto). Trocar as posições não preserva automaticamente a verdade. Também é essencial conhecer o domínio de pessoas e a ordem de quantificadores: ∀x∃y Ajuda(x,y) permite que cada x tenha seu próprio y; já ∃y∀x Ajuda(x,y) exige alguém que todos ajudem.',
+        'Se Ana e A. Silva são dois nomes da mesma pessoa, a identidade Ana = A. Silva permite substituir um nome pelo outro em uma afirmação extensional, como “entregou o documento”. Mas duas pessoas receberem certificados ou possuírem a mesma propriedade não prova que sejam idênticas. A direção da inferência e a informação sobre identidade importam.'
       ]},
-      {heading:'A ordem dos quantificadores importa',paragraphs:[
-        'Compare “Cada estudante ajuda alguma pessoa” com “Há uma pessoa que todos os estudantes ajudam”. Na primeira frase, cada estudante pode ajudar alguém diferente. Na segunda, precisamos encontrar uma única pessoa que seja ajudada por todos os estudantes.',
-        'Escrevemos a primeira estrutura como ∀x∃y Ajuda(x,y): para cada x, existe algum y que pode depender de x. Já ∃y∀x Ajuda(x,y) afirma que existe um mesmo y para todos os x. Os símbolos ∀ (“para todo”) e ∃ (“existe”) mudam o alcance da exigência.'
+      {heading:'Existir não significa existir exatamente um',paragraphs:[
+        'Considere “Algum estudante venceu” e “Exatamente um estudante venceu”. A primeira frase é satisfeita se houver pelo menos um vencedor; a segunda exige que haja um vencedor e que nenhuma outra pessoa diferente também seja vencedora. Formalmente, ∃x(V(x) ∧ ∀y(V(y) → y=x)) expressa essa existência única.',
+        'A palavra “o” pode esconder essas condições. Em uma análise de descrições definidas associada a Russell, “O vencedor recebeu o prêmio” exige que exista um vencedor, que ele seja único e que tenha recebido o prêmio. Se não houver nenhum vencedor, ou houver dois, a análise conjuntiva clássica torna a frase falsa, em vez de tratar o nome do suposto vencedor como se sempre apontasse para alguém.'
       ]},
-      {heading:'Teste com um pequeno cenário',paragraphs:[
-        'Imagine duas pessoas, Ana e Beto. Ana ajuda Ana, e Beto ajuda Beto, mas nenhuma delas ajuda a outra. Então ∀x∃y Ajuda(x,y) é verdadeira: cada pessoa ajuda ao menos uma pessoa. Porém ∃y∀x Ajuda(x,y) é falsa: não existe uma única pessoa ajudada por ambas.',
-        'Esse cenário funciona como contraexemplo à ideia de que as duas fórmulas são equivalentes. Também devemos observar qual conjunto de pessoas está sendo considerado, chamado domínio, e a ordem dos argumentos de Ajuda. Identidade, escrita x = y, significa que dois termos indicam o mesmo indivíduo.'
+      {heading:'Teste com modelos que separam as exigências',paragraphs:[
+        'Imagine Ana e Beto como participantes. Se ambos venceram, é verdadeira a frase “Algum participante venceu”, mas é falsa “Exatamente um participante venceu”. Se somente Ana venceu e recebeu o prêmio, as três exigências da descrição definida podem ser satisfeitas. Se somente Ana venceu e não recebeu, existência e unicidade valem, mas a predicação falha.',
+        'Para avaliar cada expressão, liste os integrantes do domínio e verifique o conjunto dos que satisfazem o predicado. Em relações entre pessoas, procure a testemunha exigida para cada quantificador. Essa construção explícita de modelos evita que a gramática de uma frase esconda pressupostos não demonstrados.'
       ]}
     ],
-    misconception:'Não leia ∀x∃y como se o mesmo y tivesse de servir a todos. O existencial aparece dentro da exigência para cada x, portanto a pessoa escolhida pode variar.',
-    summary:'Predicados de dois lugares descrevem relações orientadas. ∀x∃y admite escolhas de y diferentes para cada x; ∃y∀x exige um y que sirva a todos.',
-    check:{question:'Qual frase corresponde a ∃y∀x Ajuda(x,y), em um domínio de pessoas?',options:['Cada pessoa ajuda alguém, possivelmente diferente.','Existe uma pessoa que todas as pessoas ajudam.','Ninguém ajuda ninguém.'],correct:1,why:'O quantificador ∃y vem primeiro: há uma única escolha de y que deve funcionar para todos os valores de x.'}
+    misconception:'Não conclua identidade a partir de uma característica comum; tampouco conclua existência única a partir de um mero “algum”. Em descrições definidas, existência, unicidade e propriedade são exigências diferentes.',
+    summary:'Predicados representam relações e propriedades. A ordem dos quantificadores altera a conclusão. Identidade autoriza substituição em contextos extensionais; descrições definidas podem exigir existência e unicidade antes de predicar algo.',
+    check:{question:'Duas pessoas venceram uma disputa. Qual afirmação é justificável?',options:['Alguma pessoa venceu, mas não houve exatamente um vencedor.','Houve exatamente um vencedor porque a frase usa “o vencedor”.','Nenhuma pessoa venceu, já que houve empate.'],correct:0,why:'Duas pessoas satisfazem o predicado venceu: a existência é verdadeira, mas a unicidade é falsa. A gramática singular não cria unicidade.'}
   },
   metateoria:{
-    objective:'Distinguir fórmulas e provas de interpretações e modelos, reconhecendo o significado de consequência semântica, correção e completude.',
+    objective:'Separar consequência semântica de prova formal e compreender, por casos, correção, completude, incompletude aritmética e limites de algoritmos.',
     sections:[
-      {heading:'Duas maneiras diferentes de avaliar a lógica',paragraphs:[
-        'Pense em um jogo com regras escritas. Podemos perguntar se uma jogada segue as regras, mesmo sem investigar o resultado da partida. Também podemos perguntar se uma afirmação vale em todas as situações possíveis do jogo. Em lógica formal, existe uma distinção semelhante entre provas e significados.',
-        'A sintaxe trata de expressões bem formadas e das regras para construir demonstrações. A semântica estuda como interpretamos essas expressões e em quais modelos elas são verdadeiras. As duas perspectivas se relacionam, mas não são a mesma coisa.'
+      {heading:'O que uma demonstração realmente garante?',paragraphs:[
+        'Uma prova formal parte de premissas e aplica regras explícitas para chegar a uma conclusão: escrevemos Γ ⊢ φ. Já Γ ⊨ φ diz que toda interpretação em que as premissas são verdadeiras torna a conclusão verdadeira. Uma prova está no lado das regras; uma consequência semântica está no lado dos modelos.',
+        'Um cálculo correto, ou sound, preserva a validade: se Γ ⊢ φ, então Γ ⊨ φ. Isso não quer dizer que uma fórmula seja “provável” nem que toda conclusão plausível possa ser demonstrada. A completude semântica do cálculo clássico de primeira ordem diz, no sentido inverso, que consequências semânticas possuem demonstrações nesse cálculo.'
       ]},
-      {heading:'Demonstração e consequência semântica',paragraphs:[
-        'Quando escrevemos Γ ⊢ φ, dizemos que há uma demonstração formal da fórmula φ a partir de um conjunto de premissas Γ, usando as regras do sistema escolhido. É uma afirmação sobre a possibilidade de construir uma prova por passos autorizados.',
-        'Quando escrevemos Γ ⊨ φ, dizemos algo diferente: toda interpretação que torna verdadeiras as premissas de Γ também torna verdadeira φ. Essa relação é chamada consequência semântica. Podemos investigar o mesmo raciocínio pelas regras de prova ou pelos modelos possíveis.'
+      {heading:'Completude e incompletude não se contradizem',paragraphs:[
+        'Gödel demonstrou a completude do cálculo clássico de primeira ordem, mas também mostrou que teorias formais consistentes, efetivamente axiomatizáveis e capazes de expressar aritmética suficiente não conseguem provar todas as verdades aritméticas do modelo padrão. Essas afirmações tratam de objetos diferentes: um sistema de inferência e uma teoria aritmética particular.',
+        'Isso não significa que “toda lógica é incompleta” ou que o raciocínio rigoroso deixa de valer. A ferramenta prática é perguntar de que propriedade estamos falando e a que sistema ela se aplica. Sem fixar o sistema, a linguagem e as hipóteses, expressões como “completo” e “decidível” são ambíguas.'
       ]},
-      {heading:'O que é um sistema correto e completo?',paragraphs:[
-        'Um sistema de provas é correto, ou sólido no sentido metateórico, quando suas regras não permitem demonstrar uma conclusão que falhe semanticamente a partir das premissas. Em símbolos: se Γ ⊢ φ, então Γ ⊨ φ. O sistema não produz inferências inválidas.',
-        'Um sistema é completo, relativamente à linguagem e à semântica especificadas, quando toda consequência semântica pode ser demonstrada: se Γ ⊨ φ, então Γ ⊢ φ. Correção e completude são propriedades distintas. Nenhuma delas, isoladamente, significa que existe um algoritmo que termina para decidir toda pergunta possível.'
+      {heading:'Um procedimento que procura não é necessariamente um decisor',paragraphs:[
+        'Um algoritmo de decisão deve terminar em todas as entradas com resposta correta. Um método de busca por provas pode encontrar uma demonstração quando ela existe, mas continuar procurando indefinidamente quando não há prova. Encontrar evidência positiva e decidir todos os casos são tarefas diferentes.',
+        'Turing mostrou que não existe algoritmo geral capaz de decidir, para qualquer programa e entrada, se a execução terminará. Isso não impede demonstrar a parada de um programa simples que repete três vezes, nem demonstrar que um laço sem saída não termina. Evite transformar a impossibilidade de um método universal em incapacidade de analisar casos concretos.'
       ]}
     ],
-    misconception:'Não confunda completude com decidibilidade. Um sistema pode permitir prova para cada consequência semântica sem oferecer um procedimento que termine com “sim” ou “não” para todas as entradas.',
-    summary:'⊢ expressa derivação por regras; ⊨ expressa consequência em todos os modelos. Correção liga prova à validade; completude liga validade à existência de prova.',
-    check:{question:'Se um sistema é correto, qual afirmação deve valer?',options:['Tudo o que é demonstrável a partir das premissas também é consequência semântica delas.','Todas as fórmulas são demonstráveis.','Qualquer fórmula pode ser decidida por um algoritmo que sempre termina.'],correct:0,why:'Correção assegura que uma derivação autorizada não leva a uma conclusão semanticamente inválida a partir das premissas.'}
+    misconception:'“Provável” não significa “demonstrável”: correção liga ⊢ a ⊨. A completude da lógica de primeira ordem não torna toda teoria aritmética completa, e a indecidibilidade geral da parada não impede resolver casos particulares.',
+    summary:'Correção: provas preservam validade. Completude do cálculo: consequências semânticas possuem provas. Incompletude aritmética e indecidibilidade da parada têm hipóteses e alcances distintos. Pergunte sempre qual sistema e qual problema estão em jogo.',
+    check:{question:'Um algoritmo identifica que um laço simples com três iterações termina. Isso contradiz a indecidibilidade geral da parada?',options:['Não: a indecidibilidade geral não impede decidir programas particulares.','Sim: Turing provou que não se pode analisar nenhum programa.','Sim: todo procedimento precisa executar para sempre.'],correct:0,why:'O problema da parada não possui decisor uniforme para qualquer par programa/entrada, mas é possível demonstrar término ou não término em situações específicas.'}
   },
   modais:{
     objective:'Distinguir possibilidade de necessidade e interpretar operadores modais e temporais segundo os mundos ou momentos considerados.',
