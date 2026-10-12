@@ -2,9 +2,10 @@
 export const ASSESSMENT_VERSION=2;
 const mix=(items,random=Math.random)=>{const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 export function prepareBank(id,lesson,reading,supplement=[]){
+  // A autoverificação de leitura é formativa e não deve reaparecer no exame somativo.
+  // A leitura permanece argumento para compatibilidade da interface pública.
   const basic=lesson.quiz.map((q,i)=>({...q,id:id+'-base-'+(i+1),dimension:i===0?'concept':'application',objective:'Objetivo central da aula'}));
-  const check=reading?.check?[{...reading.check,id:id+'-leitura',dimension:'concept',objective:'Compreensão da síntese da leitura'}]:[];
-  return [...basic,...check,...supplement.map((q,i)=>({...q,id:id+'-extra-'+(i+1)}))];
+  return [...basic,...supplement.map((q,i)=>({...q,id:id+'-extra-'+(i+1)}))];
 }
 export function validateBank(bank){
   const ids=new Set();
@@ -32,9 +33,9 @@ export function composeAssessment(bank,history=[],random=Math.random){
 export function gradeAssessment(questions,answers){
   const missing=questions.some((_,i)=>answers[i]===undefined||answers[i]===null);
   const overall=questions.reduce((n,q,i)=>n+(Number(answers[i])===q.correct?1:0),0);
-  const central=questions.filter(q=>q.dimension==='concept');
-  const concepts=central.reduce((n,q)=>n+(Number(answers[questions.indexOf(q)])===q.correct?1:0),0);
-  const passed=!missing&&overall>=4&&concepts===2&&questions.length===5&&central.length===2;
+  const conceptTotal=questions.filter(q=>q.dimension==='concept').length;
+  const concepts=questions.reduce((n,q,i)=>n+(q.dimension==='concept'&&Number(answers[i])===q.correct?1:0),0);
+  const passed=!missing&&overall>=4&&concepts===2&&questions.length===5&&conceptTotal===2;
   const reason=passed?'Avaliação aprovada.':concepts<2?'Revisão do conceito central necessária.':'Conceito compreendido; revise a aplicação em novos contextos.';
-  return {version:2,overall,total:questions.length,concepts,conceptTotal:central.length,passed,reason,missing};
+  return {version:2,overall,total:questions.length,concepts,conceptTotal,passed,reason,missing};
 }
