@@ -22,6 +22,7 @@ import { UNIT3_READINGS } from './content/reading-unit3.js';
 import { UNIT4_TO_6_READINGS } from './content/reading-units4to6.js';
 import { UNIT12_READINGS } from './content/reading-unit12.js';
 import { UNIT13_READINGS } from './content/reading-unit13.js';
+import { DESCRIPTION_CASES, IDENTITY_CASES, RELATION_CASES, REWRITE_CHAINS, makePredicateQuestions, makeMetatheoryQuestions, makeRewriteQuestions } from './core/precision-lab.js';
 import { INDUCTION_CASES, ABDUCTION_CASES, CAUSAL_CASES, PROBABILITY_CASES, buildInductionQuestions, buildAbductionQuestions, buildCausalQuestions, buildProbabilityQuestions } from './core/evidence-lab.js';
 import { ASSUMPTION_CASES, CATEGORICAL_CASES, CATEGORICAL_CONTEXTS, buildAssumptionQuestions, buildCategoricalQuestions } from './core/argument-lab.js';
 import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, buildSquareQuestions } from './core/opposition-square.js';
@@ -773,7 +774,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     return '';
   }
 
-  const GENERATORS={inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:advancedConceptMode,arvores:advancedConceptMode,metateoria:theoremMode,falacias:advancedConceptMode,modais:semanticsMode,categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalences,argumentos:argumentsMode};
+  const GENERATORS={inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,metateoria:metatheoryPrecisionMode,falacias:advancedConceptMode,modais:semanticsMode,categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalencePrecisionMode,argumentos:argumentsMode};
   const STORE_KEY='logiclab_progress_v1',THEME_KEY='logiclab_theme_v1';
   function blankStats(){return {tries:0,perfect:0,correct:0,total:0,byMode:{},translationTypes:{},deductionLevels:{}}}
   function loadStats(){try{const saved=JSON.parse(localStorage.getItem(STORE_KEY));if(saved&&typeof saved.tries==='number'&&saved.byMode)return saved}catch(e){}return blankStats()}
@@ -1258,6 +1259,32 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       return {...step,options:shuffle([step.target,...all]).map(pretty)};
     });
     return makeSpecial('provas','Construa uma prova formal','Complete as linhas derivadas. Indique a fórmula e a regra aplicada às linhas de origem. Cada justificativa pode ser conferida.',{type:'proof',premises:model.premises,steps,ruleOptions:[['MP','Modus ponens (→E)'],['MT','Modus tollens'],['SH','Silogismo hipotético'],['DS','Silogismo disjuntivo'],['AND_E','Eliminar conjunção (∧E)'],['AND_I','Introduzir conjunção (∧I)'],['OR_I','Introduzir disjunção (∨I)'],['DN','Eliminar dupla negação']]},'Leia as linhas de origem de cada passo. Identifique a regra e a fórmula que ela autoriza.',`A demonstração conclui ${pretty(steps.at(-1).target)} a partir das premissas, usando regras explícitas de inferência.`);
+  }
+  function predicatePrecisionMode(){
+    const description=pick(DESCRIPTION_CASES),identity=pick(IDENTITY_CASES),relation=pick(RELATION_CASES);
+    const questions=makePredicateQuestions(description,identity,relation);
+    return makeSpecial('predicados2','Verifique existência, identidade e unicidade',
+      'Leia o domínio e os papéis atribuídos, separe existência de unicidade, avalie uma descrição definida e teste quantificadores e substituições.',
+      {type:'concept',questions},
+      'Comece contando as pessoas que satisfazem o predicado. Depois verifique se há uma e apenas uma, se realiza a ação e se dois nomes referem-se ao mesmo indivíduo.',
+      'Uma descrição definida exige existência, unicidade e a propriedade atribuída; identidade e escopo dos quantificadores precisam de hipóteses explícitas.');
+  }
+  function metatheoryPrecisionMode(level){
+    if(level==='hard'&&rng(3)===0)return theoremMode(level);
+    return makeSpecial('metateoria','Distingua prova, verdade e limites dos algoritmos',
+      'Decida o que segue de correção, completude, incompletude e indecidibilidade. Analise casos concretos de término de programas.',
+      {type:'concept',questions:makeMetatheoryQuestions()},
+      'Pergunte qual sistema está envolvido. Correção: ⊢ implica ⊨. A parada de um programa específico não é o mesmo que um decisor para todos os programas.',
+      'Completude da lógica de primeira ordem não contradiz incompletude de teorias aritméticas. Busca de provas e decisão geral são noções distintas.');
+  }
+  function equivalencePrecisionMode(level){
+    if(level==='easy')return equivalences(level);
+    const chain=pick(REWRITE_CHAINS);
+    return makeSpecial('equivalencias','Transforme uma fórmula justificando cada passo',
+      'Verifique duas transformações equivalentes, identifique a lei aplicada e escolha um contraexemplo para uma transformação errada.',
+      {type:'concept',questions:makeRewriteQuestions(chain)},
+      'Em cada etapa, compare as condições de verdade e identifique a regra usada. Uma única interpretação divergente refuta a equivalência.',
+      'Cada passagem correta preserva o valor em todas as interpretações; o contraexemplo demonstra por que um passo alternativo seria inválido.');
   }
   function evidenceMode(id){
     const configs={
