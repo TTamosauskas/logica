@@ -9,15 +9,15 @@ O LogicLab é um site estático em ES Modules, HTML e CSS, sem backend. A entrad
 ## Avaliação de compreensão V2
 
 - `src/core/assessment.js`: validação dos itens, composição de avaliações com embaralhamento e correção por dimensões.
-- `src/content/assessment-pilot.js`: expansão editorial de quatro bancos-piloto com oito questões por tema.
+- `src/content/assessment-pilot.js` e `src/content/assessment-unit*.js`: expansão editorial dos 23 bancos, com oito questões suplementares por tema.
 - `src/content/course.js` e `src/content/course-unit13.js`: conteúdos e questões legadas, mantidos em compatibilidade.
-- `src/content/reading-*.js`: materiais de leitura e autoverificações formativas, integradas como itens conceituais no banco V2.
+- `src/content/reading-*.js`: materiais de leitura e autoverificações formativas, deliberadamente excluídas dos bancos somativos.
 - `src/app.js`: integra o seletor, preserva as tentativas em `courseState.lessons[id].assessmentV2`, exibe pontuação conceitual e global, mantendo `mastered`, `best` e revisões anteriores.
 - `tests/assessment.test.js`: integridade de bancos, composição, embaralhamento e regras de aprovação.
 
 A composição requer dois itens `concept` e três `application`. A aprovação inicial exige desempenho total de 4/5 e 2/2 nas questões centrais. O histórico registra até vinte tentativas por tema e o rascunho persiste perguntas e escolhas em andamento.
 
-A expansão editorial completa para doze itens por tema continua pendente para dezenove temas; por isso, nesses casos a variedade decorre sobretudo do embaralhamento das opções e da ordem das perguntas.
+A expansão editorial cobre as 23 aulas, com pelo menos doze itens por aula, cinco ou mais itens conceituais e sete ou mais de aplicação; o conjunto totaliza 277 itens. As retentativas priorizam questões não utilizadas nas últimas três tentativas, enquanto existirem alternativas disponíveis.
 
 ## Evolução técnica
 
