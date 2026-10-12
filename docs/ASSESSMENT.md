@@ -12,6 +12,6 @@ O progresso utiliza o campo aditivo `lessons[id].assessmentV2`, com `history`, `
 
 ## Escopo editorial
 
-O banco base reutiliza as questões anteriores e a autoverificação da leitura. Os quatro temas-piloto — tradução, validade de argumentos, probabilidade e causalidade — têm oito novos itens editoriais cada. Nos demais temas a composição da primeira avaliação já funciona, mas a variação entre tentativas será limitada até que os bancos sejam ampliados.
+O banco base reutiliza as questões anteriores, mas não reutiliza a autoverificação da leitura, que permanece exclusivamente formativa. Os quatro temas-piloto — tradução, validade de argumentos, probabilidade e causalidade — receberam oito novos itens editoriais cada, assim como os outros dezenove temas. Há 277 itens somativos ao todo, com pelo menos 12 por aula: cinco ou mais questões conceituais e sete ou mais de aplicação.
 
 O patamar de 4/5 com 2/2 não foi validado experimentalmente. Deverá ser aferido em estudo com estudantes, comparando desempenho com justificativas abertas e tarefas de transferência.
