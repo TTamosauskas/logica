@@ -759,6 +759,27 @@ try{
     assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
     assert.match(await rel.locator('.truth-relation-status').innerText(),/Equivalentes/);
     assert.match(await rel.locator('.truth-relation-status').innerText(),/Contraditórias/);
+    const legend=rel.locator('.truth-relation-status');
+    assert.equal(await legend.locator('.truth-relation-line--structure').count(),1);
+    assert.equal(await legend.locator('.truth-relation-line--contradictory').count(),1);
+    assert.equal(await legend.locator('.truth-relation-line--equivalent').count(),1);
+    assert.ok(await legend.locator('.truth-relation-line').count()>=3,
+      'Cada relação reconhecida deve ocupar sua própria linha');
+    const colorAndRows=await legend.evaluate((node)=>{
+      const red=node.querySelector('.truth-relation-line--contradictory');
+      const green=node.querySelector('.truth-relation-line--equivalent');
+      const structure=node.querySelector('.truth-relation-line--structure');
+      const heads=[...node.previousElementSibling.querySelectorAll('thead th[data-rel-col]')];
+      const redBorder=getComputedStyle(heads[5],'::after').borderTopColor;
+      const greenBorder=getComputedStyle(heads[3],'::after').borderTopColor;
+      const rects=[...node.querySelectorAll('.truth-relation-line')].map(el=>el.getBoundingClientRect());
+      return {redText:getComputedStyle(red).color,redBorder,
+        greenText:getComputedStyle(green).color,greenBorder,
+        separate:rects.every((r,i)=>i===0||r.top>=rects[i-1].bottom)};
+    });
+    assert.equal(colorAndRows.redText,colorAndRows.redBorder,'Legenda contraditória deve ter a cor da borda vermelha');
+    assert.equal(colorAndRows.greenText,colorAndRows.greenBorder,'Legenda equivalente deve ter a cor da borda verde');
+    assert.equal(colorAndRows.separate,true,'Cada legenda deve ocupar uma linha própria');
     // A borda contínua é um único ::after do cabeçalho, sem bordas em cada td.
     assert.equal(await rel.locator('.free-truth-table tbody [class*="truth-rel-"]').count(),0);
     const outline=await headers.nth(4).evaluate(el=>{
@@ -914,6 +935,20 @@ try{
     const heads=page.locator('.free-truth-table thead th[data-rel-col]');
     await heads.last().hover();
     assert.ok(await page.locator('thead .'+kind).count()>=2);
+    const purpleLegend=page.locator('.truth-relation-line--'+(kind==='truth-rel-contrary'?'contrary':'subcontrary'));
+    assert.ok(await purpleLegend.count()>=1,'Deve haver legenda roxa para cada relação válida');
+    const purpleLines=await purpleLegend.evaluateAll(elements=>elements.map(el=>({
+      color:getComputedStyle(el).color,
+      display:getComputedStyle(el).display,
+      top:el.getBoundingClientRect().top,
+      bottom:el.getBoundingClientRect().bottom
+    })));
+    const purpleBorder=await heads.last().evaluate(el=>getComputedStyle(el,'::after').borderTopColor);
+    assert.ok(purpleLines.every(line=>line.color===purpleBorder),
+      'Todas as legendas contrárias e subcontrárias devem ter o mesmo roxo da borda');
+    assert.ok(purpleLines.every(line=>line.display==='block'));
+    assert.ok(purpleLines.every((line,i)=>i===0||line.top>=purpleLines[i-1].bottom),
+      'Relações roxas múltiplas devem ficar em linhas separadas');
     await ctx.close();
   }
   // Subalternação A→I só é apresentada quando há um indivíduo na classe-sujeito.
@@ -940,6 +975,10 @@ try{
     assert.equal(await page.locator('thead .truth-rel-subaltern').count(),2);
     assert.match(await page.locator('.truth-relation-status').innerText(),/Subalternação/);
     assert.match(await page.locator('.truth-relation-status').innerText(),/→/);
+    const greenLegend=page.locator('.truth-relation-line--subaltern');
+    assert.equal(await greenLegend.count(),1);
+    assert.equal(await greenLegend.evaluate(el=>getComputedStyle(el).color),
+      await heads.last().evaluate(el=>getComputedStyle(el,'::after').borderTopColor));
     await ctx.close();
   }
 
