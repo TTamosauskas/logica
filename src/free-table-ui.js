@@ -169,7 +169,8 @@ export function createFreeTable(root){
     </section>`;
   }
   function freeHighlightRelations(columns){
-    if(!state.graded)return [];
+    // Identifique relações assim que as colunas estiverem integralmente corretas.
+    // A correção explícita serve para fornecer o relatório, não para liberar o hover.
     const rows=freeRows(state),pred=freeTableKind(state)==='predicates';
     const correct=index=>{
       const col=columns[index];
