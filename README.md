@@ -16,15 +16,15 @@ Leia [Pedagogia](docs/PEDAGOGY.md), [Avaliação](docs/ASSESSMENT.md) e [Bancos 
 
 ## Tabela Livre
 
-Acesse **Tabela Livre** no menu superior ou diretamente por `#tabela-livre`. O laboratório é separado das notas, tentativas e revisões do curso. O estudante pode:
+Acesse **Tabela Livre** no menu superior ou por `#tabela-livre`. Esse laboratório não altera notas, tentativas nem revisões do curso. A proposta é trabalhar sempre em **modo de prática**:
 
-- Definir até seis variáveis com proposições em português, editar seus nomes e significados e adicionar até 16 fórmulas proposicionais.
-- Ver automaticamente a **leitura em linguagem natural** de cada fórmula, suas equivalências clássicas quando aplicáveis e as condições de verdade. Ex.: `u = comprei ingresso`, `t = viajei`, `¬(u → t)` gera **“É falso que se comprei ingresso, então viajei.”** e a forma equivalente `u ∧ ¬t`.
-- Gerar todas as combinações V/F ou editar um conjunto próprio de cenários, com até 64 linhas.
-- Alternar entre **Explorar** (resultados automáticos) e **Praticar** (preenchimento manual e correção), ocultando/reabrindo quaisquer colunas pelos ícones dos cabeçalhos.
-- Salvar automaticamente no navegador; exportar/importar o projeto em JSON e exportar a tabela calculada em CSV. O backup geral do LogicLab também inclui a Tabela Livre.
+- A tabela começa apenas com **p** e **q**, sem nenhuma fórmula cadastrada. Ao acrescentar variáveis, o sistema usa automaticamente **r, s, t, u**, até seis variáveis e 64 linhas.
+- O estudante define os significados de suas proposições e insere fórmulas por digitação ou pelos botões do teclado: primeiro **um botão para cada variável existente**, depois **¬ ∧ ∨ → ↔ ⊕ ( )**.
+- Cada fórmula cadastrada recebe uma **tradução estrutural em português**, equivalências clássicas quando cabíveis e as condições de verdade. Com `p = comprei ingresso` e `q = viajei`, `¬(p → q)` significa “É falso que se comprei ingresso, então viajei”, equivalente a `p ∧ ¬q`.
+- **Todas as combinações de V/F** são geradas automaticamente. O estudante preenche os valores das expressões derivadas e utiliza **Conferir respostas** quando desejar, inclusive com colunas ocultas pelos ícones de olho.
+- A tabela e suas respostas são salvas automaticamente no navegador e integram o **backup global** do LogicLab. Não há modos alternativos, cenários manuais ou exportação de CSV/JSON específica nesta tela.
 
-As traduções são **literais e estruturais**, não uma interpretação livre de contextos em linguagem natural. Fórmulas são analisadas pelo mesmo parser e avaliador lógico do curso. A correção considera também colunas recolhidas; o modo personalizado não é apresentado como tabela-verdade completa.
+Rascunhos de versões anteriores são migrados para a sequência p–u, preservando fórmulas e respostas autorais compatíveis. A leitura em português é literal e não introduz interpretações externas à fórmula. Os quantificadores “Todos”, “Alguns” e “Nenhum” pertencem à lógica de predicados e exigem uma área de modelos e domínios, separada da tabela proposicional.
 
 ## Execução local
 
