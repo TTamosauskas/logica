@@ -29,7 +29,12 @@ export function createFreeTable(root){
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
   function save(){
     if(recovery){notice('O rascunho original está protegido. Exporte os dados antes de reiniciar.',true);return}
-    try{localStorage.setItem(FREE_TABLE_KEY,JSON.stringify(state));notice('Tabela salva automaticamente neste navegador.')}
+    try{
+      localStorage.setItem(FREE_TABLE_KEY,JSON.stringify(state));
+      notice(board.querySelector('[data-unsaved="true"]')?
+        'Dados anteriores salvos. Há textos em edição que ainda exigem Salvar ou Atualizar.':
+        'Tabela salva automaticamente neste navegador.');
+    }
     catch{notice('Não foi possível salvar: armazenamento indisponível.',true)}
   }
   const has=col=>state.hidden.includes(col.key);
@@ -264,7 +269,9 @@ export function createFreeTable(root){
       relations:freeHighlightRelations(columns)});
   }
   function refresh(msg,options={}){
-    save();render(options);if(msg)notice(msg);
+    save();render(options);
+    if(msg)notice(msg+(board.querySelector('[data-unsaved="true"]')?
+      ' Existem textos em edição ainda não salvos.':''));
   }
   function run(action,button){
     if(action==='download-recovery'&&recovery){
@@ -289,8 +296,11 @@ export function createFreeTable(root){
     if(action==='save-var'||action==='remove-var'){
       const i=Number(button.dataset.index),entry=state.variables[i];if(!entry)return;
       if(action==='remove-var')removeFreeVariable(state,entry.name);
-      else editFreeVariable(state,entry.name,entry.name,root.querySelector('[data-var-meaning="'+i+'"]').value,
-        root.querySelector('[data-var-kind="'+i+'"]').value);
+      else{
+        const meaning=root.querySelector('[data-var-meaning="'+i+'"]'),kind=root.querySelector('[data-var-kind="'+i+'"]');
+        editFreeVariable(state,entry.name,entry.name,meaning.value,kind.value);
+        delete meaning.dataset.unsaved;delete kind.dataset.unsaved;
+      }
       refresh('Variáveis atualizadas.');return;
     }
     if(action==='add-formula'){
@@ -300,7 +310,11 @@ export function createFreeTable(root){
     if(action==='save-formula'||action==='remove-formula'){
       const id=button.dataset.id;
       if(action==='remove-formula')removeFreeFormula(state,id);
-      else editFreeFormula(state,id,root.querySelector('[data-formula-source="'+id+'"]').value);
+      else{
+        const input=root.querySelector('[data-formula-source="'+id+'"]');
+        editFreeFormula(state,id,input.value);
+        delete input.dataset.unsaved;
+      }
       refresh('Fórmulas atualizadas.');return;
     }
     if(action==='toggle-col'){
@@ -323,7 +337,11 @@ export function createFreeTable(root){
       domainOpen=true;
       const id=button.dataset.id;
       if(action==='remove-ind')removeFreeIndividual(state,id);
-      else editFreeIndividual(state,id,root.querySelector('[data-ind-label="'+CSS.escape(id)+'"]').value);
+      else{
+        const input=root.querySelector('[data-ind-label="'+CSS.escape(id)+'"]');
+        editFreeIndividual(state,id,input.value);
+        delete input.dataset.unsaved;
+      }
       refresh('Domínio atualizado.');return;
     }
     if(action==='predicate-value'){
@@ -336,16 +354,23 @@ export function createFreeTable(root){
     if(action==='verify-inference'){
       const source=root.querySelector('#freeConclusion').value;
       const report=verifyFreeInference(state,source);
+      delete root.querySelector('#freeConclusion').dataset.unsaved;
       refresh(report.valid?'Inferência examinada.':'Contraexemplo encontrado.');
       return;
     }
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
   root.addEventListener('input',e=>{
-    if(e.target.matches(editableSelector))e.target.dataset.unsaved='true';
+    if(e.target.matches(editableSelector)){
+      e.target.dataset.unsaved='true';
+      notice('Campo em edição: use Salvar ou Atualizar antes de sair ou recarregar.');
+    }
   });
   root.addEventListener('change',e=>{
-    if(e.target.matches('[data-var-kind]')){e.target.dataset.unsaved='true';return}
+    if(e.target.matches('[data-var-kind]')){
+      e.target.dataset.unsaved='true';
+      notice('Tipo em edição: clique em Salvar para aplicar a mudança.');return;
+    }
     if(e.target.matches('[data-venn-column]'))vennSelectedKey=e.target.value;
     else if(e.target.matches('[data-venn-filter]'))
       vennFilters={...vennFilters,[e.target.dataset.vennFilter]:e.target.value};
