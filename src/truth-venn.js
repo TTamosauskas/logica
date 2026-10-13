@@ -53,8 +53,10 @@ function svgDiagram(id,names,regions,{solution=false,predicate=false}={}){
       const isInside=Boolean(item.mask&(1<<(names.length-i-1)));
       return '<g clip-path="url(#'+clipName(id,i,isInside)+')">';
     }).join('');
+    const divergent=!predicate&&!solution&&item.expected&&item.answer!==item.expected;
     return opened+'<rect x="0" y="0" width="480" height="330" class="truth-venn-'+shade+'"><title>'+
-      esc(item.label+': '+(predicate?(item.count+' indivíduos'+(item.people?.length?': '+item.people.join(', '):'')):(raw||'pendente')))+'</title></rect>'+
+      esc(item.label+': '+(predicate?(item.count+' indivíduos'+(item.people?.length?': '+item.people.join(', '):'')):(raw||'pendente'))+
+      (divergent?' · revisar':''))+'</title></rect>'+
       '</g>'.repeat(names.length);
   }).join('');
   const outlines=layout.circles.map(([x,y,r],i)=>
@@ -150,6 +152,8 @@ export function renderPredicateVenn({id='free',variables=[],variableMeanings={},
     '<div class="truth-venn-views"><div class="truth-venn-view"><h4>Indivíduos cadastrados</h4>'+
     svgDiagram(id+'-pred',shown,regions,{predicate:true})+'</div></div>'+
     variableLegend(variables,variableMeanings)+
-    '<p class="truth-venn-status" role="status">'+pending+' indivíduo(s) ainda com predicados indefinidos; '+
-    filtered+' fora do recorte. Os números indicam pessoas, não V/F das fórmulas.</p></section>';
+    '<p class="truth-venn-status" role="status">Os números indicam indivíduos cadastrados com predicados definidos, não V/F de fórmulas. '+
+    'Um 0 indica ausência de indivíduos conhecidos nessa região, não prova que ela seja logicamente vazia. '+
+    pending+' indivíduo(s) ainda com predicados indefinidos; '+
+    filtered+' fora do recorte.</p></section>';
 }

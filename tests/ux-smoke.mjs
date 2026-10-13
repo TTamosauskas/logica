@@ -561,6 +561,20 @@ try{
     assert.equal(await free.locator('#freeNewFormula').inputValue(),'r∧p');
     await free.locator('[data-action="add-formula"]').click();
     assert.equal(await free.locator('.free-formula-card').count(),3);
+    // Entradas em edição sobrevivem ao preenchimento de células sem serem aplicadas prematuramente.
+    await free.locator('[data-var-meaning="1"]').fill('descrição ainda não salva');
+    assert.equal(await free.locator('[data-var-meaning="1"]').getAttribute('data-unsaved'),'true');
+    const initialScroll=await free.locator('.free-table-scroll').evaluate(element=>{
+      element.scrollLeft=120;return element.scrollLeft;
+    });
+    await free.locator('.free-truth-table [data-action="answer"]').first().evaluate(element=>element.click());
+    assert.equal(await free.locator('[data-var-meaning="1"]').inputValue(),'descrição ainda não salva');
+    assert.equal(await free.locator('.free-table-scroll').evaluate(element=>element.scrollLeft),initialScroll);
+    assert.equal(await free.locator('.free-translation').first().innerText().then(x=>x.includes('viajei')),true,
+      'A alteração do significado não deve modificar a leitura até Salvar');
+    await free.locator('[data-action="save-var"][data-index="1"]').click();
+    assert.equal(await free.locator('[data-var-meaning="1"]').getAttribute('data-unsaved'),null);
+    assert.match(await free.locator('.truth-venn-legend').innerText(),/descrição ainda não salva/);
     await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:p"]').click();
     assert.equal(await free.locator('.free-truth-table th.truth-col-collapsed').count(),1);
     assert.equal(await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:p"]').getAttribute('aria-pressed'),'false');
@@ -592,6 +606,17 @@ try{
     assert.match(free.url(),/#tabela-livre$/);
     const overflow=await free.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
     assert.ok(overflow<=2,'Tabela Livre excede o viewport de '+width+'px em '+overflow);
+    // Mesmo um rascunho incompatível não pode ser sobrescrito por uma tabela vazia.
+    const invalid='{"version":4,"variables":[],"formulas":[]}';
+    await free.evaluate(value=>localStorage.setItem('logiclab_tabela_livre_v1',value),invalid);
+    await free.reload({waitUntil:'networkidle'});
+    assert.equal(await free.locator('.free-recovery').count(),1);
+    assert.match(await free.locator('.free-recovery').innerText(),/Nenhum dado original foi substituído/);
+    assert.equal(await free.evaluate(()=>localStorage.getItem('logiclab_tabela_livre_v1')),invalid);
+    free.once('dialog',dialog=>dialog.accept());
+    await free.locator('[data-action="reset-recovery"]').click();
+    assert.equal(await free.locator('.free-recovery').count(),0);
+    assert.deepEqual(await free.locator('.free-variable-symbol').allTextContents(),['p','q']);
     assert.deepEqual(freeErrors,[]);
     await freeContext.close();
   }
@@ -607,6 +632,14 @@ try{
     await pred.locator('#freeNewIndividualLabel').fill('Sócrates');
     await pred.locator('[data-action="add-ind"]').click();
     assert.equal(await pred.locator('[data-ind-label="s"]').inputValue(),'Sócrates');
+    // O domínio colapsado deve continuar colapsado após atualizações da página.
+    await pred.locator('.free-domain summary').click();
+    assert.equal(await pred.locator('.free-domain').evaluate(el=>el.open),false);
+    await pred.locator('[data-action="add-var"]').click();
+    assert.equal(await pred.locator('.free-domain').evaluate(el=>el.open),false);
+    await pred.locator('.free-domain summary').click();
+    assert.equal(await pred.locator('.free-domain').evaluate(el=>el.open),true);
+    assert.equal(await pred.locator('.free-variable-symbol').count(),3);
     await pred.locator('[data-var-meaning="0"]').fill('x é Sócrates');
     await pred.locator('[data-action="save-var"][data-index="0"]').click();
     await pred.locator('[data-var-meaning="1"]').fill('x é mortal');
@@ -619,6 +652,9 @@ try{
     await pred.locator('[data-action="add-formula"]').click();
     assert.equal(await pred.locator('.free-formula-card').count(),1);
     assert.match(await pred.locator('.free-translation').first().innerText(),/Para todo indivíduo x, se/);
+    assert.match(await pred.locator('.free-inference .free-hint').innerText(),/Independente do domínio/);
+    assert.match(await pred.locator('#freeTableTitle').innerText(),/^4\./);
+    assert.match(await pred.locator('.truth-venn-status').innerText(),/não prova que ela seja logicamente vazia/);
     assert.equal(await pred.locator('.free-truth-table tbody tr').count(),2);
     assert.equal(await pred.locator('.free-truth-table .free-person-cell').count(),1);
     assert.equal(await pred.locator('.free-truth-table .free-input-pred').count(),2);
@@ -1201,7 +1237,12 @@ try{
     assert.equal(await app14.locator('#courseLesson .course-lesson-flow .locked svg.course-stage-lock').count(),3);
     await app14.locator('#courseLesson .course-lesson-flow button[data-stage="2"]').click();
     assert.match(await app14.evaluate(()=>document.activeElement?.textContent),/2. Observar um exemplo resolvido/);
-    await app14.waitForFunction(()=>{const p=document.querySelector('#course-stage-2');const y=p?.getBoundingClientRect().top;return Number.isFinite(y)&&y>=0&&y<160});
+    // Uma etapa próxima ao fim da aula pode não alcançar o topo da tela por falta de espaço para rolar.
+    // O requisito real é que a seção esteja visível após a navegação.
+    await app14.waitForFunction(()=>{
+      const rect=document.querySelector('#course-stage-2')?.getBoundingClientRect();
+      return Boolean(rect&&rect.bottom>0&&rect.top<innerHeight);
+    });
     assert.equal(app14.url(),lessonRoute);
     const progressAfterJump=await app14.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons.fundamentos);
     assert.equal(progressAfterJump.read,true);

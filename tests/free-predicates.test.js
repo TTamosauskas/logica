@@ -111,3 +111,44 @@ test('dados e escolhas sobrevivem ao salvamento sem alterar a correção proposi
  assert.equal(restored.graded,true);
  assert.equal(gradeFreeTable(restored).total,3);
 });
+
+
+test('a constante individual pode ser vinculada ao domínio concreto com a mesma identidade',()=>{
+  const s=blankFreeTable();
+  editFreeVariable(s,'p','p','Sócrates','individual');
+  editFreeVariable(s,'q','q','x é mortal','predicate');
+  addFreeFormula(s,'q(p)');
+  addFreeIndividual(s,'p','Sócrates');
+  assert.equal(freeTableKind(s),'predicates');
+  assert.deepEqual(freeRows(s).map(person=>person.id),['p']);
+  s.predicateValues['p|q']='V';
+  const col=freeColumns(s).find(c=>c.kind==='formula');
+  s.answers['global|'+col.key]='V';
+  assert.deepEqual(gradeFreeTable(s),{correct:1,total:1,missing:0});
+  const restored=readFreeTable(JSON.stringify(s),{strict:true});
+  assert.equal(restored.variables[0].kind,'individual');
+  assert.deepEqual(restored.domain,[{id:'p',label:'Sócrates'}]);
+  assert.equal(restored.answers['global|'+col.key],'V');
+  assert.throws(()=>editFreeVariable(restored,'p','p','uma propriedade','predicate'),/identifica um indivíduo/);
+});
+
+test('um símbolo com papel de indivíduo nunca recebe V/F como proposição',()=>{
+  const s=blankFreeTable();
+  editFreeVariable(s,'p','p','Sócrates','individual');
+  assert.equal(freeTableKind(s),'predicates');
+  assert.equal(freeRows(s).length,0);
+  assert.throws(()=>parseFreeFormula(s,'p ∧ q'),/proposicionais não podem incluir símbolos/);
+  assert.throws(()=>addFreeFormula(s,'q'),/proposicionais não podem incluir símbolos/);
+  addFreeFormula(s,'q(p)');
+  assert.equal(freeTableKind(s),'predicates');
+});
+
+test('excluir indivíduo citado pela conclusão é impedido antes de corromper a persistência',()=>{
+  const s=blankFreeTable();
+  addFreeIndividual(s,'s','Sócrates');
+  addFreeFormula(s,'∀x(p(x) → q(x))');
+  s.inferenceConclusion='q(s)';
+  assert.throws(()=>removeFreeIndividual(s,'s'),/conclusão que usa s/);
+  assert.equal(s.domain.length,1);
+  assert.equal(readFreeTable(JSON.stringify(s),{strict:true}).domain[0].id,'s');
+});

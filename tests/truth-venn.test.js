@@ -62,7 +62,8 @@ test('modo de predicados representa indivíduos sem fingir conhecer entradas inc
   assert.match(html,/Ana/);
   assert.match(html,/1 indivíduo\(s\) ainda com predicados indefinidos/);
   assert.doesNotMatch(html,/Solução correta/);
-  assert.match(html,/Os números indicam pessoas, não V\/F das fórmulas/);
+  assert.match(html,/Os números indicam indivíduos cadastrados com predicados definidos, não V\/F de fórmulas/);
+  assert.match(html,/não prova que ela seja logicamente vazia/);
 });
 
 test('rótulos dos indivíduos não inserem marcação HTML no diagrama',()=>{
