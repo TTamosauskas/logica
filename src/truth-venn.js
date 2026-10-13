@@ -79,18 +79,19 @@ function filtersHtml(variables,filters,scope){
       '</select></label>';
   }).join('');
 }
-function regionList(items,{solution=false,predicate=false}={}){
-  return '<ul class="truth-venn-regions">'+items.map(item=>{
-    const result=predicate?(item.people.length?item.people.join(', '):'nenhum cadastrado'):
-      (solution?item.expected:item.answer)||'pendente';
-    const mismatch=!predicate&&!solution&&item.expected&&item.answer!==item.expected;
-    return '<li><code>'+esc(item.label)+'</code><span class="'+(mismatch?'truth-venn-mismatch':'')+'">'+
-      esc(result)+(mismatch?' · revisar':'')+'</span></li>';
-  }).join('')+'</ul>';
+/** Legenda compartilhada: explica os átomos, nunca repete fórmulas de regiões. */
+function variableLegend(variables,meanings={}){
+  const entries=variables.map(name=>{
+    const meaning=String(meanings?.[name]??'').trim();
+    return '<div class="truth-venn-variable"><dt><code>'+esc(name)+'</code></dt>'+
+      '<dd>'+esc(meaning||'Significado não informado neste exercício.')+'</dd></div>';
+  }).join('');
+  return '<section class="truth-venn-legend" aria-label="Significado das variáveis">'+
+    '<h4>Significado das variáveis</h4><dl class="truth-venn-variables">'+entries+'</dl></section>';
 }
 /** Retorna um painel contendo exclusivamente as entradas do aluno até a correção. */
 export function renderTruthVenn({
-  id='exercise',variables=[],rows=[],columns=[],selectedKey='',filters={},
+  id='exercise',variables=[],variableMeanings={},rows=[],columns=[],selectedKey='',filters={},
   getAnswer=()=>'',getExpected=()=>'',checked=false
 }={}){
   if(!variables.length||!columns.length||
@@ -109,17 +110,16 @@ export function renderTruthVenn({
     '" aria-label="Fórmula representada no diagrama">'+columns.map(col=>
       '<option value="'+esc(col.key)+'"'+(col.key===chosenKey?' selected':'')+'>'+esc(col.label)+'</option>').join('')+
     '</select></label>';
-  const user='<div class="truth-venn-view"><h4>Suas respostas</h4>'+svgDiagram(id+'-student',shown,regions)+
-    regionList(regions)+'</div>';
+  const user='<div class="truth-venn-view"><h4>Suas respostas</h4>'+svgDiagram(id+'-student',shown,regions)+'</div>';
   const correct=checked?'<div class="truth-venn-view"><h4>Solução correta</h4>'+
-    svgDiagram(id+'-answer',shown,regions,{solution:true})+regionList(regions,{solution:true})+'</div>':'';
+    svgDiagram(id+'-answer',shown,regions,{solution:true})+'</div>':'';
   return '<section class="truth-venn-panel" aria-label="Venn–Euler das respostas">'+
     '<div class="truth-venn-heading"><div><h3>Diagrama de Venn–Euler</h3>'+
     '<p>Os círculos representam conjuntos de interpretações. Verde = V; vermelho = F; cinza = pendente.</p></div></div>'+
     '<div class="truth-venn-controls">'+selector+filtersHtml(variables,filters,id)+'</div>'+
     (variables.length>3?'<p class="truth-venn-note">Recorte: os círculos mostram '+esc(shown.join(', '))+
     '; as demais variáveis são fixadas pelos filtros. Alterar um filtro seleciona outras linhas da tabela.</p>':'')+
-    '<div class="truth-venn-views">'+user+correct+'</div>'+
+    '<div class="truth-venn-views">'+user+correct+'</div>'+variableLegend(variables,variableMeanings)+
     '<p class="truth-venn-status" role="status">'+
     (checked?differences+' região(ões) divergente(s), incluindo pendências. Compare os dois diagramas.':
       empty+' região(ões) ainda sem resposta. A solução aparecerá somente depois de Conferir respostas.')+'</p>'+
@@ -127,7 +127,7 @@ export function renderTruthVenn({
 }
 
 /** Na tabela de predicados, V/F define pertinência dos indivíduos, não gabarito. */
-export function renderPredicateVenn({id='free',variables=[],people=[],predicateValues={},filters={}}={}){
+export function renderPredicateVenn({id='free',variables=[],variableMeanings={},people=[],predicateValues={},filters={}}={}){
   if(!variables.length||!people.length)return '';
   const shown=variables.slice(0,3),fixed=variables.slice(3);
   const regions=Array.from({length:2**shown.length},(_,mask)=>
@@ -148,8 +148,8 @@ export function renderPredicateVenn({id='free',variables=[],people=[],predicateV
     (fixed.length?'<p class="truth-venn-note">Recorte dos predicados '+esc(shown.join(', '))+
     '. Os demais predicados são fixados pelos filtros.</p>':'')+
     '<div class="truth-venn-views"><div class="truth-venn-view"><h4>Indivíduos cadastrados</h4>'+
-    svgDiagram(id+'-pred',shown,regions,{predicate:true})+
-    regionList(regions,{predicate:true})+'</div></div>'+
+    svgDiagram(id+'-pred',shown,regions,{predicate:true})+'</div></div>'+
+    variableLegend(variables,variableMeanings)+
     '<p class="truth-venn-status" role="status">'+pending+' indivíduo(s) ainda com predicados indefinidos; '+
     filtered+' fora do recorte. Os números indicam pessoas, não V/F das fórmulas.</p></section>';
 }
