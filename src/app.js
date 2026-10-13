@@ -9,6 +9,8 @@ import { courseScreenContext, exerciseScreenContext } from './core/screen-guidan
 import { learningOverview, nextCourseMessage, formatReviewDate, attemptDecision, examWeakAreas } from './core/learning-feedback.js';
 import { EXERCISE_DRAFTS_KEY, EXAM_DRAFT_KEY, DRAFT_VERSION, hasPendingWork, readExerciseDrafts, readExamDraft, mostRecentUnfinished } from './core/draft-store.js';
 import { SYMBOLS, rng, pick, v, not, bin, A, O, X, I, B, t, evalAst, fmt, pretty, sig, varsOf, relevantNames, truthRows, varColumns, stepNodes, formulaColumns, build } from './core/logic.js';
+import {immediateOperands,propositionalRelations,categoricalRelation} from './core/table-relations.js';
+import {attachTruthHighlights} from './table-highlights.js';
 import { tokens, parseFormula, equivalentFormula } from './core/parser.js';
 import { escapeHTML } from './core/html.js';
 import { fundamentals, operators, composed, demorgan, classification, equivalences, argumentsMode } from './modes/propositional.js';
@@ -1054,6 +1056,35 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     renderTable();
     saveExerciseDraft();
   }
+  let truthHighlights=null;
+  function exerciseColumnRelations(ex){
+    const columns=ex.cols;
+    const correct=index=>{
+      const col=columns[index];
+      if(!col||!ex.grade||ex.revealed)return false;
+      if(!col.editable)return true;
+      return ex.envs.every((_,r)=>ex.answers[fieldKey(r,index)]===expected(ex,r,index));
+    };
+    const result=[];
+    if(ex.mode==='categoricos'&&ex.cat){
+      for(let i=0;i<columns.length;i++)for(let j=i+1;j<columns.length;j++){
+        if(!correct(i)||!correct(j)||columns[i].catIndex===undefined||columns[j].catIndex===undefined)continue;
+        const a=ex.cat.forms[columns[i].catIndex],b=ex.cat.forms[columns[j].catIndex];
+        // A existência do sujeito nunca deve ser inferida das linhas ilustrativas.
+        const subjectNonempty=Boolean(ex.cat.assumeNonempty===true);
+        const relation=categoricalRelation(a,b,{subjectNonempty});
+        if(relation)result.push({a:i,b:j,...relation});
+      }
+      return result;
+    }
+    const known=new Set(ex.vars||[]);
+    const supported=node=>!node?false:node.type==='var'?known.has(node.name):
+      (node.type==='not'||['and','or','xor','implies','iff'].includes(node.type))&&
+        Boolean(node.a&&supported(node.a)&&(!node.b||supported(node.b)));
+    const safe=columns.map(col=>({...col,node:supported(col.node)?col.node:null}));
+    return propositionalRelations(safe,ex.vars||[],correct).filter(rel=>
+      columns[rel.a].editable||columns[rel.b].editable);
+  }
   function renderTable(){const ex=exercise,hidden=hiddenTableColumns(ex);
     let str='<thead><tr>'+ex.cols.map((c,index)=>{
       if(ex.mode==='deducao'&&c.key.startsWith('clue')){
@@ -1073,7 +1104,16 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       }
       return `<th scope="col" class="${c.editable?'derived':''}${hidden.has(index)?' truth-col-collapsed':''}"><div class="truth-col-full-label">${escapeHTML(c.label)}<div class="col-sub">${escapeHTML(c.sub)}</div></div>${columnCollapsedLabel(c.label)}${columnToggleButton(index,c.label,hidden.has(index))}</th>`;
     }).join('')+'</tr></thead><tbody>';
-    ex.envs.forEach((env,r)=>{str+='<tr>';ex.cols.forEach((col,c)=>{if(hidden.has(c)){str+='<td class="truth-cell-collapsed" aria-hidden="true"></td>';return}const exp=expected(ex,r,c);if(!col.editable){str+=`<td class="given ${ex.mode==='deducao'?'assignment':ex.mode==='categoricos'?'model-cell':''}" title="Valor conhecido">${escapeHTML(exp)}</td>`;return}const key=fieldKey(r,c),answer=ex.answers[key]||'',grade=ex.grade,checked=grade!==null&&!(ex.mode==='deducao'&&ex.metadata.contest),isCorrect=answer===exp;let cls='cell'+(answer?' filled':'');if(ex.revealed)cls+=' revealed';else if(checked)cls+=!answer?' empty-grade':isCorrect?' correct':' incorrect';const visible=ex.revealed?exp:answer||'<span class="cell-placeholder">·</span>';const expectedBadge=(checked&&(!isCorrect))?`<span class="expected" title="Resposta correta">${exp}</span>`:'';str+=`<td><button type="button" class="${cls}" data-r="${r}" data-c="${c}" ${ex.revealed?'disabled':''} aria-label="Linha ${r+1}, ${col.label}: ${ex.revealed?exp:answer||'vazio'}" title="Clique para alternar V, F e vazio. Também aceita teclas V, F e Delete.">${visible}${expectedBadge}</button></td>`});str+='</tr>'});str+='</tbody>';$('truthTable').innerHTML=str;renderCategoricalModelWorkbench()}
+    ex.envs.forEach((env,r)=>{str+='<tr>';ex.cols.forEach((col,c)=>{if(hidden.has(c)){str+='<td class="truth-cell-collapsed" aria-hidden="true"></td>';return}const exp=expected(ex,r,c);if(!col.editable){str+=`<td class="given ${ex.mode==='deducao'?'assignment':ex.mode==='categoricos'?'model-cell':''}" title="Valor conhecido">${escapeHTML(exp)}</td>`;return}const key=fieldKey(r,c),answer=ex.answers[key]||'',grade=ex.grade,checked=grade!==null&&!(ex.mode==='deducao'&&ex.metadata.contest),isCorrect=answer===exp;let cls='cell'+(answer?' filled':'');if(ex.revealed)cls+=' revealed';else if(checked)cls+=!answer?' empty-grade':isCorrect?' correct':' incorrect';const visible=ex.revealed?exp:answer||'<span class="cell-placeholder">·</span>';const expectedBadge=(checked&&(!isCorrect))?`<span class="expected" title="Resposta correta">${exp}</span>`:'';str+=`<td><button type="button" class="${cls}" data-r="${r}" data-c="${c}" ${ex.revealed?'disabled':''} aria-label="Linha ${r+1}, ${col.label}: ${ex.revealed?exp:answer||'vazio'}" title="Clique para alternar V, F e vazio. Também aceita teclas V, F e Delete.">${visible}${expectedBadge}</button></td>`});str+='</tr>'});
+    let colIndex=0;
+    str=str.replace(/<th scope="col"/g,()=>'<th scope="col" tabindex="0" data-rel-col="'+(colIndex++)+'"');
+    str+='</tbody>';
+    const table=$('truthTable');table.innerHTML=str;
+    const config={columns:ex.cols,operands:index=>immediateOperands(ex.cols,index),
+      relations:exerciseColumnRelations(ex)};
+    if(truthHighlights)truthHighlights.update(config);
+    else truthHighlights=attachTruthHighlights(table,config);
+    renderCategoricalModelWorkbench()}
   function renderChoice(){const ex=exercise;if(!ex.choice){$('decisionArea').innerHTML='';return}const c=ex.choice;let buttons=c.options.map(option=>{const selected=ex.picked===option,cls='choice'+(selected?' selected':'')+(ex.revealed&&option===c.correct?' right':'')+(ex.grade&&selected?(selected&&option===c.correct?' right':' wrong'):'');return `<button class="${cls}" type="button" data-choice="${option}" ${ex.revealed?'disabled':''} aria-pressed="${selected}">${option}</button>`}).join('');$('decisionArea').innerHTML=`<section class="decision"><h3>${c.question}</h3><p>${ex.mode==='deducao'&&ex.metadata.contest?'No modo concurso, escolha sua resposta após analisar as pistas.':'Escolha uma resposta após completar a tabela.'}</p>${ex.mode==='deducao'?`<div class="deduction-options"><h3>Alternativas</h3>${ex.metadata.options.map(o=>`<p><b>${o.letter})</b>${escapeHTML(o.text)}</p>`).join('')}</div>`:''}<div class="choices" role="group" aria-label="${c.question}">${buttons}</div>${(ex.revealed||ex.grade)?`<p class="explanation"><strong>Resposta: ${c.correct}.</strong> ${c.explanation}</p>`:''}</section>`}
   function renderFeedback(){
     const ex=exercise,place=$('feedbackArea');

@@ -439,6 +439,12 @@ try{
     assert.ok(originalColumns>=3&&originalCells>0);
     assert.equal(await focus.locator('#columnVisibility').count(),0,'A faixa redundante não deve existir');
     assert.equal(await table.locator('[data-toggle-col]').count(),originalColumns);
+    assert.equal(await table.locator('thead th[data-rel-col]').count(),originalColumns);
+    await table.locator('thead th[data-rel-col]').last().hover();
+    assert.ok(await table.locator('thead th.truth-rel-structure').count()>=1);
+    assert.equal(await table.locator('thead th.truth-rel-equivalent').count(),0);
+    await table.locator('thead th[data-rel-col]').last().focus();
+    assert.ok(await table.locator('thead th.truth-rel-structure').count()>=1);
     assert.equal(await table.locator('[data-toggle-col][aria-pressed="true"]').count(),originalColumns);
     // Em ambos os estados, o centro do botão e do SVG coincide com o centro do cabeçalho.
     const misalignment=()=>table.locator('thead th').evaluateAll(heads=>Math.max(0,...heads.map(head=>{
@@ -707,6 +713,117 @@ try{
     assert.ok(over<=2,'Inferência simbólica excedeu a tela de '+width+'px em '+over);
     assert.deepEqual(errors,[]);
     await inferenceContext.close();
+  }
+
+  // Destaques compartilhados: composição imediata antes da correção, relações depois.
+  for(const width of [375,1280]){
+    const relationContext=await browser.newContext({viewport:{width,height:812},hasTouch:width===375,isMobile:width===375});
+    const rel=await relationContext.newPage(),relErrors=[];
+    rel.on('pageerror',err=>relErrors.push(err.message));
+    await rel.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    for(const source of ['p→q','¬p∨q','¬(p→q)']){
+      await rel.locator('#freeNewFormula').fill(source);
+      await rel.locator('[data-action="add-formula"]').click();
+    }
+    const headers=rel.locator('.free-truth-table thead th[data-rel-col]');
+    assert.equal(await headers.count(),6);
+    await headers.nth(5).hover();
+    assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-structure')),true);
+    assert.equal(await headers.nth(3).evaluate(el=>el.classList.contains('truth-rel-structure')),true);
+    assert.equal(await headers.nth(0).evaluate(el=>el.classList.contains('truth-rel-structure')),false);
+    assert.equal(await headers.nth(1).evaluate(el=>el.classList.contains('truth-rel-structure')),false);
+    assert.match(await rel.locator('.truth-relation-status').innerText(),/Composição direta/);
+    assert.equal(await headers.nth(5).getAttribute('tabindex'),'0');
+    assert.equal(await rel.locator('.truth-rel-equivalent').count(),0);
+    // Requer todas as células completas e corretas e a conferência explícita.
+    const values={
+      's:!p':['F','F','V','V'],
+      'f:f1':['V','F','V','V'],
+      'f:f2':['V','F','V','V'],
+      'f:f3':['F','V','F','F']
+    };
+    for(let row=0;row<4;row++)for(const [key,list] of Object.entries(values)){
+      const answer=rel.locator('.free-truth-table [data-action="answer"][data-row="'+row+'"][data-key="'+key+'"]');
+      assert.equal(await answer.count(),1,'Célula esperada '+key);
+      await answer.click();if(list[row]==='F')await answer.click();
+    }
+    await headers.nth(4).hover();
+    assert.equal(await rel.locator('thead .truth-rel-equivalent').count(),0);
+    await rel.locator('[data-action="grade"]').click();
+    assert.match(await rel.locator('.free-grade').innerText(),/16 de 16/);
+    await headers.nth(4).hover();
+    assert.equal(await headers.nth(3).evaluate(el=>el.classList.contains('truth-rel-equivalent')),true);
+    assert.equal(await headers.nth(4).evaluate(el=>el.classList.contains('truth-rel-equivalent')),true);
+    assert.match(await rel.locator('.truth-relation-status').innerText(),/Equivalentes/);
+    await headers.nth(5).hover();
+    assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
+    assert.equal(await headers.nth(3).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
+    assert.match(await rel.locator('.truth-relation-status').innerText(),/Contraditórias/);
+    await headers.nth(5).click();
+    assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
+    await headers.nth(5).click();
+    assert.equal(await rel.locator('thead .truth-rel-contradictory').count(),0);
+    await headers.nth(4).focus();
+    await headers.nth(5).focus();
+    assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
+    const over=await rel.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(over<=2,'Bordas de relações ultrapassaram a largura '+width+'px em '+over);
+    assert.deepEqual(relErrors,[]);
+    await relationContext.close();
+  }
+  // Contrariedade e subcontrariedade apresentam as duas variantes de roxo.
+  for(const [sources,kind] of [
+    [['p∧q','p∧¬q'],'truth-rel-contrary'],
+    [['p∨q','¬p∨q'],'truth-rel-subcontrary']
+  ]){
+    const ctx=await browser.newContext({viewport:{width:1280,height:800}});
+    const page=await ctx.newPage();
+    await page.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    for(const source of sources){
+      await page.locator('#freeNewFormula').fill(source);
+      await page.locator('[data-action="add-formula"]').click();
+    }
+    // Para subcontrárias: ¬p é coluna intermediária. Para contrárias: ¬q.
+    const neg=sources[1].includes('¬p')?'p':'q';
+    const values=kind==='truth-rel-contrary'?
+      {'s:!q':['F','V','F','V'],'f:f1':['V','F','F','F'],'f:f2':['F','V','F','F']}:
+      {'s:!p':['F','F','V','V'],'f:f1':['V','V','V','F'],'f:f2':['V','F','V','V']};
+    for(let row=0;row<4;row++)for(const [key,list] of Object.entries(values)){
+      const answer=page.locator('.free-truth-table [data-action="answer"][data-row="'+row+'"][data-key="'+key+'"]');
+      await answer.click();if(list[row]==='F')await answer.click();
+    }
+    await page.locator('[data-action="grade"]').click();
+    assert.match(await page.locator('.free-grade').innerText(),/12 de 12/);
+    const heads=page.locator('.free-truth-table thead th[data-rel-col]');
+    await heads.last().hover();
+    assert.ok(await page.locator('thead .'+kind).count()>=2);
+    await ctx.close();
+  }
+  // Subalternação A→I só é apresentada quando há um indivíduo na classe-sujeito.
+  {
+    const ctx=await browser.newContext({viewport:{width:1280,height:800}});
+    const page=await ctx.newPage();
+    await page.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    await page.locator('.free-domain summary').click();
+    await page.locator('#freeNewIndividualId').fill('s');
+    await page.locator('#freeNewIndividualLabel').fill('Sócrates');
+    await page.locator('[data-action="add-ind"]').click();
+    for(const source of ['∀x(p(x) → q(x))','∃x(p(x) ∧ q(x))']){
+      await page.locator('#freeNewFormula').fill(source);
+      await page.locator('[data-action="add-formula"]').click();
+    }
+    for(const predicate of ['p','q'])await page.locator('.free-input-pred[data-name="'+predicate+'"]').click();
+    const active=page.locator('.free-truth-table [data-action="answer"]');
+    assert.equal(await active.count(),4);
+    for(let index=0;index<4;index++)await active.nth(index).click();
+    await page.locator('[data-action="grade"]').click();
+    assert.match(await page.locator('.free-grade').innerText(),/4 de 4/);
+    const heads=page.locator('.free-truth-table thead th[data-rel-col]');
+    await heads.last().hover();
+    assert.equal(await page.locator('thead .truth-rel-subaltern').count(),2);
+    assert.match(await page.locator('.truth-relation-status').innerText(),/Subalternação/);
+    assert.match(await page.locator('.truth-relation-status').innerText(),/→/);
+    await ctx.close();
   }
 
   // Ciclos 10–13: todas as 23 aulas devem ensinar antes de avaliar.
