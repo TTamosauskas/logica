@@ -561,6 +561,20 @@ try{
     assert.equal(await free.locator('#freeNewFormula').inputValue(),'r∧p');
     await free.locator('[data-action="add-formula"]').click();
     assert.equal(await free.locator('.free-formula-card').count(),3);
+    // Entradas em edição sobrevivem ao preenchimento de células sem serem aplicadas prematuramente.
+    await free.locator('[data-var-meaning="1"]').fill('descrição ainda não salva');
+    assert.equal(await free.locator('[data-var-meaning="1"]').getAttribute('data-unsaved'),'true');
+    const initialScroll=await free.locator('.free-table-scroll').evaluate(element=>{
+      element.scrollLeft=120;return element.scrollLeft;
+    });
+    await free.locator('.free-truth-table [data-action="answer"]').first().evaluate(element=>element.click());
+    assert.equal(await free.locator('[data-var-meaning="1"]').inputValue(),'descrição ainda não salva');
+    assert.equal(await free.locator('.free-table-scroll').evaluate(element=>element.scrollLeft),initialScroll);
+    assert.equal(await free.locator('.free-translation').first().innerText().then(x=>x.includes('viajei')),true,
+      'A alteração do significado não deve modificar a leitura até Salvar');
+    await free.locator('[data-action="save-var"][data-index="1"]').click();
+    assert.equal(await free.locator('[data-var-meaning="1"]').getAttribute('data-unsaved'),null);
+    assert.match(await free.locator('.truth-venn-legend').innerText(),/descrição ainda não salva/);
     await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:p"]').click();
     assert.equal(await free.locator('.free-truth-table th.truth-col-collapsed').count(),1);
     assert.equal(await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:p"]').getAttribute('aria-pressed'),'false');
@@ -607,6 +621,14 @@ try{
     await pred.locator('#freeNewIndividualLabel').fill('Sócrates');
     await pred.locator('[data-action="add-ind"]').click();
     assert.equal(await pred.locator('[data-ind-label="s"]').inputValue(),'Sócrates');
+    // O domínio colapsado deve continuar colapsado após atualizações da página.
+    await pred.locator('.free-domain summary').click();
+    assert.equal(await pred.locator('.free-domain').evaluate(el=>el.open),false);
+    await pred.locator('[data-action="add-var"]').click();
+    assert.equal(await pred.locator('.free-domain').evaluate(el=>el.open),false);
+    await pred.locator('.free-domain summary').click();
+    assert.equal(await pred.locator('.free-domain').evaluate(el=>el.open),true);
+    assert.equal(await pred.locator('.free-variable-symbol').count(),3);
     await pred.locator('[data-var-meaning="0"]').fill('x é Sócrates');
     await pred.locator('[data-action="save-var"][data-index="0"]').click();
     await pred.locator('[data-var-meaning="1"]').fill('x é mortal');
@@ -619,6 +641,9 @@ try{
     await pred.locator('[data-action="add-formula"]').click();
     assert.equal(await pred.locator('.free-formula-card').count(),1);
     assert.match(await pred.locator('.free-translation').first().innerText(),/Para todo indivíduo x, se/);
+    assert.match(await pred.locator('.free-inference .free-hint').innerText(),/Independente do domínio/);
+    assert.match(await pred.locator('#freeTableTitle').innerText(),/^4\./);
+    assert.match(await pred.locator('.truth-venn-status').innerText(),/não prova que ela seja logicamente vazia/);
     assert.equal(await pred.locator('.free-truth-table tbody tr').count(),2);
     assert.equal(await pred.locator('.free-truth-table .free-person-cell').count(),1);
     assert.equal(await pred.locator('.free-truth-table .free-input-pred').count(),2);
