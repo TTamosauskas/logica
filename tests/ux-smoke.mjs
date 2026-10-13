@@ -567,7 +567,7 @@ try{
     await free.locator('[data-action="grade"]').click();
     assert.match(await free.locator('.free-grade').innerText(),/respostas corretas/);
     const stored=await free.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
-    assert.equal(stored.version,2);
+    assert.equal(stored.version,3);
     assert.equal('rowMode' in stored,false);
     assert.equal('viewMode' in stored,false);
     assert.deepEqual(stored.variables.map(x=>x.name),['p','q','r']);
@@ -588,6 +588,78 @@ try{
     assert.ok(overflow<=2,'Tabela Livre excede o viewport de '+width+'px em '+overflow);
     assert.deepEqual(freeErrors,[]);
     await freeContext.close();
+  }
+
+  // A mesma Tabela Livre oferece predicados por indivíduo e resultados globais dos quantificadores.
+  for(const width of [375,1280]){
+    const predContext=await browser.newContext({viewport:{width,height:812}});
+    const pred=await predContext.newPage(),predErrors=[];
+    pred.on('pageerror',err=>predErrors.push(err.message));
+    await pred.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    await pred.locator('.free-domain summary').click();
+    await pred.locator('#freeNewIndividualId').fill('s');
+    await pred.locator('#freeNewIndividualLabel').fill('Sócrates');
+    await pred.locator('[data-action="add-ind"]').click();
+    assert.equal(await pred.locator('[data-ind-label="s"]').inputValue(),'Sócrates');
+    await pred.locator('[data-var-meaning="0"]').fill('x é Sócrates');
+    await pred.locator('[data-action="save-var"][data-index="0"]').click();
+    await pred.locator('[data-var-meaning="1"]').fill('x é mortal');
+    await pred.locator('[data-action="save-var"][data-index="1"]').click();
+    await pred.locator('#freeNewFormula').focus();
+    await pred.locator('.free-keypad [data-symbol="∀"]').click();
+    await pred.locator('.free-keypad [data-symbol="p"]').click();
+    assert.equal(await pred.locator('#freeNewFormula').inputValue(),'∀x(p(x)');
+    await pred.locator('#freeNewFormula').fill('∀x(P(x) → Q(x))');
+    await pred.locator('[data-action="add-formula"]').click();
+    assert.equal(await pred.locator('.free-formula-card').count(),1);
+    assert.match(await pred.locator('.free-translation').first().innerText(),/Para todo indivíduo x, se/);
+    assert.equal(await pred.locator('.free-truth-table tbody tr').count(),2);
+    assert.equal(await pred.locator('.free-truth-table .free-person-cell').count(),1);
+    assert.equal(await pred.locator('.free-truth-table .free-input-pred').count(),2);
+    assert.equal(await pred.locator('.free-truth-table [data-row="global"]').count(),1);
+    await pred.locator('[data-action="grade"]').click();
+    assert.equal(await pred.locator('#freeFeedback').getAttribute('data-result'),'error');
+    assert.match(await pred.locator('#freeFeedback').innerText(),/Preencha V\/F/);
+    await pred.locator('.free-input-pred[data-name="p"]').click();
+    await pred.locator('.free-input-pred[data-name="q"]').click();
+    await pred.locator('.free-input-pred[data-name="q"]').click();
+    assert.equal(await pred.locator('.free-input-pred[data-name="q"]').innerText(),'F');
+    const local=pred.locator('.free-truth-table [data-action="answer"]:not([data-row="global"])').first();
+    await local.click();await local.click();
+    const global=pred.locator('.free-truth-table [data-row="global"]').first();
+    await global.click();await global.click();
+    await pred.locator('[data-action="grade"]').click();
+    assert.match(await pred.locator('.free-grade').innerText(),/2 de 2 respostas corretas/);
+    assert.match(await pred.locator('.free-interpretation').first().innerText(),/Contraexemplo: Sócrates/);
+    await pred.reload({waitUntil:'networkidle'});
+    assert.equal(await pred.locator('.free-input-pred[data-name="q"]').innerText(),'F');
+    assert.equal(await pred.locator('.free-truth-table [data-row="global"]').first().innerText(),'F');
+    assert.match(await pred.locator('.free-grade').innerText(),/2 de 2/);
+    await pred.locator('#freeNewFormula').fill('∃x(P(x) ∧ Q(x))');
+    await pred.locator('[data-action="add-formula"]').click();
+    await pred.locator('#freeNewFormula').fill('¬∃x(P(x) ∧ Q(x))');
+    await pred.locator('[data-action="add-formula"]').click();
+    await pred.locator('#freeNewFormula').fill('Q(s)');
+    await pred.locator('[data-action="add-formula"]').click();
+    assert.match(await pred.locator('.free-translation').last().innerText(),/Sócrates é mortal/);
+    assert.equal(await pred.locator('.free-truth-table [data-row="global"]').count(),4);
+    await pred.locator('#freeNewFormula').fill('p ∨ q');
+    await pred.locator('[data-action="add-formula"]').click();
+    assert.equal(await pred.locator('#freeFeedback').getAttribute('data-result'),'error');
+    assert.equal(await pred.locator('.free-formula-card').count(),4);
+    await pred.locator('#freeNewIndividualId').fill('a');
+    await pred.locator('#freeNewIndividualLabel').fill('Platão');
+    await pred.locator('[data-action="add-ind"]').click();
+    assert.equal(await pred.locator('.free-truth-table .free-person-cell').count(),2);
+    assert.equal(await pred.locator('.free-truth-table [data-row="global"]').count(),4);
+    const stored=await pred.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
+    assert.equal(stored.version,3);
+    assert.deepEqual(stored.domain.map(x=>x.label),['Sócrates','Platão']);
+    assert.equal(stored.formulas.length,4);
+    assert.deepEqual(predErrors,[]);
+    const over=await pred.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(over<=2,'Tabela de quantificadores excedeu '+width+'px em '+over);
+    await predContext.close();
   }
 
   // Ciclos 10–13: todas as 23 aulas devem ensinar antes de avaliar.

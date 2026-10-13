@@ -24,6 +24,11 @@ Acesse **Tabela Livre** no menu superior ou por `#tabela-livre`. Esse laboratór
 - **Todas as combinações de V/F** são geradas automaticamente. O estudante preenche os valores das expressões derivadas e utiliza **Conferir respostas** quando desejar, inclusive com colunas ocultas pelos ícones de olho.
 - A tabela e suas respostas são salvas automaticamente no navegador e integram o **backup global** do LogicLab. Não há modos alternativos, cenários manuais ou exportação de CSV/JSON específica nesta tela.
 
+
+**Quantificadores na mesma tabela:** a Tabela Livre aceita `p(x)`, `q(s)`, `∀x(p(x) → q(x))`, `∃x(p(x) ∧ q(x))` e `¬∃x(p(x) ∧ q(x))`. Na área **Indivíduos do domínio**, cadastre uma constante como `s = Sócrates`. Defina `p(x) = x é humano` e `q(x) = x é mortal`, atribua V/F para cada propriedade e pessoa, depois preencha as subexpressões. O quantificador é avaliado sobre o **domínio inteiro**: sua resposta aparece uma vez, na linha **No domínio**, não uma vez por indivíduo. Após definir as propriedades, a leitura contextual pode identificar um contraexemplo da universal ou uma testemunha da existencial. `q(s)` vira **“Sócrates é mortal”**.
+
+O sistema alterna automaticamente entre linhas proposicionais completas (2ⁿ combinações) e linhas por indivíduos quando as fórmulas envolvem predicados. Não mistura esses dois tipos de fórmula na mesma tabela: para mudar de tipo, remova as fórmulas anteriores. O domínio deve conter ao menos um indivíduo antes da correção. Essa semântica corresponde a **modelos finitos cadastrados**, e não a afirmações sobre todas as pessoas do mundo. A leitura literal de `∀x(p(x)→q(x))` preserva expressamente o quantificador; não se reduz a uma implicação simples.
+
 Rascunhos de versões anteriores são migrados para a sequência p–u, preservando fórmulas e respostas autorais compatíveis. A leitura em português é literal e não introduz interpretações externas à fórmula. Os quantificadores “Todos”, “Alguns” e “Nenhum” pertencem à lógica de predicados e exigem uma área de modelos e domínios, separada da tabela proposicional.
 
 ## Execução local
