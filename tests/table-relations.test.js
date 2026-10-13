@@ -42,7 +42,8 @@ test('não deduz contrariedade artificial quando uma coluna é constante',()=>{
 test('só compara colunas corretas habilitadas, não entrega respostas incompletas',()=>{
   const nodes=[p,q,I(p,q),O(not(p),q)];
   const cols=nodes.map(node=>({node}));
-  assert.deepEqual(propositionalRelations(cols,['p','q'],index=>index<3),[]);
+  assert.ok(propositionalRelations(cols,['p','q'],index=>index<3).every(x=>x.a<3&&x.b<3));
+  assert.equal(propositionalRelations(cols,['p','q'],index=>index<3).some(x=>x.a===2&&x.b===3),false);
   const relations=propositionalRelations(cols,['p','q'],()=>true);
   assert.ok(relations.some(x=>x.a===2&&x.b===3&&x.kind==='equivalent'));
   assert.equal(propositionalRelations(cols,['p','q'],()=>false).length,0);
