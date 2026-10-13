@@ -69,6 +69,5 @@
   #topFreeTable{padding:8px 7px;font-size:11px}
 }
 
-/* Mantém botões do rodapé acima da superfície do próprio rodapé na rolagem móvel. */
-.footer-progress-actions{position:relative;z-index:1}
-.footer-progress-actions button{position:relative;z-index:1;pointer-events:auto}
+/* Reserva espaço de rolagem para alcançar todos os controles do rodapé no celular. */
+@media(max-width:700px){.footer{padding-bottom:120px}}
