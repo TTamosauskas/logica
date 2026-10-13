@@ -1240,7 +1240,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     savedDrafts={};undoClearState=null;finalExamSession=null;
     try{localStorage.removeItem(EXERCISE_DRAFTS_KEY);localStorage.removeItem(EXAM_DRAFT_KEY)}catch{}
     exercise=null;stats=blankStats();translationHistory=[];storeTranslationHistory();deductionHistory=[];saveDeductionHistory();syllogismHistory=[];saveShortHistory(SYLLOGISM_HISTORY_KEY,syllogismHistory);categoricalHistory=[];saveShortHistory(CATEGORICAL_HISTORY_KEY,categoricalHistory);save();courseState={lessons:{},final:{}};saveCourseState();renderHome();goHome();toast('Progresso local reiniciado.');}
-  function showGuide(){if(!$('workView').classList.contains('hide')){const help=$('exerciseHelp');help.open=true;help.scrollIntoView({behavior:'smooth',block:'center'});return}const ref=$('reference');ref.open=true;ref.scrollIntoView({behavior:'smooth',block:'start'})}
+  function showGuide(){const ref=$('reference');ref.open=true;ref.scrollIntoView({behavior:'smooth',block:'start'})}
   function toggleTheme(){const light=document.documentElement.dataset.theme==='light';document.documentElement.dataset.theme=light?'dark':'light';$('themeButton').textContent=light?'☀  Tema':'☾  Tema';try{localStorage.setItem(THEME_KEY,light?'dark':'light')}catch(e){}}
   function initTheme(){let current='dark';try{current=localStorage.getItem(THEME_KEY)||'dark'}catch(e){}document.documentElement.dataset.theme=current;$('themeButton').textContent=current==='light'?'☾  Tema':'☀  Tema'}
   $('modeGrid').addEventListener('click',e=>{
