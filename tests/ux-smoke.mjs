@@ -605,6 +605,10 @@ try{
     await pred.locator('[data-action="save-var"][data-index="0"]').click();
     await pred.locator('[data-var-meaning="1"]').fill('x é mortal');
     await pred.locator('[data-action="save-var"][data-index="1"]').click();
+    await pred.locator('#freeNewFormula').focus();
+    await pred.locator('.free-keypad [data-symbol="∀"]').click();
+    await pred.locator('.free-keypad [data-symbol="p"]').click();
+    assert.equal(await pred.locator('#freeNewFormula').inputValue(),'∀x(p(x)');
     await pred.locator('#freeNewFormula').fill('∀x(P(x) → Q(x))');
     await pred.locator('[data-action="add-formula"]').click();
     assert.equal(await pred.locator('.free-formula-card').count(),1);
