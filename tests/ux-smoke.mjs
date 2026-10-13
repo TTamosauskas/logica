@@ -880,6 +880,10 @@ try{
     assert.equal(await cols.nth(4).evaluate(el=>el.classList.contains('truth-rel-contradictory')),false);
     await last.click();
     await cols.nth(3).hover();
+    assert.equal(await cols.nth(4).evaluate(el=>el.classList.contains('truth-rel-contradictory')),false,
+      'Resposta incorreta não deve liberar relações');
+    await last.click();
+    await cols.nth(3).hover();
     assert.equal(await cols.nth(4).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
     assert.deepEqual(errors,[]);
     await ctx.close();
