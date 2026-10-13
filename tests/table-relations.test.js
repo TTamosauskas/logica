@@ -25,10 +25,9 @@ test('contradição requer inversão de valores em todas as linhas',()=>{
   assert.equal(relationOf(...vectors([A(p,q),not(A(p,q))])).kind,'contradictory');
   assert.equal(relationOf(...vectors([p,not(p)])).kind,'contradictory');
 });
-test('verde tracejado indica consequência em uma só direção',()=>{
-  const relation=relationOf(...vectors([A(p,q),p]));
-  assert.deepEqual(relation,{kind:'subaltern',from:'a',to:'b'});
-  assert.deepEqual(relationOf(...vectors([p,A(p,q)])),{kind:'subaltern',from:'b',to:'a'});
+test('não confunde implicação proposicional com subalternação categórica',()=>{
+  assert.equal(relationOf(...vectors([A(p,q),p])),null);
+  assert.equal(relationOf(...vectors([p,A(p,q)])),null);
 });
 test('roxo contínuo indica contrariedade, roxo tracejado subcontrariedade',()=>{
   assert.equal(relationOf(...vectors([A(p,q),A(p,not(q))])).kind,'contrary');
