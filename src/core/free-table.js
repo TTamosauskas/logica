@@ -62,9 +62,8 @@ export function addFreeVariable(state,name,meaning=''){
   const next=nextFreeVariableName(state);
   if(!next)throw Error('O limite da tabela é de seis variáveis (64 linhas).');
   if(name!==next)throw Error('A próxima variável é '+next+'.');
-  if(state.domain.some(d=>d.id===next))throw Error('O símbolo '+next+' já identifica um indivíduo do domínio. Exclua esse indivíduo antes de acrescentar a variável.');
-  const usedAsIndividual=state.formulas.some(f=>
-    predicateTerms(parseFreeFormula(state,f.source)).has(next));
+  const usedAsIndividual=state.domain.some(d=>d.id===next)||
+    state.formulas.some(f=>predicateTerms(parseFreeFormula(state,f.source)).has(next));
   state.variables.push({name:next,meaning:clean(meaning).slice(0,160),
     kind:usedAsIndividual?'individual':'predicate'});
   invalidate(state);return state;
@@ -114,9 +113,14 @@ export function addFreeIndividual(state,id,label){
     throw Error('Use um identificador como a, b ou s para o indivíduo (não x).');
   if(!clean(label))throw Error('Informe o nome do indivíduo, como Sócrates.');
   if(state.domain.length>=MAX_INDIVIDUALS)throw Error('Máximo de 20 indivíduos.');
-  if(state.domain.some(d=>d.id===name)||
-     state.variables.some(v=>v.name===name&&v.kind!=='individual'))
-    throw Error('Já existe uma proposição, propriedade ou indivíduo com esse símbolo.');
+  if(state.domain.some(d=>d.id===name))
+    throw Error('Já existe um indivíduo com esse símbolo.');
+  const variable=state.variables.find(v=>v.name===name);
+  if(variable?.kind!=='individual'&&variable){
+    if(state.formulas.some(f=>predicateAtomicNames([parseFreeFormula(state,f.source)]).has(name)))
+      throw Error('O símbolo '+name+' já representa uma propriedade em fórmula cadastrada.');
+    variable.kind='individual';
+  }
   state.domain.push({id:name,label:clean(label).slice(0,80)});
   state.graded=false;state.answers={};state.inferenceReport=null;return state;
 }
