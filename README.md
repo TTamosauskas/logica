@@ -10,7 +10,7 @@ Cada aula articula leitura progressiva, exemplo resolvido, prática com ajuda, r
 
 **Todos os 23 temas possuem pelo menos 12 itens de avaliação**, totalizando **277 questões** (12 por aula, com 13 em metateoria). Quatro temas — tradução, validade de argumentos, probabilidade e causalidade — iniciaram a ampliação editorial, posteriormente estendida às demais 19 aulas. As questões de autoverificação da leitura permanecem exclusivamente formativas e não são reutilizadas na avaliação inicial.
 
-**Foco por colunas nas tabelas-verdade:** cada coluna possui um controle de ocultação no cabeçalho, inclusive as variáveis de entrada. As colunas ocultas aparecem em uma faixa acima da tabela e podem ser restauradas individualmente ou pelo comando “Mostrar todas”. Trata-se apenas de uma escolha de visualização: respostas e correção continuam abrangendo todas as colunas, mesmo ocultas. A escolha fica no rascunho da tentativa e é reiniciada ao gerar um novo exercício.
+**Foco por colunas nas tabelas-verdade:** cada cabeçalho mantém um botão de olho aberto (coluna visível) ou riscado (coluna recolhida). Ao recolher uma coluna, o cabeçalho permanece compacto, exibindo seu rótulo abreviado com o nome completo acessível; o estudante pode reabrir a coluna no mesmo botão. Nenhuma variável de entrada é obrigatória. Respostas e correção continuam abrangendo todas as colunas, mesmo recolhidas. A escolha fica salva no rascunho da tentativa e é reiniciada ao gerar um novo exercício.
 
 Leia [Pedagogia](docs/PEDAGOGY.md), [Avaliação](docs/ASSESSMENT.md) e [Bancos de questões](docs/QUESTION_BANKS.md) para rubricas, limitações e critérios editoriais.
 
