@@ -940,12 +940,13 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   }
   function renderCategoricalModelWorkbench(){
     const area=$('categoricalModelWorkbench'),ex=exercise,active=ex?.mode==='categoricos';
-    const tableBar=$('tableHeaderBar'),tableWrap=$('tableScrollWrap'),legend=$('tableLegendBar');
-    if(!active){area.classList.add('hide');tableBar.classList.remove('hide');tableWrap.classList.remove('hide');legend.classList.remove('hide');return}
+    const tableBar=$('tableHeaderBar'),tableWrap=$('tableScrollWrap'),legend=$('tableLegendBar'),columnControls=$('columnVisibility');
+    if(!active){area.classList.add('hide');tableBar.classList.remove('hide');tableWrap.classList.remove('hide');legend.classList.remove('hide');columnControls.classList.toggle('hide',!ex?.cols?.length);return}
     const cat=ex.cat,unlocked=cat.venn.verdictVerified||ex.revealed;
     area.classList.toggle('hide',!unlocked);
     tableBar.classList.toggle('hide',!cat.showFullTable);
     tableWrap.classList.toggle('hide',!cat.showFullTable);
+    columnControls.classList.toggle('hide',!cat.showFullTable);
     legend.classList.toggle('hide',!cat.showFullTable);
     if(!unlocked)return;
     const r=Math.max(0,Math.min(ex.envs.length-1,cat.modelRow||0));cat.modelRow=r;
