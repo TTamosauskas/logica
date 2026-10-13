@@ -936,11 +936,19 @@ try{
     await heads.last().hover();
     assert.ok(await page.locator('thead .'+kind).count()>=2);
     const purpleLegend=page.locator('.truth-relation-line--'+(kind==='truth-rel-contrary'?'contrary':'subcontrary'));
-    assert.equal(await purpleLegend.count(),1);
-    assert.equal(await purpleLegend.evaluate(el=>getComputedStyle(el).color),
-      await heads.last().evaluate(el=>getComputedStyle(el,'::after').borderTopColor),
-      'Contrárias e subcontrárias: texto e borda devem ter o mesmo roxo');
-    assert.equal(await purpleLegend.evaluate(el=>getComputedStyle(el).display),'block');
+    assert.ok(await purpleLegend.count()>=1,'Deve haver legenda roxa para cada relação válida');
+    const purpleLines=await purpleLegend.evaluateAll(elements=>elements.map(el=>({
+      color:getComputedStyle(el).color,
+      display:getComputedStyle(el).display,
+      top:el.getBoundingClientRect().top,
+      bottom:el.getBoundingClientRect().bottom
+    })));
+    const purpleBorder=await heads.last().evaluate(el=>getComputedStyle(el,'::after').borderTopColor);
+    assert.ok(purpleLines.every(line=>line.color===purpleBorder),
+      'Todas as legendas contrárias e subcontrárias devem ter o mesmo roxo da borda');
+    assert.ok(purpleLines.every(line=>line.display==='block'));
+    assert.ok(purpleLines.every((line,i)=>i===0||line.top>=purpleLines[i-1].bottom),
+      'Relações roxas múltiplas devem ficar em linhas separadas');
     await ctx.close();
   }
   // Subalternação A→I só é apresentada quando há um indivíduo na classe-sujeito.
