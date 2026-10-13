@@ -1,6 +1,7 @@
 import { MODULES } from './content/modules.js';
 import { LEARNING_STAGES, getPracticeGroups, getNextLearningStep } from './core/learning-path.js';
 import { routeFromHash } from './core/navigation.js';
+import { createFreeTable } from './free-table-ui.js';
 import { reviewStatus,beginReviewTracking,recordReview,reviewQueue,consolidatedCount,studyRecommendation } from './core/reviews.js';
 import { createBackup,importBackup,PORTABLE_KEYS } from './core/progress-portability.js';
 import { performanceSummary } from './core/performance.js';
@@ -40,6 +41,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   
   
   const $=id=>document.getElementById(id);
+  const freeTable=createFreeTable($('freeTableView'));
   function setRouteHash(hash){const next='#'+hash;if(location.hash!==next)history.pushState(null,'',next)}
   
     
@@ -886,7 +888,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   function openMode(id,updateHash=true,fresh=false){
     if(!MODULES.some(m=>m.id===id))return;
     const previous=!fresh?savedDrafts[id]:null;
-    $('courseView').classList.add('hide');mode=id;
+    $('courseView').classList.add('hide');$('freeTableView').classList.add('hide');mode=id;
     if(previous&&previous.exercise&&(previous.exercise.mode===id||id==='misto')){
       level=previous.level||'easy';serial=previous.serial||1;lastSignature=previous.lastSignature||'';
       courseAttempt=previous.courseAttempt||null;undoClearState=previous.undo||null;
@@ -905,7 +907,17 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     if(exercise)renderExercise();else nextExercise(true);
     scrollTo({top:0,behavior:'instant'});
   }
-  function goHome(updateHash=true){courseAttempt=null;$('courseView').classList.add('hide');$('workView').classList.add('hide');$('homeView').classList.remove('hide');if(updateHash)setRouteHash('inicio');renderHome();scrollTo({top:0,behavior:'instant'})}
+  function openFreeTable(updateHash=true){
+    courseAttempt=null;
+    $('homeView').classList.add('hide');
+    $('workView').classList.add('hide');
+    $('courseView').classList.add('hide');
+    $('freeTableView').classList.remove('hide');
+    if(updateHash)setRouteHash('tabela-livre');
+    freeTable.open();
+    scrollTo({top:0,behavior:'instant'});
+  }
+  function goHome(updateHash=true){courseAttempt=null;$('freeTableView').classList.add('hide');$('courseView').classList.add('hide');$('workView').classList.add('hide');$('homeView').classList.remove('hide');if(updateHash)setRouteHash('inicio');renderHome();scrollTo({top:0,behavior:'instant'})}
   function currentExerciseMode(){return MODULES.find(m=>m.id===exercise.mode)}
   /* PASSO 4 do módulo 11: a mesma geometria do Venn é reutilizada para mostrar
      a posição de cada pessoa de um modelo concreto. Cada cenário é independente. */
@@ -1442,7 +1454,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     });
     $('courseMap').innerHTML=html;
   }
-  function openCourse(updateHash=true,id=null){courseAttempt=null;courseActive=id&&LESSONS[id]?id:null;lessonFeedback=null;$('homeView').classList.add('hide');$('workView').classList.add('hide');$('courseView').classList.remove('hide');$('courseExam').classList.add('hide');if(updateHash)setRouteHash(courseActive?'aula-'+courseActive:'curso');renderCourse();scrollTo({top:0,behavior:'instant'})}
+  function openCourse(updateHash=true,id=null){courseAttempt=null;courseActive=id&&LESSONS[id]?id:null;lessonFeedback=null;$('freeTableView').classList.add('hide');$('homeView').classList.add('hide');$('workView').classList.add('hide');$('courseView').classList.remove('hide');$('courseExam').classList.add('hide');if(updateHash)setRouteHash(courseActive?'aula-'+courseActive:'curso');renderCourse();scrollTo({top:0,behavior:'instant'})}
   function renderCourse(){
     updateCourseContext(courseActive?'lesson':'map');
     renderCourseMap();$('courseMap').classList.toggle('hide',!!courseActive);$('courseLesson').classList.toggle('hide',!courseActive);$('courseMapButton').classList.toggle('hide',!courseActive);$('courseExam').classList.add('hide');if(courseActive)renderCourseLesson();}
@@ -1751,10 +1763,13 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   $('nextLessonButton').addEventListener('click',openRecommendedLesson);
   $('heroStartButton').addEventListener('click',()=>openCourse());
   $('heroPracticeButton').addEventListener('click',()=>{const section=$('practiceSection');section.scrollIntoView({behavior:'smooth',block:'start'});section.focus({preventScroll:true})});
+  $('topFreeTable').addEventListener('click',()=>openFreeTable());$('freeHomeBack').addEventListener('click',()=>goHome());
   $('topCourse').addEventListener('click',()=>openCourse());$('startCourseButton').addEventListener('click',()=>openCourse());$('courseHomeBack').addEventListener('click',()=>goHome());$('courseMapButton').addEventListener('click',()=>openCourse());$('courseMap').addEventListener('click',courseClick);$('courseLesson').addEventListener('click',courseClick);$('courseLesson').addEventListener('change',e=>{if(e.target.matches('[data-square-mode],[data-square-given]'))updateSquareLab(e.target.closest('[data-square-lab]'));});$('courseExam').addEventListener('click',courseClick);
   function syncRouteFromLocation(){
     const route=routeFromHash(location.hash,MODULES.map(m=>m.id),Object.keys(LESSONS));
-    if(route.view==='exam'){
+    if(route.view==='free-table'){
+      if($('freeTableView').classList.contains('hide'))openFreeTable(false);
+    }else if(route.view==='exam'){
       if($('courseExam').classList.contains('hide')){openCourse(false);openFinalExam(false)}
     }else if(route.view==='course'){
       if($('courseView').classList.contains('hide')||courseActive!==route.id)openCourse(false,route.id);
