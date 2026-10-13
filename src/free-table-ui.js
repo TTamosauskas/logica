@@ -16,14 +16,19 @@ const eye=open=>open?
   '<path d="M3 3l18 18"></path><path d="M10.5 5.1A11 11 0 0 1 12 5c6.6 0 10 7 10 7a14 14 0 0 1-3.3 4.1"></path><path d="M6.6 6.6C3.6 8.6 2 12 2 12s3.4 7 10 7c1.3 0 2.5-.3 3.6-.7"></path>';
 const key=(r,col)=>r+'|'+col;
 export function createFreeTable(root){
-  let state;
-  try{state=readFreeTable(localStorage.getItem(FREE_TABLE_KEY))}catch{state=blankFreeTable()}
+  let state,recovery=null;
+  try{
+    const stored=localStorage.getItem(FREE_TABLE_KEY);
+    try{state=readFreeTable(stored,{strict:true})}
+    catch(error){state=blankFreeTable();recovery={raw:stored||'',reason:error.message}}
+  }catch{state=blankFreeTable()}
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
-  let lastFormulaInput=null,domainOpen=false;
+  let lastFormulaInput=null,domainOpen=state.domain.length>0;
   let truthHighlightController=null;
   let vennSelectedKey='',vennFilters={};
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
   function save(){
+    if(recovery){notice('O rascunho original está protegido. Exporte os dados antes de reiniciar.',true);return}
     try{localStorage.setItem(FREE_TABLE_KEY,JSON.stringify(state));notice('Tabela salva automaticamente neste navegador.')}
     catch{notice('Não foi possível salvar: armazenamento indisponível.',true)}
   }
@@ -59,8 +64,7 @@ export function createFreeTable(root){
     </section>`;
   }
   function renderDomain(){
-    const hasMembers=state.domain.length>0;
-    return `<details class="free-domain" ${hasMembers||domainOpen?'open':''}>
+    return `<details class="free-domain" ${domainOpen?'open':''}>
       <summary>Indivíduos do domínio (opcional, para testar um modelo V/F) <small>${state.domain.length} cadastrados</small></summary>
       <p>Esta área não é necessária para verificar se uma conclusão decorre das premissas. Para experimentar V/F em um modelo concreto, cadastre indivíduos, por exemplo s = Sócrates; cada um ocupará uma linha.</p>
       <div class="free-domain-entries">${state.domain.map(item=>`<div class="free-domain-entry">
@@ -128,7 +132,7 @@ export function createFreeTable(root){
     const result=state.inferenceReport;
     return `<section class="free-card free-inference" aria-labelledby="freeInferenceTitle">
       <div class="free-section-heading"><h2 id="freeInferenceTitle">3. Verificar uma inferência</h2>
-        <span class="free-hint">Sem domínio cadastrado</span></div>
+        <span class="free-hint">Independente do domínio cadastrado</span></div>
       <p>As fórmulas acima são as premissas. Informe a conclusão e verifique se ela decorre necessariamente das premissas. Esta análise considera todos os modelos possíveis, sem cadastrar pessoas ou atribuir V/F manualmente.</p>
       <div class="free-formula-new"><label>Conclusão <input type="text" id="freeConclusion" maxlength="240"
         value="${esc(state.inferenceConclusion||'')}" placeholder="ex.: r(p)" spellcheck="false"></label>
@@ -166,7 +170,7 @@ export function createFreeTable(root){
         getExpected:(row,col)=>evaluateFreeRow(rows[row],col,state)?'V':'F',
         checked:state.graded});
     return `<section class="free-card" aria-labelledby="freeTableTitle">
-      <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2><span class="free-hint">${rows.length} ${pred?'indivíduos':'combinações V/F'} · ${n}/${columns.length} colunas expandidas</span></div>
+      <div class="free-section-heading"><h2 id="freeTableTitle">${pred?'4':'3'}. Preencher a tabela-verdade</h2><span class="free-hint">${rows.length} ${pred?'indivíduos':'combinações V/F'} · ${n}/${columns.length} colunas expandidas</span></div>
       <p class="free-table-tip">${pred?'Preencha V/F dos predicados para cada indivíduo. Depois resolva as expressões. Cada quantificador tem um único resultado para o domínio, na última linha.':'Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas.'} Use o olho de cada cabeçalho para recolher ou mostrar colunas. Passe sobre um cabeçalho (ou toque nele) para ver relações entre colunas completamente corretas, mesmo antes de conferir.</p>
       <div class="table-scroll free-table-scroll" role="region" tabindex="0" aria-label="Tabela Livre ${pred?'de predicados':'proposicional'}">
         <table class="truth-table free-truth-table">
@@ -212,20 +216,71 @@ export function createFreeTable(root){
     }
     return result;
   }
-  function render(){
+  const editableSelector='[data-var-meaning],[data-var-kind],[data-formula-source],[data-ind-label],'+
+    '#freeNewFormula,#freeConclusion,#freeNewIndividualId,#freeNewIndividualLabel';
+  const draftKey=element=>element.id?'id:'+element.id:
+    ['data-var-meaning','data-var-kind','data-formula-source','data-ind-label']
+      .map(name=>element.hasAttribute(name)?name+':'+element.getAttribute(name):'')
+      .find(Boolean)||'';
+  function render({resetNewFormula=false,resetNewIndividual=false}={}){
+    const previousDomain=board.querySelector('.free-domain');
+    if(previousDomain)domainOpen=previousDomain.open;
+    const oldScroll=board.querySelector('.free-table-scroll');
+    const scroll=oldScroll?{left:oldScroll.scrollLeft,top:oldScroll.scrollTop}:null;
+    const active=document.activeElement,focusKey=board.contains(active)?draftKey(active):'';
+    const focusSelection=active?.matches?.('input')?{
+      start:active.selectionStart,end:active.selectionEnd}:null;
+    const drafts=new Map([...board.querySelectorAll(editableSelector)]
+      .filter(el=>el.dataset.unsaved==='true')
+      .map(el=>[draftKey(el),el.value]));
+    if(resetNewFormula)drafts.delete('id:freeNewFormula');
+    if(resetNewIndividual){
+      drafts.delete('id:freeNewIndividualId');drafts.delete('id:freeNewIndividualLabel');
+    }
     truthHighlightController?.destroy();
     truthHighlightController=null;
+    if(recovery){
+      board.innerHTML='<section class="free-card free-recovery" role="alert"><h2>Rascunho protegido</h2>'+
+        '<p>Os dados salvos da Tabela Livre não puderam ser interpretados: '+esc(recovery.reason)+
+        '</p><p>Nenhum dado original foi substituído. Baixe uma cópia do conteúdo antes de optar por reiniciar.</p>'+
+        '<div class="free-entry-actions"><button type="button" class="button primary" data-action="download-recovery">Baixar rascunho original</button>'+
+        '<button type="button" class="button" data-action="reset-recovery">Reiniciar Tabela Livre</button></div></section>';
+      return;
+    }
     board.innerHTML=renderVariables()+renderFormulas()+renderInference()+renderTable();
+    for(const control of board.querySelectorAll(editableSelector)){
+      const key=draftKey(control);
+      if(drafts.has(key)){control.value=drafts.get(key);control.dataset.unsaved='true'}
+      if(focusKey===key){control.focus({preventScroll:true});
+        if(focusSelection&&control.matches('input')&&focusSelection.start!==null)
+          control.setSelectionRange(focusSelection.start,focusSelection.end)}
+    }
+    const newScroll=board.querySelector('.free-table-scroll');
+    if(scroll&&newScroll){newScroll.scrollLeft=scroll.left;newScroll.scrollTop=scroll.top}
     const table=board.querySelector('.free-truth-table');
     if(!table)return;
     const columns=freeColumns(state);
     truthHighlightController=attachTruthHighlights(table,{columns,operands:index=>immediateOperands(columns,index),
       relations:freeHighlightRelations(columns)});
   }
-  function refresh(msg){
-    save();render();if(msg)notice(msg);
+  function refresh(msg,options={}){
+    save();render(options);if(msg)notice(msg);
   }
   function run(action,button){
+    if(action==='download-recovery'&&recovery){
+      const blob=new Blob([recovery.raw],{type:'application/json;charset=utf-8'});
+      const url=URL.createObjectURL(blob),link=document.createElement('a');
+      link.href=url;link.download='logiclab-tabela-livre-recuperacao.json';
+      document.body.append(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
+      notice('Cópia dos dados originais exportada.');return;
+    }
+    if(action==='reset-recovery'&&recovery){
+      if(!confirm('Reiniciar apagará o rascunho salvo da Tabela Livre. Você já fez o download de recuperação?'))return;
+      recovery=null;state=blankFreeTable();domainOpen=false;
+      refresh('Tabela Livre reiniciada.');return;
+    }
+    if(recovery)return;
     if(action==='add-var'){
       const next=nextFreeVariableName(state);
       addFreeVariable(state,next);
@@ -239,7 +294,8 @@ export function createFreeTable(root){
       refresh('Variáveis atualizadas.');return;
     }
     if(action==='add-formula'){
-      addFreeFormula(state,root.querySelector('#freeNewFormula').value);refresh('Fórmula adicionada e traduzida.');return;
+      addFreeFormula(state,root.querySelector('#freeNewFormula').value);
+      refresh('Fórmula adicionada e traduzida.',{resetNewFormula:true});return;
     }
     if(action==='save-formula'||action==='remove-formula'){
       const id=button.dataset.id;
@@ -261,7 +317,7 @@ export function createFreeTable(root){
     if(action==='add-ind'){
       domainOpen=true;
       addFreeIndividual(state,root.querySelector('#freeNewIndividualId').value,root.querySelector('#freeNewIndividualLabel').value);
-      refresh('Indivíduo cadastrado.');return;
+      refresh('Indivíduo cadastrado.',{resetNewIndividual:true});return;
     }
     if(action==='save-ind'||action==='remove-ind'){
       domainOpen=true;
@@ -285,7 +341,11 @@ export function createFreeTable(root){
     }
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
+  root.addEventListener('input',e=>{
+    if(e.target.matches(editableSelector))e.target.dataset.unsaved='true';
+  });
   root.addEventListener('change',e=>{
+    if(e.target.matches('[data-var-kind]')){e.target.dataset.unsaved='true';return}
     if(e.target.matches('[data-venn-column]'))vennSelectedKey=e.target.value;
     else if(e.target.matches('[data-venn-filter]'))
       vennFilters={...vennFilters,[e.target.dataset.vennFilter]:e.target.value};
@@ -320,5 +380,7 @@ export function createFreeTable(root){
     root.querySelector(selector)?.click();
   });
   render();
-  return {open(){render();notice('Tabela salva neste navegador.')}};
+  if(recovery)notice('Não foi possível abrir os dados salvos; o original foi preservado para download.',true);
+  return {open(){render();if(recovery)notice('Rascunho protegido: baixe os dados antes de reiniciar.',true);
+    else notice('Tabela salva neste navegador.')}};
 }
