@@ -129,12 +129,18 @@ export function evaluatePredicate(node,domain,truth,subject=null){
     default:throw Error('Expressão não reconhecida.');
   }
 }
-export function predicateReading(node,meanings){
-  if(node.type==='pred')return meanings[node.name]||node.name+'('+node.term+')';
-  if(node.type==='not')return 'não é verdade que ('+predicateReading(node.a,meanings)+')';
-  if(node.type==='forall')return 'para todo indivíduo x, '+predicateReading(node.a,meanings);
-  if(node.type==='exists')return 'existe ao menos um indivíduo x para o qual '+predicateReading(node.a,meanings);
-  const a=predicateReading(node.a,meanings),b=predicateReading(node.b,meanings);
+export function predicateReading(node,meanings,individualNames={}){
+  if(node.type==='pred'){
+    const text=meanings[node.name]||node.name;
+    const who=node.term==='x'?'x':individualNames[node.term]||node.term;
+    if(/\bx\b/i.test(text))return text.replace(/\bx\b/gi,who);
+    const lowered=text.charAt(0).toLowerCase()+text.slice(1);
+    return who+' '+(/^(é|são|está|estão|foi|tem|possui|faz|era|será)\b/i.test(text)?lowered:'é '+lowered);
+  }
+  if(node.type==='not')return 'não é verdade que ('+predicateReading(node.a,meanings,individualNames)+')';
+  if(node.type==='forall')return 'para todo indivíduo x, '+predicateReading(node.a,meanings,individualNames);
+  if(node.type==='exists')return 'existe ao menos um indivíduo x para o qual '+predicateReading(node.a,meanings,individualNames);
+  const a=predicateReading(node.a,meanings,individualNames),b=predicateReading(node.b,meanings,individualNames);
   if(node.type==='implies')return 'se ('+a+'), então ('+b+')';
   if(node.type==='iff')return '('+a+') se, e somente se, ('+b+')';
   if(node.type==='xor')return 'ou ('+a+') ou ('+b+'), mas não ambos';
