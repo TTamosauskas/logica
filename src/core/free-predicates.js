@@ -24,6 +24,8 @@ export const isPredicateSource=source=>/[∀∃]|\b[a-z]\s*\(/i.test(String(sour
 
 export function parsePredicateFormula(source,variables,individuals){
   const list=predicateTokens(source),names=new Set(variables),constants=new Set(individuals);
+  if(list.filter(t=>t.type==='forall'||t.type==='exists').length>2)
+    throw Error('Use no máximo dois quantificadores por fórmula nesta versão.');
   let pos=0;
   const peek=()=>list[pos],consume=type=>peek()?.type===type?(pos++,true):false;
   const expect=(type,message)=>{if(!consume(type))throw Error(message)};
