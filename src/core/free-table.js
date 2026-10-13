@@ -380,6 +380,22 @@ export function readFreeTable(raw,{strict=false}={}){
     }
     state.nextId=Math.max(1,...state.formulas.map(f=>Number(f.id.slice(1))+1));
     if(Number.isInteger(input.nextId))state.nextId=Math.max(state.nextId,Math.min(input.nextId,99999));
+    // A conclusão do painel aposentado é integrada à tabela como a última
+    // fórmula, em vez de desaparecer na migração dos projetos anteriores.
+    if(state.inferenceConclusion&&freeTableKind(state)==='predicates'){
+      const source=state.inferenceConclusion;
+      if(state.formulas.length<MAX_PREDICATE_TABLE_FORMULAS){
+        try{
+          addFreeFormula(state,source);
+          state.inferenceConclusion='';
+          state.inferenceReport=null;
+        }catch(error){
+          if(!/já está cadastrada/.test(error.message))throw error;
+          state.inferenceConclusion='';
+          state.inferenceReport=null;
+        }
+      }
+    }
     return state;
   }catch(error){
     if(strict)throw Error('Projeto inválido: '+error.message);
