@@ -3,7 +3,7 @@ import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableNam
   addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,
   removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
   parseFreeFormula,describeFreeFormula,freeTableKind,MAX_INDIVIDUALS,
-  addFreeIndividual,editFreeIndividual,removeFreeIndividual} from './core/free-table.js';
+  addFreeIndividual,editFreeIndividual,removeFreeIndividual,verifyFreeInference} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
 
@@ -37,10 +37,14 @@ export function createFreeTable(root){
     const next=nextFreeVariableName(state);
     return `<section class="free-card" aria-labelledby="freeVarTitle">
       <div class="free-section-heading"><h2 id="freeVarTitle">1. Variáveis e significados</h2><span class="free-hint">${state.variables.length}/${MAX_VARS}</span></div>
-      <p>As variáveis começam com p e q e seguem r, s, t, u. Informe uma proposição para gerar traduções em português.</p>
+      <p>Os símbolos seguem p, q, r, s, t, u. Identifique quais representam indivíduos (Sócrates) e quais representam propriedades (x é mortal). Não é obrigatório cadastrar um domínio para verificar uma inferência.</p>
       <div class="free-entries">${state.variables.map((v,i)=>`<div class="free-entry">
         <span class="free-variable-symbol" aria-label="Variável ${esc(v.name)}">${esc(v.name)}</span>
-        <label>Significado de ${esc(v.name)} <input type="text" data-var-meaning="${i}" value="${esc(v.meaning)}" maxlength="160" placeholder="ex.: comprei ingresso" aria-label="Significado de ${esc(v.name)}"></label>
+        <label>Tipo de ${esc(v.name)} <select data-var-kind="${i}" aria-label="Tipo lógico de ${esc(v.name)}">
+          <option value="predicate" ${v.kind!=='individual'?'selected':''}>Proposição / propriedade</option>
+          <option value="individual" ${v.kind==='individual'?'selected':''}>Indivíduo</option>
+        </select></label>
+        <label>Significado de ${esc(v.name)} <input type="text" data-var-meaning="${i}" value="${esc(v.meaning)}" maxlength="160" placeholder="${v.kind==='individual'?'ex.: Sócrates':'ex.: x é mortal'}" aria-label="Significado de ${esc(v.name)}"></label>
         <div class="free-entry-actions"><button type="button" class="button small" data-action="save-var" data-index="${i}">Salvar</button>
         ${i===state.variables.length-1&&i>=2?`<button type="button" class="button small" data-action="remove-var" data-index="${i}" aria-label="Excluir variável ${esc(v.name)}">Excluir</button>`:''}</div>
       </div>`).join('')}</div>
@@ -70,7 +74,7 @@ export function createFreeTable(root){
   function renderFormulas(){
     return `<section class="free-card" aria-labelledby="freeFormulaTitle">
       <div class="free-section-heading"><h2 id="freeFormulaTitle">2. Fórmulas e tradução</h2><span class="free-hint">${state.formulas.length} cadastradas</span></div>
-      <p>Use p, q etc. como proposições ou como propriedades p(x), q(x). Com ∀x(...) ou ∃x(...), a leitura considera os indivíduos cadastrados acima.</p>
+      <p>Cadastre uma ou mais fórmulas como premissas. Exemplo: q(p) e ∀x(q(x) → r(x)), com p = Sócrates, q = homem e r = mortal. Para verificar se r(p) decorre delas, use a seção de inferência abaixo. Não é necessário listar indivíduos.</p>
       <div class="free-entries">${!state.formulas.length?'<p class="free-empty-formulas">Nenhuma fórmula cadastrada. Use os botões abaixo para criar a primeira.</p>':''}${state.formulas.map(f=>{
         const parsed=parseFreeFormula(state,f.source),d=describeFreeFormula(parsed,state);
         return `<div class="free-formula-card">
@@ -114,8 +118,32 @@ export function createFreeTable(root){
     if(col.global)return '<td>'+truthButton(0,col,true)+'</td>';
     return '<td class="free-global-placeholder" aria-hidden="true">—</td>';
   }
+  function renderInference(){
+    if(freeTableKind(state)!=='predicates')return '';
+    const result=state.inferenceReport;
+    return `<section class="free-card free-inference" aria-labelledby="freeInferenceTitle">
+      <div class="free-section-heading"><h2 id="freeInferenceTitle">3. Verificar uma inferência</h2>
+        <span class="free-hint">Sem domínio cadastrado</span></div>
+      <p>As fórmulas acima são as premissas. Informe a conclusão e verifique se ela decorre necessariamente das premissas. Esta análise considera todos os modelos possíveis, sem cadastrar pessoas ou atribuir V/F manualmente.</p>
+      <div class="free-formula-new"><label>Conclusão <input type="text" id="freeConclusion" maxlength="240"
+        value="${esc(state.inferenceConclusion||'')}" placeholder="ex.: r(p)" spellcheck="false"></label>
+        <button class="button primary" type="button" data-action="verify-inference">Verificar inferência</button></div>
+      ${result?`<div class="free-inference-result" role="status">
+        <strong>${result.valid?(result.satisfiable?'Conclusão válida.':'Premissas incompatíveis.'):'Conclusão não decorre das premissas.'}</strong>
+        <p>${esc(result.explanation)}</p>
+        ${result.counterexample?`<p><strong>Contraexemplo:</strong> ${esc(result.counterexample.types.join(' · '))}
+          ${result.counterexample.individuals.length?' | '+esc(result.counterexample.individuals.join(' · ')):''}</p>`:''}
+        <small>${esc(result.checked)} modelos examinados. Fragmento suportado: até três propriedades e dois indivíduos nomeados.</small>
+      </div>`:''}
+    </section>`;
+  }
   function renderTable(){
     const pred=freeTableKind(state)==='predicates',columns=freeColumns(state),rows=freeRows(state);
+    if(pred&&!rows.length)return `<section class="free-card" aria-labelledby="freeTableTitle">
+      <h2 id="freeTableTitle">4. Tabela de modelos (opcional)</h2>
+      <p>Para verificar se uma conclusão decorre de premissas, use a seção acima: não são necessários indivíduos.
+      Cadastre pessoas no campo “Indivíduos do domínio” somente se quiser experimentar valores V/F em um modelo concreto.</p>
+    </section>`;
     const n=columns.length-state.hidden.length,hasGlobal=pred&&columns.some(col=>col.global);
     let grade=null;
     if(state.graded&&columns.some(col=>col.kind!=='var')){
@@ -137,7 +165,7 @@ export function createFreeTable(root){
       ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção inclui as colunas recolhidas.</p>`:''}
     </section>`;
   }
-  function render(){board.innerHTML=renderVariables()+renderFormulas()+renderTable()}
+  function render(){board.innerHTML=renderVariables()+renderFormulas()+renderInference()+renderTable()}
   function refresh(msg){
     save();render();if(msg)notice(msg);
   }
@@ -150,7 +178,8 @@ export function createFreeTable(root){
     if(action==='save-var'||action==='remove-var'){
       const i=Number(button.dataset.index),entry=state.variables[i];if(!entry)return;
       if(action==='remove-var')removeFreeVariable(state,entry.name);
-      else editFreeVariable(state,entry.name,entry.name,root.querySelector('[data-var-meaning="'+i+'"]').value);
+      else editFreeVariable(state,entry.name,entry.name,root.querySelector('[data-var-meaning="'+i+'"]').value,
+        root.querySelector('[data-var-kind="'+i+'"]').value);
       refresh('Variáveis atualizadas.');return;
     }
     if(action==='add-formula'){
@@ -192,9 +221,15 @@ export function createFreeTable(root){
       state.graded=false;refresh();
       root.querySelector('[data-action="predicate-value"][data-ind="'+CSS.escape(button.dataset.ind)+'"][data-name="'+CSS.escape(button.dataset.name)+'"]')?.focus({preventScroll:true});return;
     }
+    if(action==='verify-inference'){
+      const source=root.querySelector('#freeConclusion').value;
+      const report=verifyFreeInference(state,source);
+      refresh(report.valid?'Inferência examinada.':'Contraexemplo encontrado.');
+      return;
+    }
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
-  root.addEventListener('focusin',e=>{if(e.target.matches('#freeNewFormula,[data-formula-source]'))lastFormulaInput=e.target});
+  root.addEventListener('focusin',e=>{if(e.target.matches('#freeNewFormula,#freeConclusion,[data-formula-source]'))lastFormulaInput=e.target});
   root.addEventListener('click',e=>{
     const sym=e.target.closest('[data-symbol]');
     if(sym){
@@ -211,9 +246,10 @@ export function createFreeTable(root){
     try{run(button.dataset.action,button)}catch(error){notice(error.message,true)}
   });
   root.addEventListener('keydown',e=>{
-    if(e.key!=='Enter'||!e.target.matches('#freeNewFormula,[data-formula-source],[data-var-meaning],#freeNewIndividualId,#freeNewIndividualLabel,[data-ind-label]'))return;
+    if(e.key!=='Enter'||!e.target.matches('#freeConclusion,#freeNewFormula,[data-formula-source],[data-var-meaning],#freeNewIndividualId,#freeNewIndividualLabel,[data-ind-label]'))return;
     e.preventDefault();
-    const selector=e.target.id==='freeNewIndividualId'||e.target.id==='freeNewIndividualLabel'?'[data-action="add-ind"]':
+    const selector=e.target.id==='freeConclusion'?'[data-action="verify-inference"]':
+      e.target.id==='freeNewIndividualId'||e.target.id==='freeNewIndividualLabel'?'[data-action="add-ind"]':
       e.target.matches('[data-ind-label]')?'[data-action="save-ind"][data-id="'+e.target.dataset.indLabel+'"]':
       e.target.id==='freeNewFormula'?'[data-action="add-formula"]':
       e.target.matches('[data-formula-source]')?'[data-action="save-formula"][data-id="'+e.target.dataset.formulaSource+'"]':
