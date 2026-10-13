@@ -104,6 +104,7 @@ test('migra tabela antiga preservando fórmulas autorais e removendo apenas o ex
   const defaults=readFreeTable(JSON.stringify(initial),{strict:true});
   assert.deepEqual(defaults.variables.map(v=>v.name),['p','q']);
   assert.deepEqual(defaults.formulas,[]);
+  assert.deepEqual(defaults.variables.map(v=>v.meaning),['','']);
   const authored={...initial,variables:[{name:'u',meaning:'fui ao cinema'},{name:'t',meaning:'comprei ingresso'}],
     answers:{'0|f:f1':'V'},hidden:['v:u']};
   const restored=readFreeTable(JSON.stringify(authored),{strict:true});
