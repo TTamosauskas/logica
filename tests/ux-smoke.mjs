@@ -748,7 +748,9 @@ try{
       await answer.click();if(list[row]==='F')await answer.click();
     }
     await headers.nth(4).hover();
-    assert.equal(await rel.locator('thead .truth-rel-equivalent').count(),0);
+    assert.equal(await rel.locator('.free-grade').count(),0,'Relações aparecem sem conferir');
+    assert.equal(await headers.nth(3).evaluate(el=>el.classList.contains('truth-rel-equivalent')),true);
+    assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
     await rel.locator('[data-action="grade"]').click();
     assert.match(await rel.locator('.free-grade').innerText(),/16 de 16/);
     await headers.nth(4).hover();
@@ -831,6 +833,54 @@ try{
     await heads.nth(6).hover();
     assert.equal(await heads.nth(4).evaluate(x=>x.classList.contains('truth-rel-contradictory')),true);
     assert.ok(await heads.nth(4).evaluate(el=>parseFloat(getComputedStyle(el,'::after').height)>el.offsetHeight));
+    assert.deepEqual(errors,[]);
+    await ctx.close();
+  }
+  // Regressão da captura: contornos coloridos assim que p→q e p∧¬q ficam corretas.
+  for(const width of [375,1280]){
+    const ctx=await browser.newContext({viewport:{width,height:812},hasTouch:width===375,isMobile:width===375});
+    const page=await ctx.newPage(),errors=[];
+    page.on('pageerror',err=>errors.push(err.message));
+    await page.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    for(const formula of ['p→q','p∧¬q']){
+      await page.locator('#freeNewFormula').fill(formula);
+      await page.locator('[data-action="add-formula"]').click();
+    }
+    const cols=page.locator('.free-truth-table thead th[data-rel-col]');
+    assert.equal(await cols.count(),5);
+    const values={
+      's:!q':['F','V','F','V'],
+      'f:f1':['V','F','V','V'],
+      'f:f2':['F','V','F','F']
+    };
+    for(let row=0;row<4;row++)for(const [column,expected] of Object.entries(values)){
+      if(row===3&&column==='f:f2')continue;
+      const cell=page.locator('.free-truth-table [data-action="answer"][data-row="'+row+'"][data-key="'+column+'"]');
+      await cell.click();
+      if(expected[row]==='F')await cell.click();
+    }
+    await cols.nth(3).hover();
+    assert.equal(await cols.nth(3).evaluate(el=>el.classList.contains('truth-rel-contradictory')),false,
+      'Não revelar contradição com coluna incompleta');
+    const last=page.locator('.free-truth-table [data-action="answer"][data-row="3"][data-key="f:f2"]');
+    await last.click();await last.click();
+    assert.equal(await page.locator('.free-grade').count(),0);
+    await cols.nth(3).hover();
+    assert.equal(await cols.nth(3).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
+    assert.equal(await cols.nth(4).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
+    assert.match(await page.locator('.truth-relation-status').innerText(),/Contraditórias/);
+    const frame=await cols.nth(4).evaluate(el=>({
+      height:parseFloat(getComputedStyle(el,'::after').height),
+      required:el.closest('table').getBoundingClientRect().bottom-el.getBoundingClientRect().top
+    }));
+    assert.ok(Math.abs(frame.height-frame.required)<=2,'Borda deve ser única e cobrir a coluna inteira');
+    // Se uma resposta voltar a estar errada, a relação deixa de aparecer imediatamente.
+    await last.click();
+    await cols.nth(3).hover();
+    assert.equal(await cols.nth(4).evaluate(el=>el.classList.contains('truth-rel-contradictory')),false);
+    await last.click();
+    await cols.nth(3).hover();
+    assert.equal(await cols.nth(4).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
     assert.deepEqual(errors,[]);
     await ctx.close();
   }
