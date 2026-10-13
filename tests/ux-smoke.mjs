@@ -426,6 +426,61 @@ try{
   }
 
 
+  // Foco por colunas: o estudante decide quais colunas mostrar, inclusive variáveis básicas.
+  for(const width of [375,1280]){
+    const focusContext=await browser.newContext({viewport:{width,height:812}});
+    const focus=await focusContext.newPage(),focusErrors=[];
+    focus.on('pageerror',e=>focusErrors.push(e.message));
+    await focus.goto(root+'#compostas',{waitUntil:'networkidle'});
+    const originalColumns=await focus.locator('#truthTable thead th').count();
+    const originalCells=await focus.locator('#truthTable .cell').count();
+    assert.ok(originalColumns>=3&&originalCells>0);
+    assert.equal(await focus.locator('#columnVisibility').isVisible(),true);
+    const originalColumn=await focus.locator('#truthTable .cell').first().getAttribute('data-c');
+    await focus.locator('#truthTable .cell').first().click();
+    const draft=()=>focus.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_exercise_drafts_v1')).byMode.compostas.exercise);
+    const before=await draft();
+    assert.equal(before.answers['0-'+originalColumn],'V');
+    // A primeira coluna pode ser escondida mesmo se for uma variável de entrada.
+    await focus.locator('#truthTable [data-hide-col="0"]').focus();
+    await focus.keyboard.press('Enter');
+    assert.equal(await focus.locator('#truthTable thead th').count(),originalColumns-1);
+    assert.equal(await focus.locator('#columnVisibility [data-show-col="0"]').count(),1);
+    assert.equal(await focus.locator('#truthTable [data-hide-col="0"]').count(),0);
+    await focus.locator('#truthTable [data-hide-col="'+originalColumn+'"]').click();
+    assert.equal(await focus.locator('#truthTable .cell[data-c="'+originalColumn+'"]').count(),0);
+    assert.equal((await draft()).answers['0-'+originalColumn],'V');
+    await focus.reload({waitUntil:'networkidle'});
+    assert.deepEqual((await draft()).hiddenColumns,[0,Number(originalColumn)].filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b));
+    assert.equal(await focus.locator('#truthTable thead th').count(),originalColumns-2);
+    // Restituir uma coluna conserva o valor digitado e os índices originais.
+    await focus.locator('#columnVisibility [data-show-col="'+originalColumn+'"]').click();
+    assert.equal(await focus.locator('#truthTable .cell[data-r="0"][data-c="'+originalColumn+'"]').innerText(),'V');
+    const restoredCell=focus.locator('#truthTable .cell[data-r="0"][data-c="'+originalColumn+'"]');
+    await restoredCell.focus();
+    await focus.keyboard.press('ArrowDown');
+    assert.equal(await focus.evaluate(()=>document.activeElement?.dataset.r),'1');
+    assert.equal(await focus.evaluate(()=>document.activeElement?.dataset.c),originalColumn);
+    // Todas as colunas são opcionais; não é permitido perder as respostas ocultadas.
+    const otherColumns=await focus.locator('#truthTable [data-hide-col]').evaluateAll(els=>els.map(el=>Number(el.dataset.hideCol)));
+    for(const index of otherColumns)await focus.locator('#truthTable [data-hide-col="'+index+'"]').click();
+    assert.equal(await focus.locator('#truthTable .cell').count(),0);
+    assert.match(await focus.locator('#truthTable .truth-no-columns').innerText(),/Escolha uma coluna/);
+    await focus.locator('#checkButton').click();
+    assert.equal((await draft()).answers['0-'+originalColumn],'V');
+    assert.ok((await draft()).grade.total>=originalCells);
+    await focus.locator('#columnVisibility [data-show-all-columns]').click();
+    assert.equal(await focus.locator('#truthTable thead th').count(),originalColumns);
+    assert.equal(await focus.locator('#truthTable .cell').count(),originalCells);
+    assert.equal((await draft()).hiddenColumns.length,0);
+    await focus.locator('#newButton').click();
+    assert.equal(await focus.locator('#columnVisibility [data-show-col]').count(),0);
+    assert.deepEqual(focusErrors,[]);
+    const overflow=await focus.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(overflow<=2,'Foco por colunas excedeu a tela de '+width+'px');
+    await focusContext.close();
+  }
+
   // Ciclos 10–13: todas as 23 aulas devem ensinar antes de avaliar.
   // A pergunta formativa permite errar, compreender e tentar novamente sem alterar a nota.
   for(const width of [375,1280]){
