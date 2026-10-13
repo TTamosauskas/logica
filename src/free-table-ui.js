@@ -90,27 +90,46 @@ export function createFreeTable(root){
       <small class="free-hint">Para predicados, use p(x), p(s), ∀x(p(x) → q(x)) e ∃x(p(x) ∧ q(x)). Nenhum equivale a ¬∃.</small>
     </section>`;
   }
+  function truthButton(r,col,global=false){
+    const id=(global?'global':r)+'|'+col.key,answer=state.answers[id]||'',graded=state.graded;
+    const want=graded?(evaluateFreeRow(global?null:freeRows(state)[r],col,state)?'V':'F'):'';
+    const status=!graded?'':answer===want?' correct':' incorrect';
+    return `<button type="button" class="cell${answer?' filled':''}${status}" data-action="answer" data-row="${global?'global':r}" data-key="${esc(col.key)}" aria-label="${global?'Resultado no domínio':'Linha '+(r+1)}, ${esc(col.label)}: ${answer||'vazio'}">${answer||'<span class="cell-placeholder">·</span>'}</button>${graded&&answer!==want?`<small class="free-correction" title="Valor esperado">${want}</small>`:''}`;
+  }
   function cell(row,r,col){
     if(has(col))return '<td class="truth-cell-collapsed" aria-hidden="true"></td>';
-    if(col.kind==='var'){
-      const value=t(row[col.node.name]);
-      return `<td class="given">${value}</td>`;
+    if(freeTableKind(state)==='predicates'){
+      if(col.kind==='var'){
+        const id=row.id+'|'+col.name,value=state.predicateValues[id]||'';
+        return `<td><button type="button" class="cell${value?' filled':''} free-input-pred" data-action="predicate-value" data-ind="${esc(row.id)}" data-name="${esc(col.name)}" aria-label="${esc(row.label)}: ${esc(col.label)} é ${value||'indefinido'}">${value||'<span class="cell-placeholder">·</span>'}</button></td>`;
+      }
+      return col.global?'<td class="free-global-placeholder" aria-label="Resultado no domínio">—</td>':
+        '<td>'+truthButton(r,col)+'</td>';
     }
-    const want=t(evaluateFreeRow(row,col));
-    const answer=state.answers[key(r,col.key)]||'',graded=state.graded;
-    const status=!graded?'':answer===want?' correct':' incorrect';
-    return `<td><button type="button" class="cell${answer?' filled':''}${status}" data-action="answer" data-row="${r}" data-key="${esc(col.key)}" aria-label="Linha ${r+1}, ${esc(col.label)}: ${answer||'vazio'}">${answer||'<span class="cell-placeholder">·</span>'}</button>${graded&&answer!==want?`<small class="free-correction" title="Valor esperado">${want}</small>`:''}</td>`;
+    if(col.kind==='var')return `<td class="given">${t(row[col.node.name])}</td>`;
+    return '<td>'+truthButton(r,col)+'</td>';
+  }
+  function globalCell(col){
+    if(has(col))return '<td class="truth-cell-collapsed" aria-hidden="true"></td>';
+    if(col.global)return '<td>'+truthButton(0,col,true)+'</td>';
+    return '<td class="free-global-placeholder" aria-hidden="true">—</td>';
   }
   function renderTable(){
-    const columns=freeColumns(state),rows=freeRows(state),n=columns.length-state.hidden.length;
-    const grade=state.graded&&columns.some(col=>col.kind!=='var')?gradeFreeTable(state):null;
+    const pred=freeTableKind(state)==='predicates',columns=freeColumns(state),rows=freeRows(state);
+    const n=columns.length-state.hidden.length,hasGlobal=pred&&columns.some(col=>col.global);
+    let grade=null;
+    if(state.graded&&columns.some(col=>col.kind!=='var')){
+      try{grade=gradeFreeTable(state)}catch{state.graded=false}
+    }
     return `<section class="free-card" aria-labelledby="freeTableTitle">
-      <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2><span class="free-hint">${rows.length} ${rows.length===1?'linha':'linhas'} · ${n}/${columns.length} colunas expandidas</span></div>
-      <p class="free-table-tip">Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas; use o olho do cabeçalho para recolher ou mostrar qualquer coluna.</p>
-      <div class="table-scroll free-table-scroll" role="region" tabindex="0" aria-label="Tabela livre, deslize horizontalmente para consultar as colunas">
+      <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2><span class="free-hint">${rows.length} ${pred?'indivíduos':'combinações V/F'} · ${n}/${columns.length} colunas expandidas</span></div>
+      <p class="free-table-tip">${pred?'Preencha V/F dos predicados para cada indivíduo. Depois resolva as expressões. Cada quantificador tem um único resultado para o domínio, na última linha.':'Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas.'} Use o olho de cada cabeçalho para recolher ou mostrar colunas.</p>
+      <div class="table-scroll free-table-scroll" role="region" tabindex="0" aria-label="Tabela Livre ${pred?'de predicados':'proposicional'}">
         <table class="truth-table free-truth-table">
-          <thead><tr>${columns.map(header).join('')}</tr></thead>
-          <tbody>${rows.map((row,r)=>`<tr>${columns.map(col=>cell(row,r,col)).join('')}</tr>`).join('')}</tbody>
+          <thead><tr>${pred?'<th scope="col" class="free-individual-head">Indivíduo</th>':''}${columns.map(header).join('')}</tr></thead>
+          <tbody>${rows.length?rows.map((row,r)=>`<tr>${pred?`<th scope="row" class="free-person-cell"><span>${esc(row.label)}</span><code>${esc(row.id)}</code></th>`:''}${columns.map(col=>cell(row,r,col)).join('')}</tr>`).join(''):
+            `<tr><td colspan="${columns.length+1}" class="free-no-people">Cadastre um indivíduo acima para preencher os predicados.</td></tr>`}
+          ${hasGlobal?`<tr class="free-aggregate-row"><th scope="row">No domínio</th>${columns.map(col=>globalCell(col)).join('')}</tr>`:''}</tbody>
         </table>
       </div>
       ${columns.some(col=>col.kind!=='var')?'<div class="free-table-actions"><button type="button" class="button primary" data-action="grade">Conferir respostas</button></div>':
