@@ -117,3 +117,10 @@
 .free-inference-result>p{margin:8px 0;color:var(--text)}
 .free-inference-result small{color:var(--muted)}
 @media(max-width:700px){.free-entry label:nth-child(2),.free-entry label:nth-child(3){flex:1 1 180px}}
+
+/* Edições locais pendentes de Salvar/Atualizar e recuperação de rascunhos. */
+#freeBoard [data-unsaved="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.free-recovery{border-color:var(--danger)}
+.free-recovery h2{margin:0 0 8px;font-size:20px}
+.free-recovery p{font-size:13px;line-height:1.7;color:var(--text)}
+.free-recovery .free-entry-actions{margin-top:14px}
