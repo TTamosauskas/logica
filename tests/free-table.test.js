@@ -7,8 +7,8 @@ import {evalAst} from '../src/core/logic.js';
 
 test('começa apenas com p e q, sem fórmulas, em tabela completa de prática',()=>{
   const state=blankFreeTable();
-  assert.equal(state.version,3);
-  assert.deepEqual(state.variables,[{name:'p',meaning:''},{name:'q',meaning:''}]);
+  assert.equal(state.version,4);
+  assert.deepEqual(state.variables,[{name:'p',meaning:'',kind:'predicate'},{name:'q',meaning:'',kind:'predicate'}]);
   assert.deepEqual(state.formulas,[]);
   assert.deepEqual(freeColumns(state).map(c=>c.label),['p','q']);
   assert.equal(freeRows(state).length,4);

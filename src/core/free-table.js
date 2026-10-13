@@ -1,5 +1,6 @@
 /** Estado e semântica da Tabela Livre — independente do DOM e das avaliações do curso. */
 import {parseFormula} from './parser.js';
+import {checkSymbolicInference} from './free-inference.js';
 import {truthRows,evalAst,pretty,stepNodes,sig,v,A,not} from './logic.js';
 import {isPredicateSource,parsePredicateFormula,predicateSignature,predicatePretty,predicateSteps,
  predicateAtomicNames,rootHasFreeX,hasQuantifier,evaluatePredicate,predicateReading,predicateEvidence} from './free-predicates.js';
@@ -15,27 +16,41 @@ const normalName=name=>String(name||'').trim().toLowerCase();
 const clean=s=>String(s||'').trim();
 
 export function blankFreeTable(){
-  return {version:3,variables:[{name:'p',meaning:''},{name:'q',meaning:''}],
-    formulas:[],nextId:1,hidden:[],answers:{},graded:false,domain:[],predicateValues:{}};
+  return {version:4,variables:[{name:'p',meaning:'',kind:'predicate'},{name:'q',meaning:'',kind:'predicate'}],
+    formulas:[],nextId:1,hidden:[],answers:{},graded:false,domain:[],predicateValues:{},inferenceConclusion:'',inferenceReport:null};
 }
 export const nextFreeVariableName=state=>VARIABLE_SEQUENCE[state.variables.length]||null;
 export function parseFreeFormula(state,source){
   const text=clean(source);
   if(!text||text.length>240)throw Error('A fórmula precisa ter entre 1 e 240 caracteres.');
-  return isPredicateSource(text)?parsePredicateFormula(text,state.variables.map(v=>v.name),state.domain.map(d=>d.id)):
+  return isPredicateSource(text)?parsePredicateFormula(text,
+    state.variables.filter(v=>v.kind!=='individual').map(v=>v.name),
+    [...state.domain.map(d=>d.id),...state.variables.filter(v=>v.kind==='individual').map(v=>v.name)]):
     parseFormula(text,state.variables.map(item=>item.name));
 }
 export function addFreeVariable(state,name,meaning=''){
   const next=nextFreeVariableName(state);
   if(!next)throw Error('O limite da tabela é de seis variáveis (64 linhas).');
   if(name!==next)throw Error('A próxima variável é '+next+'.');
-  state.variables.push({name:next,meaning:clean(meaning).slice(0,160)});
+  if(state.domain.some(d=>d.id===next))throw Error('O símbolo '+next+' já identifica um indivíduo do domínio. Exclua esse indivíduo antes de acrescentar a variável.');
+  state.variables.push({name:next,meaning:clean(meaning).slice(0,160),kind:'predicate'});
   invalidate(state);return state;
 }
-export function editFreeVariable(state,oldName,newName,meaning){
+export function editFreeVariable(state,oldName,newName,meaning,kind){
   const entry=state.variables.find(x=>x.name===oldName);
   if(!entry)throw Error('Variável não encontrada.');
   if(newName!==oldName)throw Error('Os nomes seguem a sequência p, q, r, s, t, u.');
+  const type=kind??entry.kind??'predicate';
+  if(!['individual','predicate'].includes(type))throw Error('Tipo de símbolo inválido.');
+  if(type!==entry.kind){
+    if(type==='individual'&&state.domain.some(d=>d.id===oldName))throw Error('O símbolo já identifica um indivíduo no domínio.');
+    if(type==='individual'&&freeTableKind(state)==='propositional'&&state.formulas.length)
+      throw Error('Remova as fórmulas proposicionais antes de transformar uma variável em indivíduo.');
+    const proposed={...state,variables:state.variables.map(v=>v.name===oldName?{...v,kind:type}:v)};
+    proposed.formulas.forEach(f=>parseFreeFormula(proposed,f.source));
+    if(proposed.inferenceConclusion)parseFreeFormula(proposed,proposed.inferenceConclusion);
+    entry.kind=type;invalidate(state);
+  }
   entry.meaning=clean(meaning).slice(0,160);
   return state;
 }
@@ -44,8 +59,14 @@ export function removeFreeVariable(state,name){
   if(state.variables.at(-1).name!==name)throw Error('Remova primeiro a última variável da sequência.');
   for(const formula of state.formulas){
     const ast=parseFreeFormula(state,formula.source);
-    const uses=node=>node.type==='var'||node.type==='pred'?node.name===name:Boolean(node.a&&uses(node.a)||node.b&&uses(node.b));
+    const uses=node=>node.type==='var'||node.type==='pred'?(node.name===name||node.term===name):Boolean(node.a&&uses(node.a)||node.b&&uses(node.b));
     if(uses(ast))throw Error('Remova ou edite as fórmulas que usam '+name+' antes de excluir a variável.');
+  }
+  if(state.inferenceConclusion&&isPredicateSource(state.inferenceConclusion)){
+    const ast=parseFreeFormula(state,state.inferenceConclusion);
+    const uses=node=>node.type==='pred'?(node.name===name||node.term===name):
+      Boolean(node.a&&uses(node.a)||node.b&&uses(node.b));
+    if(uses(ast))throw Error('Remova a conclusão que usa '+name+' antes de excluir a variável.');
   }
   state.variables.pop();invalidate(state);return state;
 }
@@ -56,9 +77,9 @@ export function addFreeIndividual(state,id,label){
     throw Error('Use um identificador como a, b ou s para o indivíduo (não x).');
   if(!clean(label))throw Error('Informe o nome do indivíduo, como Sócrates.');
   if(state.domain.length>=MAX_INDIVIDUALS)throw Error('Máximo de 20 indivíduos.');
-  if(state.domain.some(d=>d.id===name))throw Error('Já existe um indivíduo com esse símbolo.');
+  if(state.domain.some(d=>d.id===name)||state.variables.some(v=>v.name===name))throw Error('Já existe um indivíduo com esse símbolo.');
   state.domain.push({id:name,label:clean(label).slice(0,80)});
-  state.graded=false;state.answers={};return state;
+  state.graded=false;state.answers={};state.inferenceReport=null;return state;
 }
 export function editFreeIndividual(state,id,label){
   const entry=state.domain.find(d=>d.id===id);
@@ -104,9 +125,20 @@ export function editFreeFormula(state,id,source){
 export function removeFreeFormula(state,id){
   state.formulas=state.formulas.filter(f=>f.id!==id);invalidate(state);return state;
 }
-function invalidate(state){state.answers={};state.graded=false;state.hidden=[]}
+function invalidate(state){state.answers={};state.graded=false;state.hidden=[];state.inferenceReport=null}
 function isPredicateAst(node){return node.type==='pred'||Boolean((node.a&&isPredicateAst(node.a))||(node.b&&isPredicateAst(node.b)))}
 export const formulaSignature=ast=>ast.type==='pred'||hasQuantifier(ast)||isPredicateAst(ast)?predicateSignature(ast):sig(ast);
+/** As fórmulas cadastradas são premissas; a conclusão é verificada em todos os modelos. */
+export function verifyFreeInference(state,source){
+  if(freeTableKind(state)!=='predicates')throw Error('Cadastre premissas com predicados, como q(p) e ∀x(q(x) → r(x)).');
+  if(!isPredicateSource(source))throw Error('A conclusão deve usar predicados, como r(p) ou ∀x(q(x) → r(x)).');
+  const conclusion=parseFreeFormula(state,source);
+  const premises=state.formulas.map(f=>parseFreeFormula(state,f.source));
+  const report=checkSymbolicInference(premises,conclusion);
+  state.inferenceConclusion=clean(source);
+  state.inferenceReport=report;
+  return report;
+}
 export function freeColumns(state){
   const roots=state.formulas.map(f=>parseFreeFormula(state,f.source));
   if(freeTableKind(state)==='predicates'){
@@ -174,7 +206,7 @@ function semantic(node,names){
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 export function describeFreeFormula(node,state){
   const names=Object.fromEntries(state.variables.map(x=>[x.name,x.meaning||x.name]));
-  if(freeTableKind(state)==='predicates')return {literal:cap(predicateReading(node,names,Object.fromEntries(state.domain.map(d=>[d.id,d.label])))).replace(/\.+$/,'')+'.',
+  if(freeTableKind(state)==='predicates')return {literal:cap(predicateReading(node,names,Object.fromEntries([...state.domain.map(d=>[d.id,d.label]),...state.variables.filter(v=>v.kind==='individual').map(v=>[v.name,v.meaning||v.name])]))).replace(/\.+$/,'')+'.',
     equivalent:'',truth:freeFormulaEvidence(state,node)};
   const literal=cap(semantic(node,names)).replace(/\.+$/,'')+'.';
   let equivalent='',truth='';
@@ -202,16 +234,19 @@ export function readFreeTable(raw,{strict=false}={}){
   try {
     if(!raw)return blankFreeTable();
     const input=typeof raw==='string'?JSON.parse(raw):raw;
-    if(!input||![1,2,3].includes(input.version)||!Array.isArray(input.variables)||
+    if(!input||![1,2,3,4].includes(input.version)||!Array.isArray(input.variables)||
        input.variables.length<2||input.variables.length>MAX_VARS||
        !Array.isArray(input.formulas)||input.formulas.length>MAX_FORMULAS)throw Error('Estrutura de tabela inválida.');
     const names=input.variables.map(x=>x.name);
     if(names.some(n=>!validName(n))||new Set(names).size!==names.length)throw Error('Variáveis inválidas.');
     const state=blankFreeTable();
-    state.variables=names.map((name,i)=>({name:VARIABLE_SEQUENCE[i],meaning:clean(input.variables[i].meaning).slice(0,160)}));
+    state.variables=names.map((name,i)=>({name:VARIABLE_SEQUENCE[i],meaning:clean(input.variables[i].meaning).slice(0,160),
+      kind:input.version===4&&input.variables[i].kind==='individual'?'individual':'predicate'}));
     const originalSources=input.formulas.map(f=>{
       if(typeof f?.source!=='string')throw Error('Fórmula inválida.');
-      if(isPredicateSource(f.source))parsePredicateFormula(f.source,names,(input.domain||[]).map(d=>d.id));
+      if(isPredicateSource(f.source))parsePredicateFormula(f.source,
+        names.filter((n,i)=>input.variables[i].kind!=='individual'),
+        [...(input.domain||[]).map(d=>d.id),...names.filter((n,i)=>input.variables[i].kind==='individual')]);
       else parseFormula(f.source,names);
       return f.source;
     });
@@ -231,7 +266,7 @@ export function readFreeTable(raw,{strict=false}={}){
     });
     const ids=state.formulas.map(f=>f.id);
     if(new Set(ids).size!==ids.length)throw Error('Fórmulas repetidas.');
-    if(input.version===3){
+    if(input.version>=3){
       if(!Array.isArray(input.domain)||input.domain.length>MAX_INDIVIDUALS)throw Error('Domínio inválido.');
       for(const item of input.domain){
         if(!item||typeof item.id!=='string'||typeof item.label!=='string')throw Error('Indivíduo inválido.');
@@ -249,9 +284,9 @@ export function readFreeTable(raw,{strict=false}={}){
     state.hidden=[];
     state.answers={};
     if(!isDefaultV1){
-      const oldState={variables:names.map(name=>({name})),
+      const oldState={variables:names.map((name,i)=>({name,kind:state.variables[i].kind})),
         formulas:originalSources.map((source,i)=>({id:input.formulas[i].id,source}))};
-      if(input.version===3){oldState.domain=state.domain;oldState.predicateValues=state.predicateValues}
+      if(input.version>=3){oldState.domain=state.domain;oldState.predicateValues=state.predicateValues}
       const oldColumns=freeColumns(oldState);
       const mapping=Object.fromEntries(oldColumns.map((col,i)=>[col.key,columns[i]?.key]).filter(x=>x[1]));
       state.hidden=Array.isArray(input.hidden)?[...new Set(input.hidden.map(k=>mapping[k]).filter(Boolean))]:[];
@@ -265,6 +300,17 @@ export function readFreeTable(raw,{strict=false}={}){
         }
       }
       state.graded=input.graded===true&&input.rowMode!=='custom';
+    }
+    if(input.version===4&&typeof input.inferenceConclusion==='string'&&input.inferenceConclusion.length<=240){
+      const candidate=input.inferenceConclusion.trim();
+      if(candidate){
+        parseFreeFormula(state,candidate);
+        state.inferenceConclusion=candidate;
+        if(state.formulas.length&&freeTableKind(state)==='predicates'&&input.inferenceReport){
+          try{state.inferenceReport=checkSymbolicInference(
+            state.formulas.map(f=>parseFreeFormula(state,f.source)),parseFreeFormula(state,candidate))}catch{}
+        }
+      }
     }
     state.nextId=Math.max(1,...state.formulas.map(f=>Number(f.id.slice(1))+1));
     if(Number.isInteger(input.nextId))state.nextId=Math.max(state.nextId,Math.min(input.nextId,99999));
