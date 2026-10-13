@@ -1,5 +1,6 @@
 /** Relações de estrutura e semântica entre colunas de uma tabela proposicional completa. */
 import {sig,evalAst,truthRows} from './logic.js';
+import {predicateSignature} from './free-predicates.js';
 
 export const RELATION_TEXT={
   equivalent:'Equivalentes: mesmos valores em todas as interpretações.',
@@ -8,7 +9,12 @@ export const RELATION_TEXT={
   contrary:'Contrárias: não podem ser ambas verdadeiras (mas podem ser ambas falsas).',
   subcontrary:'Subcontrárias: não podem ser ambas falsas (mas podem ser ambas verdadeiras).'
 };
-function nodeSig(node){return node?sig(node):null}
+function nodeSig(node){
+  if(!node)return null;
+  if(node.type==='pred'||node.type==='forall'||node.type==='exists'||containsPredicate(node))return predicateSignature(node);
+  return sig(node);
+}
+function containsPredicate(node){return node.type==='pred'||Boolean((node.a&&containsPredicate(node.a))||(node.b&&containsPredicate(node.b)))}
 export function immediateOperands(columns,index){
   const node=columns[index]?.node;
   if(!node||(!node.a&&!node.b))return [];
@@ -54,6 +60,32 @@ export function propositionalRelations(columns,variables,eligible){
   return relations;
 }
 /** A/E/I/O — sem hipótese de existência: apenas contradições são incondicionais. */
+/** Identifica as quatro formas A/E/I/O estritamente sobre o mesmo S e P. */
+export function categoricalForm(node){
+  if(!node)return null;
+  let kind='',body=node;
+  if(node.type==='forall'){
+    body=node.a;
+    if(body?.type==='implies'&&body.a?.type==='pred'&&body.b?.type==='pred')
+      kind='all';
+    else if(body?.type==='implies'&&body.a?.type==='pred'&&
+      body.b?.type==='not'&&body.b.a?.type==='pred'){
+      kind='none';body={a:body.a,b:body.b.a};
+    }
+  }else if(node.type==='exists'){
+    body=node.a;
+    if(body?.type==='and'&&body.a?.type==='pred'&&body.b?.type==='pred')kind='some';
+    else if(body?.type==='and'&&body.a?.type==='pred'&&
+      body.b?.type==='not'&&body.b.a?.type==='pred'){
+      kind='someNot';body={a:body.a,b:body.b.a};
+    }
+  }else if(node.type==='not'&&node.a?.type==='exists'&&node.a.a?.type==='and'&&
+    node.a.a.a?.type==='pred'&&node.a.a.b?.type==='pred'){
+    kind='none';body=node.a.a;
+  }
+  if(!kind||body.a?.term!=='x'||body.b?.term!=='x')return null;
+  return {kind,a:body.a.name,b:body.b.name};
+}
 export function categoricalRelation(a,b,{subjectNonempty=false}={}){
   if(!a||!b||a.a!==b.a||a.b!==b.b||a.kind===b.kind)return null;
   const pair=[a.kind,b.kind].sort().join('|');
