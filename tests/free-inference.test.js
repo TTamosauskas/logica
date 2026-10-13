@@ -77,6 +77,6 @@ test('papéis, premissas e conclusão persistem após recarregar',()=>{
 test('limites do verificador são explícitos para não sobrecarregar a página',()=>{
   const state=blankFreeTable();
   for(const name of ['r','s'])addFreeVariable(state,name);
-  for(const name of ['p','q','r','s'])addFreeFormula(state,name+'(x)');
+  for(const name of ['p','q','r','s'])addFreeFormula(state,'∀x('+name+'(x))');
   assert.throws(()=>verifyFreeInference(state,'∀x(p(x))'),/até três propriedades/);
 });
