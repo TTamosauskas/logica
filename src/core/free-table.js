@@ -151,7 +151,7 @@ export function describeFreeFormula(node,state){
   }
   return {literal,equivalent,truth};
 }
-export function readFreeTable(raw){
+export function readFreeTable(raw,{strict=false}={}){
   try{
     if(!raw)return blankFreeTable();
     const input=typeof raw==='string'?JSON.parse(raw):raw;
@@ -161,7 +161,13 @@ export function readFreeTable(raw){
     state.variables=[];
     for(const row of input.variables)addFreeVariable(state,row.name,row.meaning);
     state.formulas=[];state.nextId=1;
-    for(const row of input.formulas)addFreeFormula(state,row.source);
+    const ids=new Set();
+    for(const row of input.formulas){
+      addFreeFormula(state,row.source);
+      if(typeof row.id!=='string'||!/^f[1-9][0-9]*$/.test(row.id)||ids.has(row.id))throw Error('Identificador de fórmula inválido.');
+      ids.add(row.id);
+      state.formulas[state.formulas.length-1].id=row.id;
+    }
     state.rowMode=input.rowMode==='custom'?'custom':'all';
     state.customRows=Array.isArray(input.customRows)?input.customRows.slice(0,MAX_ROWS)
       .filter(x=>x&&typeof x==='object'&&!Array.isArray(x))
@@ -177,7 +183,8 @@ export function readFreeTable(raw){
         if(match&&Number(match[1])<max&&keys.has(match[2])&&(value==='V'||value==='F'))state.answers[key]=value;
       }
     }
-    state.nextId=Math.max(state.nextId,Number.isInteger(input.nextId)?Math.min(input.nextId,99999):0);
+    state.nextId=Math.max(state.nextId,1,...state.formulas.map(f=>Number(f.id.slice(1))+1));
+    if(Number.isInteger(input.nextId)&&input.nextId>state.nextId)state.nextId=Math.min(input.nextId,99999);
     state.graded=input.graded===true;return state;
-  }catch{return blankFreeTable()}
+  }catch(error){if(strict)throw Error('Projeto inválido: '+error.message);return blankFreeTable()}
 }
