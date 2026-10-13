@@ -31,6 +31,12 @@ Para explorar o valor de verdade **em um modelo concreto**, a área **Indivíduo
 
 A tabela alterna entre combinações proposicionais (2ⁿ linhas) e modelos de predicados sem misturar os dois tipos de fórmula simultaneamente. A correção V/F do modelo concreto continua exigindo ao menos um indivíduo; **a verificação de inferências não exige nenhum**. Os rascunhos anteriores são migrados, preservando fórmulas e respostas compatíveis.
 
+### Destaques visuais nas tabelas
+
+No **Curso Guiado**, nas tabelas dos exercícios e na **Tabela Livre**, passar o mouse, focar pelo teclado ou tocar em um cabeçalho mostra bordas neutras apenas no resultado e em seus **operandos imediatos**, nunca em todos os antepassados da fórmula. Ao conferir V/F, colunas inteiramente corretas recebem relações semânticas com outras colunas também corretas: **verde contínuo** para equivalência, **vermelho contínuo** para contradição, **verde tracejado** para subalternação, **roxo contínuo** para contrariedade e **roxo tracejado** para subcontrariedade. Uma descrição textual indica a relação e, na subalternação, a direção. Quando coexistem relações distintas para um mesmo cabeçalho, prioriza-se uma categoria de cada vez para evitar cores conflitantes; toque novamente para desfazer a seleção.
+
+Nas tabelas proposicionais, equivalência e oposição são calculadas sobre **todas as 2ⁿ interpretações**, não sobre linhas coincidentes por acaso. A **subalternação** é reservada às proposições categóricas A→I e E→O, e contrariedade, subcontrariedade e subalternação só são exibidas quando há garantia de que a classe do sujeito é **não vazia**. Contradições A–O e E–I independem dessa existência. Em modelos finitos de predicados, igualdade de V/F no domínio cadastrado **não** é usada para declarar equivalência lógica universal. Os controles de olho continuam funcionando com as bordas e a correção não revela relações em colunas incompletas ou erradas.
+
 ## Execução local
 
 A partir da raiz, execute:
