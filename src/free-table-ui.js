@@ -425,8 +425,8 @@ export function createFreeTable(root){
       const conclusion=input?.value.trim()||'';
       const report=analyzeFreePossibilities(state,{conclusionSource:conclusion,filters:vennFilters});
       if(input){
+        if(conclusion!==state.inferenceConclusion)state.inferenceReport=null;
         state.inferenceConclusion=conclusion;
-        state.inferenceReport=null;
         delete input.dataset.unsaved;
       }
       possibilities={key:possibilityKey(),report};
