@@ -139,6 +139,7 @@ export function predicateReading(node,meanings,individualNames={}){
     const lowered=text.charAt(0).toLowerCase()+text.slice(1);
     return who+' '+(/^(é|são|está|estão|foi|tem|possui|faz|era|será)\b/i.test(text)?lowered:'é '+lowered);
   }
+  if(node.type==='not'&&node.a.type==='exists')return 'nenhum indivíduo do domínio satisfaz: '+predicateReading(node.a.a,meanings,individualNames);
   if(node.type==='not')return 'não é verdade que ('+predicateReading(node.a,meanings,individualNames)+')';
   if(node.type==='forall')return 'para todo indivíduo x, '+predicateReading(node.a,meanings,individualNames);
   if(node.type==='exists')return 'existe ao menos um indivíduo x para o qual '+predicateReading(node.a,meanings,individualNames);
