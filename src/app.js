@@ -1100,6 +1100,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       .filter(col=>col.node&&col.assignmentIndex===undefined);
     panel.innerHTML=renderTruthVenn({
       id:'exercise',variables:ex.vars,rows:ex.envs,
+      variableMeanings:{...(ex.translation?.claimMap||{}),...(ex.metadata?.variableMeanings||{})},
       columns:columns.map(col=>({key:col.key,label:col.label,index:col.index,
         derived:col.editable})),
       selectedKey:ex.vennColumnKey||'',filters:ex.vennFilters||{},
