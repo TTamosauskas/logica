@@ -606,6 +606,17 @@ try{
     assert.match(free.url(),/#tabela-livre$/);
     const overflow=await free.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
     assert.ok(overflow<=2,'Tabela Livre excede o viewport de '+width+'px em '+overflow);
+    // Mesmo um rascunho incompatível não pode ser sobrescrito por uma tabela vazia.
+    const invalid='{"version":4,"variables":[],"formulas":[]}';
+    await free.evaluate(value=>localStorage.setItem('logiclab_tabela_livre_v1',value),invalid);
+    await free.reload({waitUntil:'networkidle'});
+    assert.equal(await free.locator('.free-recovery').count(),1);
+    assert.match(await free.locator('.free-recovery').innerText(),/Nenhum dado original foi substituído/);
+    assert.equal(await free.evaluate(()=>localStorage.getItem('logiclab_tabela_livre_v1')),invalid);
+    free.once('dialog',dialog=>dialog.accept());
+    await free.locator('[data-action="reset-recovery"]').click();
+    assert.equal(await free.locator('.free-recovery').count(),0);
+    assert.deepEqual(await free.locator('.free-variable-symbol').allTextContents(),['p','q']);
     assert.deepEqual(freeErrors,[]);
     await freeContext.close();
   }
