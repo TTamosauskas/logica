@@ -21,7 +21,7 @@ export const UNIT4_TO_6_READINGS={
     check:{question:'Em um Venn, o que precisamos marcar ao afirmar “Alguns estudantes são músicos”?',options:['Um X na interseção entre estudantes e músicos.','Hachurar toda a interseção entre os grupos.','Hachurar a região fora dos dois grupos.'],correct:0,why:'“Alguns” exige ao menos um indivíduo presente nos dois conjuntos. O X registra existência; hachurar a interseção indicaria o oposto.'}
   },
   predicados2:{
-    objective:'Interpretar relações e ordem dos quantificadores, substituir nomes de um mesmo indivíduo e distinguir existência, unicidade e descrições definidas.',
+    objective:'Distinguir validade simbólica da avaliação em modelos, interpretar relações e ordem dos quantificadores e reconhecer existência, identidade e unicidade.',
     sections:[
       {heading:'Relações, nomes e o significado de identidade',paragraphs:[
         '“Ana ajuda Beto” representa uma relação com duas posições: Ajuda(Ana,Beto). Trocar as posições não preserva automaticamente a verdade. Também é essencial conhecer o domínio de pessoas e a ordem de quantificadores: ∀x∃y Ajuda(x,y) permite que cada x tenha seu próprio y; já ∃y∀x Ajuda(x,y) exige alguém que todos ajudem.',
@@ -33,10 +33,10 @@ export const UNIT4_TO_6_READINGS={
       ]},
       {heading:'Teste com modelos que separam as exigências',paragraphs:[
         'Imagine Ana e Beto como participantes. Se ambos venceram, é verdadeira a frase “Algum participante venceu”, mas é falsa “Exatamente um participante venceu”. Se somente Ana venceu e recebeu o prêmio, as três exigências da descrição definida podem ser satisfeitas. Se somente Ana venceu e não recebeu, existência e unicidade valem, mas a predicação falha.',
-        'Para avaliar cada expressão, liste os integrantes do domínio e verifique o conjunto dos que satisfazem o predicado. Em relações entre pessoas, procure a testemunha exigida para cada quantificador. Essa construção explícita de modelos evita que a gramática de uma frase esconda pressupostos não demonstrados.'
+        'Há duas perguntas diferentes. Para calcular o valor de uma frase em uma situação concreta, podemos listar os indivíduos de um domínio e verificar quem satisfaz cada predicado. Mas para verificar se uma conclusão decorre logicamente de premissas, não precisamos cadastrar pessoas: podemos usar regras de inferência ou buscar um contraexemplo possível. Por exemplo, de “Sócrates é homem” e “Todo homem é mortal” decorre “Sócrates é mortal”, por instanciação universal e modus ponens.'
       ]}
     ],
-    misconception:'Não conclua identidade a partir de uma característica comum; tampouco conclua existência única a partir de um mero “algum”. Em descrições definidas, existência, unicidade e propriedade são exigências diferentes.',
+    misconception:'Não confunda verificar uma inferência com calcular V/F em um domínio listado. A validade de Sócrates é homem; todos os homens são mortais; logo Sócrates é mortal dispensa uma lista de indivíduos. Não conclua identidade a partir de uma característica comum nem existência única de um mero “algum”.',
     summary:'Predicados representam relações e propriedades. A ordem dos quantificadores altera a conclusão. Identidade autoriza substituição em contextos extensionais; descrições definidas podem exigir existência e unicidade antes de predicar algo.',
     check:{question:'Duas pessoas venceram uma disputa. Qual afirmação é justificável?',options:['Alguma pessoa venceu, mas não houve exatamente um vencedor.','Houve exatamente um vencedor porque a frase usa “o vencedor”.','Nenhuma pessoa venceu, já que houve empate.'],correct:0,why:'Duas pessoas satisfazem o predicado venceu: a existência é verdadeira, mas a unicidade é falsa. A gramática singular não cria unicidade.'}
   },
