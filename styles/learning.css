@@ -301,13 +301,24 @@
   border-radius:2px;z-index:2;
 }
 .truth-table th.truth-rel-structure{--truth-frame-color:var(--text)}
-.truth-table th.truth-rel-equivalent{--truth-frame-color:#2db76e}
-.truth-table th.truth-rel-contradictory{--truth-frame-color:#e45359}
-.truth-table th.truth-rel-subaltern{--truth-frame-color:#2db76e}
+/* As legendas e as bordas reutilizam as mesmas cores semânticas. */
+:root{
+  --truth-relation-green:#2db76e;
+  --truth-relation-red:#e45359;
+  --truth-relation-purple:#a36cf2;
+}
+.truth-table th.truth-rel-equivalent{--truth-frame-color:var(--truth-relation-green)}
+.truth-table th.truth-rel-contradictory{--truth-frame-color:var(--truth-relation-red)}
+.truth-table th.truth-rel-subaltern{--truth-frame-color:var(--truth-relation-green)}
 .truth-table th.truth-rel-subaltern::after{border-style:dashed}
-.truth-table th.truth-rel-contrary{--truth-frame-color:#a36cf2}
-.truth-table th.truth-rel-subcontrary{--truth-frame-color:#a36cf2}
+.truth-table th.truth-rel-contrary{--truth-frame-color:var(--truth-relation-purple)}
+.truth-table th.truth-rel-subcontrary{--truth-frame-color:var(--truth-relation-purple)}
 .truth-table th.truth-rel-subcontrary::after{border-style:dashed}
 .truth-relation-status{min-height:22px;font-size:12px;color:var(--muted);line-height:1.6;margin:8px 0 0;overflow-wrap:anywhere}
-.truth-relation-status[data-relation="active"]{color:var(--text)}
+.truth-relation-line{display:block;overflow-wrap:anywhere}
+.truth-relation-line+.truth-relation-line{margin-top:3px}
+.truth-relation-line--structure{color:var(--muted)}
+.truth-relation-line--equivalent,.truth-relation-line--subaltern{color:var(--truth-relation-green)}
+.truth-relation-line--contradictory{color:var(--truth-relation-red)}
+.truth-relation-line--contrary,.truth-relation-line--subcontrary{color:var(--truth-relation-purple)}
 @media(hover:none){.truth-table [data-rel-col]{-webkit-tap-highlight-color:transparent}}
