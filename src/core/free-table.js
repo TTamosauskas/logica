@@ -146,6 +146,8 @@ export function readFreeTable(raw,{strict=false}={}){
       input.variables[0].meaning==='comprei ingresso'&&input.variables[1].meaning==='viajei'&&
       originalSources.length===1&&originalSources[0]==='¬(u → t)'&&
       !Object.keys(input.answers||{}).length&&!(input.hidden||[]).length;
+    // O exemplo de fábrica da versão anterior não vira significado nem fórmula do aluno.
+    if(isDefaultV1)state.variables=blankFreeTable().variables;
     state.formulas=isDefaultV1?[]:sources.map((source,i)=>{
       const id=input.formulas[i].id;
       if(typeof id!=='string'||!/^f[1-9]\d*$/.test(id))throw Error('Identificador de fórmula inválido.');
