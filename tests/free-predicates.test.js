@@ -112,7 +112,7 @@ test('domínio opcional e respostas da nova tabela sobrevivem ao salvamento',()=
  assert.deepEqual(restored.hidden,[derived.key]);
  assert.equal(restored.answers['0|'+derived.key],'V');
  assert.equal(restored.graded,true);
- assert.equal(gradeFreeTable(restored).total,3);
+ assert.equal(gradeFreeTable(restored).total,4);
 });
 
 test('constante individual pode ser cadastrada e a tabela independe do domínio',()=>{
