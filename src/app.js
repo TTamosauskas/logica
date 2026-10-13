@@ -1514,9 +1514,10 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       {label:'5. Aprovar avaliação inicial',done:p.mastered,available:p.independent}
     ];
     if(p.mastered)stages.push({label:'6. Consolidar com revisões espaçadas',done:reviewStatus(p).consolidated,available:true});
+    const lockIcon='<svg class="course-stage-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>';
     const stageNavigation=stages.map((stage,i)=>stage.available
       ?`<button type="button" class="course-stage ${stage.done?'done':''}" data-caction="stage" data-stage="${i+1}" aria-label="${stage.done?'Revisar':'Ir para'} ${escapeHTML(stage.label)}${stage.done?' (concluída)':''}">${stage.done?'✓ ':''}${escapeHTML(stage.label)}</button>`
-      :`<span class="course-stage locked" aria-label="${escapeHTML(stage.label)} — indisponível" title="Conclua a etapa anterior para desbloquear">${escapeHTML(stage.label)}</span>`).join('');
+      :`<span class="course-stage locked" aria-label="${escapeHTML(stage.label)} — indisponível" title="Conclua a etapa anterior para desbloquear">${lockIcon}${escapeHTML(stage.label)}</span>`).join('');
     let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><nav class="course-lesson-flow" aria-label="Etapas da aula">${stageNavigation}</nav><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
     const reading=COURSE_READINGS[id];
     html+=`<section class="course-lesson-panel" id="course-stage-1"><h3 tabindex="-1">1. Compreender</h3>${reading?renderPedagogicalReading(reading):`<p>${escapeHTML(lesson.theory)}</p>`}${id==='categoricos2'?renderOppositionSquare():''}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
