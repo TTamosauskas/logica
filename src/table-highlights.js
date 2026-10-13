@@ -64,14 +64,22 @@ export function attachTruthHighlights(table,configuration){
       const from=relation.from==='a'?relation.a:relation.b,to=relation.to==='a'?relation.a:relation.b;
       const direction=relation.kind==='subaltern'?
         ' ('+(config.columns[from]?.label||'')+' → '+(config.columns[to]?.label||'')+')':'';
-      labels.push(other+': '+RELATION_TEXT[relation.kind]+direction);
+      labels.push({kind:relation.kind,text:other+': '+RELATION_TEXT[relation.kind]+direction});
     }
     for(const [peer,style] of styles)mark(peer,style);
     if(hits.length)mark(index,CSS_FOR[hits[0].kind]);
     geometry();
     if(status){
       const structural=operands.length?'Composição direta: '+operands.map(j=>config.columns[j]?.label).join(' e ')+'.':'';
-      status.textContent=[structural,...labels].filter(Boolean).join(' ');
+      const addLine=(message,kind)=>{
+        const line=document.createElement('span');
+        line.className='truth-relation-line';
+        line.classList.add(kind?'truth-relation-line--'+kind:'truth-relation-line--structure');
+        line.textContent=message;
+        status.appendChild(line);
+      };
+      if(structural)addLine(structural,null);
+      labels.forEach(label=>addLine(label.text,label.kind));
       if(labels.length)status.dataset.relation='active';
     }
   }
