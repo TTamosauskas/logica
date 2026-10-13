@@ -150,6 +150,8 @@ export function renderPredicateVenn({id='free',variables=[],variableMeanings={},
     '<div class="truth-venn-views"><div class="truth-venn-view"><h4>Indivíduos cadastrados</h4>'+
     svgDiagram(id+'-pred',shown,regions,{predicate:true})+'</div></div>'+
     variableLegend(variables,variableMeanings)+
-    '<p class="truth-venn-status" role="status">'+pending+' indivíduo(s) ainda com predicados indefinidos; '+
-    filtered+' fora do recorte. Os números indicam pessoas, não V/F das fórmulas.</p></section>';
+    '<p class="truth-venn-status" role="status">Os números indicam indivíduos cadastrados com predicados definidos, não V/F de fórmulas. '+
+    'Um 0 indica ausência de indivíduos conhecidos nessa região, não prova que ela seja logicamente vazia. '+
+    pending+' indivíduo(s) ainda com predicados indefinidos; '+
+    filtered+' fora do recorte.</p></section>';
 }
