@@ -273,6 +273,9 @@ try{
   // Backup local pode sair do navegador e ser restaurado após confirmação.
   await progressPage.locator('#brand').click();
   await progressPage.evaluate(()=>{window.__backupProbe=[];const create=URL.createObjectURL;URL.createObjectURL=function(...args){window.__backupProbe.push('blob');return create.apply(this,args)}})
+  await progressPage.locator('#exportProgressButton').scrollIntoViewIfNeeded();
+  const footerProbe=await progressPage.locator('#exportProgressButton').evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return {hit:hit?.tagName,hitId:hit?.id,pointer:getComputedStyle(el).pointerEvents,x:r.x,y:r.y,w:r.width,h:r.height}});
+  console.log('FOOTER_PROBE',footerProbe);
   const downloadPromise=progressPage.waitForEvent('download',{timeout:10000}).catch(error=>error);
   await progressPage.locator('#exportProgressButton').click({noWaitAfter:true});
   const download=await downloadPromise;
