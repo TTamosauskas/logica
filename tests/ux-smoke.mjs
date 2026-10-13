@@ -662,6 +662,53 @@ try{
     await predContext.close();
   }
 
+  // Validade simbólica sem cadastrar domínio: Sócrates é homem, todo homem é mortal.
+  for(const width of [375,1280]){
+    const inferenceContext=await browser.newContext({viewport:{width,height:812}});
+    const inference=await inferenceContext.newPage(),errors=[];
+    inference.on('pageerror',err=>errors.push(err.message));
+    await inference.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    await inference.locator('[data-var-meaning="0"]').fill('Sócrates');
+    await inference.locator('[data-var-kind="0"]').selectOption('individual');
+    await inference.locator('[data-action="save-var"][data-index="0"]').click();
+    await inference.locator('[data-var-meaning="1"]').fill('homem');
+    await inference.locator('[data-action="save-var"][data-index="1"]').click();
+    await inference.locator('[data-action="add-var"]').click();
+    await inference.locator('[data-var-meaning="2"]').fill('mortal');
+    await inference.locator('[data-action="save-var"][data-index="2"]').click();
+    await inference.locator('#freeNewFormula').fill('q(p)');
+    await inference.locator('[data-action="add-formula"]').click();
+    assert.match(await inference.locator('.free-translation').first().innerText(),/Sócrates é homem/i);
+    await inference.locator('#freeNewFormula').fill('∀x(q(x) → r(x))');
+    await inference.locator('[data-action="add-formula"]').click();
+    assert.equal(await inference.locator('.free-inference').count(),1);
+    assert.equal(await inference.locator('.free-person-cell').count(),0);
+    assert.equal(await inference.locator('[data-action="grade"]').count(),0);
+    assert.match(await inference.locator('#freeTableTitle').innerText(),/modelos/i);
+    await inference.locator('#freeConclusion').fill('r(p)');
+    await inference.locator('[data-action="verify-inference"]').click();
+    assert.match(await inference.locator('.free-inference-result').innerText(),/Conclusão válida/i);
+    assert.match(await inference.locator('.free-inference-result').innerText(),/não há interpretação/i);
+    const saved=await inference.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
+    assert.equal(saved.version,4);
+    assert.equal(saved.variables[0].kind,'individual');
+    assert.equal(saved.inferenceConclusion,'r(p)');
+    assert.equal(saved.inferenceReport.valid,true);
+    assert.deepEqual(saved.domain,[]);
+    await inference.reload({waitUntil:'networkidle'});
+    assert.equal(await inference.locator('#freeConclusion').inputValue(),'r(p)');
+    assert.match(await inference.locator('.free-inference-result').innerText(),/Conclusão válida/i);
+    await inference.locator('#freeConclusion').fill('∀x(r(x) → q(x))');
+    await inference.locator('[data-action="verify-inference"]').click();
+    assert.match(await inference.locator('.free-inference-result').innerText(),/não decorre/i);
+    assert.match(await inference.locator('.free-inference-result').innerText(),/Contraexemplo/i);
+    assert.equal(await inference.locator('.free-domain-entry').count(),0);
+    const over=await inference.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(over<=2,'Inferência simbólica excedeu a tela de '+width+'px em '+over);
+    assert.deepEqual(errors,[]);
+    await inferenceContext.close();
+  }
+
   // Ciclos 10–13: todas as 23 aulas devem ensinar antes de avaliar.
   // A pergunta formativa permite errar, compreender e tentar novamente sem alterar a nota.
   for(const width of [375,1280]){
