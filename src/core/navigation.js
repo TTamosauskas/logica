@@ -4,6 +4,7 @@ export function routeFromHash(hash, moduleIds, lessonIds = moduleIds) {
   try { id = decodeURIComponent(String(hash || '').replace(/^#/, '')); }
   catch { return {view: 'home', id: null}; }
 
+  if (id === 'tabela-livre') return {view: 'free-table', id: null};
   if (id === 'curso') return {view: 'course', id: null};
   if (id === 'avaliacao-final') return {view: 'exam', id: null};
   if (id.startsWith('aula-') && lessonIds.includes(id.slice(5))) {
