@@ -626,6 +626,31 @@ try{
     const app14=await context14.newPage(),errors14=[];
     app14.on('pageerror',e=>errors14.push(e.message));
     await app14.goto(root,{waitUntil:'networkidle'});
+    // Etapas disponíveis e concluídas servem como índice clicável, sem pular pré-requisitos.
+    await app14.goto(root+'#aula-fundamentos',{waitUntil:'networkidle'});
+    assert.equal(await app14.locator('#courseLesson nav[aria-label="Etapas da aula"]').count(),1);
+    assert.equal(await app14.locator('#courseLesson .course-lesson-flow button[data-caction="stage"]').count(),1);
+    assert.equal(await app14.locator('#courseLesson .course-lesson-flow .locked').count(),4);
+    assert.equal(await app14.locator('#course-stage-2').count(),0);
+    const lessonRoute=app14.url();
+    await app14.locator('#courseLesson .course-lesson-flow button[data-stage="1"]').focus();
+    await app14.keyboard.press('Enter');
+    assert.equal(await app14.evaluate(()=>document.activeElement?.textContent),'1. Compreender');
+    assert.equal(app14.url(),lessonRoute);
+    await app14.locator('[data-caction="read"]').click();
+    assert.equal(await app14.locator('#courseLesson .course-lesson-flow button[data-caction="stage"]').count(),2);
+    assert.equal(await app14.locator('#courseLesson .course-lesson-flow button.done').count(),1);
+    await app14.locator('#courseLesson .course-lesson-flow button[data-stage="2"]').click();
+    assert.match(await app14.evaluate(()=>document.activeElement?.textContent),/2. Observar um exemplo resolvido/);
+    await app14.waitForFunction(()=>{const p=document.querySelector('#course-stage-2');const y=p?.getBoundingClientRect().top;return Number.isFinite(y)&&y>=0&&y<160});
+    assert.equal(app14.url(),lessonRoute);
+    const progressAfterJump=await app14.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons.fundamentos);
+    assert.equal(progressAfterJump.read,true);
+    assert.equal(progressAfterJump.example,false);
+    await app14.locator('#courseLesson .course-lesson-flow button[data-stage="1"]').click();
+    assert.equal(await app14.evaluate(()=>document.activeElement?.textContent),'1. Compreender');
+    assert.equal(app14.url(),lessonRoute);
+    await app14.goto(root,{waitUntil:'networkidle'});
     assert.match(await app14.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
     for(const id of ['predicados2','metateoria']){
       await app14.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
@@ -677,6 +702,13 @@ try{
       const approved=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id],id);
       assert.equal(approved.mastered,true);
       assert.equal(approved.assessmentV2.history.length,2);
+      // A sexta etapa aparece somente após aprovação e navega até a revisão agendada.
+      assert.equal(await app14.locator('#courseLesson .course-lesson-flow button[data-stage="6"]').count(),1);
+      const routeBeforeReview=app14.url();
+      await app14.locator('#courseLesson .course-lesson-flow button[data-stage="6"]').click();
+      assert.match(await app14.evaluate(()=>document.activeElement?.textContent),/6. Consolidar com revisões espaçadas/);
+      assert.equal(app14.url(),routeBeforeReview);
+      assert.equal(await app14.locator('#course-stage-6').count(),1);
       }
     await app14.goto(root+'#aula-equivalencias',{waitUntil:'networkidle'});
     await app14.evaluate(()=>{
