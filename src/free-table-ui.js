@@ -154,7 +154,7 @@ export function createFreeTable(root){
     }
     return `<section class="free-card" aria-labelledby="freeTableTitle">
       <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2><span class="free-hint">${rows.length} ${pred?'indivíduos':'combinações V/F'} · ${n}/${columns.length} colunas expandidas</span></div>
-      <p class="free-table-tip">${pred?'Preencha V/F dos predicados para cada indivíduo. Depois resolva as expressões. Cada quantificador tem um único resultado para o domínio, na última linha.':'Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas.'} Use o olho de cada cabeçalho para recolher ou mostrar colunas.</p>
+      <p class="free-table-tip">${pred?'Preencha V/F dos predicados para cada indivíduo. Depois resolva as expressões. Cada quantificador tem um único resultado para o domínio, na última linha.':'Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas.'} Use o olho de cada cabeçalho para recolher ou mostrar colunas. Passe sobre um cabeçalho (ou toque nele) para ver relações entre colunas completamente corretas, mesmo antes de conferir.</p>
       <div class="table-scroll free-table-scroll" role="region" tabindex="0" aria-label="Tabela Livre ${pred?'de predicados':'proposicional'}">
         <table class="truth-table free-truth-table">
           <thead><tr>${pred?'<th scope="col" class="free-individual-head">Indivíduo</th>':''}${columns.map(header).join('')}</tr></thead>
@@ -169,7 +169,8 @@ export function createFreeTable(root){
     </section>`;
   }
   function freeHighlightRelations(columns){
-    if(!state.graded)return [];
+    // Identifique relações assim que as colunas estiverem integralmente corretas.
+    // A correção explícita serve para fornecer o relatório, não para liberar o hover.
     const rows=freeRows(state),pred=freeTableKind(state)==='predicates';
     const correct=index=>{
       const col=columns[index];

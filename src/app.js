@@ -1061,7 +1061,9 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     const columns=ex.cols;
     const correct=index=>{
       const col=columns[index];
-      if(!col||!ex.grade||ex.revealed)return false;
+      if(!col||ex.revealed)return false;
+      // Valor conhecido é uma coluna correta por definição; respostas manuais
+      // só participam quando todas as linhas já foram preenchidas corretamente.
       if(!col.editable)return true;
       return ex.envs.every((_,r)=>ex.answers[fieldKey(r,index)]===expected(ex,r,index));
     };
