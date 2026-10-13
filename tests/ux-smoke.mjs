@@ -731,6 +731,20 @@ try{
     await inference.locator('[data-action="verify-inference"]').click();
     assert.match(await inference.locator('.free-inference-result').innerText(),/Conclusão válida/i);
     assert.match(await inference.locator('.free-inference-result').innerText(),/não há interpretação/i);
+    // A linha A=V, B=V, C=F é impossível em todos os modelos, embora a implicação seja F.
+    await inference.locator('[data-action="analyze-possibilities"]').click();
+    assert.equal(await inference.locator('.free-possibility-table tbody tr').count(),8);
+    assert.equal(await inference.locator('.free-possibility-keys dt').count(),3);
+    const ghost=inference.locator('.free-possibility-table tbody tr').nth(1);
+    assert.equal(await ghost.locator('td').nth(0).innerText(),'V');
+    assert.equal(await ghost.locator('td').nth(1).innerText(),'V');
+    assert.equal(await ghost.locator('td').nth(2).innerText(),'F');
+    assert.equal(await ghost.locator('.free-possibility-state').innerText(),'Impossível');
+    assert.equal(await ghost.locator('td').nth(3).innerText(),'F');
+    await ghost.locator('summary').click();
+    assert.match(await ghost.locator('details p').innerText(),/Instanciação universal/);
+    assert.match(await inference.locator('.free-possibility-verdict').innerText(),/não é tautologia/);
+    assert.match(await inference.locator('.free-possibility-verdict').innerText(),/inferência válida/);
     const saved=await inference.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
     assert.equal(saved.version,4);
     assert.equal(saved.variables[0].kind,'individual');
@@ -745,6 +759,17 @@ try{
     assert.match(await inference.locator('.free-inference-result').innerText(),/não decorre/i);
     assert.match(await inference.locator('.free-inference-result').innerText(),/Contraexemplo/i);
     assert.equal(await inference.locator('.free-domain-entry').count(),0);
+    // Vincular a constante p ao domínio torna visível no Venn uma região impossível.
+    await inference.locator('.free-domain summary').click();
+    await inference.locator('#freeNewIndividualId').fill('p');
+    await inference.locator('#freeNewIndividualLabel').fill('Sócrates');
+    await inference.locator('[data-action="add-ind"]').click();
+    await inference.locator('.free-input-pred[data-name="q"]').click();
+    await inference.locator('.free-input-pred[data-name="r"]').click();
+    await inference.locator('.free-input-pred[data-name="r"]').click();
+    await inference.locator('[data-action="analyze-possibilities"]').click();
+    assert.ok(await inference.locator('.truth-venn-impossible').count()>0);
+    assert.match(await inference.locator('.truth-venn-status').innerText(),/contradizem as premissas/);
     const over=await inference.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
     assert.ok(over<=2,'Inferência simbólica excedeu a tela de '+width+'px em '+over);
     assert.deepEqual(errors,[]);
