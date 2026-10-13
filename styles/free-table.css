@@ -68,3 +68,7 @@
   #topCourse{padding:8px 7px;font-size:11px}
   #topFreeTable{padding:8px 7px;font-size:11px}
 }
+
+/* Mantém botões do rodapé acima da superfície do próprio rodapé na rolagem móvel. */
+.footer-progress-actions{position:relative;z-index:1}
+.footer-progress-actions button{position:relative;z-index:1;pointer-events:auto}
