@@ -753,8 +753,20 @@ try{
     assert.match(await rel.locator('.free-grade').innerText(),/16 de 16/);
     await headers.nth(4).hover();
     assert.equal(await headers.nth(3).evaluate(el=>el.classList.contains('truth-rel-equivalent')),true);
-    assert.equal(await headers.nth(4).evaluate(el=>el.classList.contains('truth-rel-equivalent')),true);
+    assert.equal(await headers.nth(4).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
+    assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
     assert.match(await rel.locator('.truth-relation-status').innerText(),/Equivalentes/);
+    assert.match(await rel.locator('.truth-relation-status').innerText(),/Contraditórias/);
+    // A borda contínua é um único ::after do cabeçalho, sem bordas em cada td.
+    assert.equal(await rel.locator('.free-truth-table tbody [class*="truth-rel-"]').count(),0);
+    const outline=await headers.nth(4).evaluate(el=>{
+      const table=el.closest('table'),style=getComputedStyle(el,'::after');
+      return {border:style.borderTopStyle,borderBottom:style.borderBottomStyle,
+        height:parseFloat(style.height),expected:table.getBoundingClientRect().bottom-el.getBoundingClientRect().top};
+    });
+    assert.equal(outline.border,'solid');
+    assert.equal(outline.borderBottom,'solid');
+    assert.ok(Math.abs(outline.height-outline.expected)<=2,'O contorno precisa chegar até a última linha da coluna');
     await headers.nth(5).hover();
     assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
     assert.equal(await headers.nth(3).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
@@ -770,6 +782,57 @@ try{
     assert.ok(over<=2,'Bordas de relações ultrapassaram a largura '+width+'px em '+over);
     assert.deepEqual(relErrors,[]);
     await relationContext.close();
+  }
+  // Regressão: p → q e p ∧ ¬q são contraditórias mesmo quando ¬p ∨ q é equivalente à primeira.
+  for(const width of [375,1280]){
+    const ctx=await browser.newContext({viewport:{width,height:812},hasTouch:width===375,isMobile:width===375});
+    const p=await ctx.newPage(),errors=[];
+    p.on('pageerror',e=>errors.push(e.message));
+    await p.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    for(const formula of ['p→q','¬p∨q','p∧¬q']){
+      await p.locator('#freeNewFormula').fill(formula);
+      await p.locator('[data-action="add-formula"]').click();
+    }
+    const values={
+      's:!p':['F','F','V','V'],
+      's:!q':['F','V','F','V'],
+      'f:f1':['V','F','V','V'],
+      'f:f2':['V','F','V','V'],
+      'f:f3':['F','V','F','F']
+    };
+    for(let row=0;row<4;row++)for(const [column,results] of Object.entries(values)){
+      const cell=p.locator('.free-truth-table [data-action="answer"][data-row="'+row+'"][data-key="'+column+'"]');
+      await cell.click();
+      if(results[row]==='F')await cell.click();
+    }
+    await p.locator('[data-action="grade"]').click();
+    assert.match(await p.locator('.free-grade').innerText(),/20 de 20/);
+    const headers=p.locator('.free-truth-table thead th[data-rel-col]');
+    assert.equal(await headers.count(),7);
+    await headers.nth(4).hover();
+    assert.equal(await headers.nth(4).evaluate(x=>x.classList.contains('truth-rel-contradictory')),true);
+    assert.equal(await headers.nth(5).evaluate(x=>x.classList.contains('truth-rel-equivalent')),true);
+    assert.equal(await headers.nth(6).evaluate(x=>x.classList.contains('truth-rel-contradictory')),true);
+    const info=await p.locator('.truth-relation-status').innerText();
+    assert.match(info,/Contraditórias/);
+    assert.match(info,/Equivalentes/);
+    const frame=await headers.nth(6).evaluate(el=>({
+      height:parseFloat(getComputedStyle(el,'::after').height),
+      required:el.closest('table').getBoundingClientRect().bottom-el.getBoundingClientRect().top
+    }));
+    assert.ok(Math.abs(frame.height-frame.required)<=2);
+    assert.equal(await p.locator('.free-truth-table tbody .truth-rel-contradictory').count(),0);
+    await headers.nth(6).hover();
+    assert.equal(await headers.nth(4).evaluate(x=>x.classList.contains('truth-rel-contradictory')),true);
+    assert.equal(await headers.nth(6).evaluate(x=>x.classList.contains('truth-rel-contradictory')),true);
+    // Recolher uma coluna mantém o cabeçalho e o contorno integral.
+    await headers.nth(4).locator('.truth-col-toggle').click();
+    const heads=p.locator('.free-truth-table thead th[data-rel-col]');
+    await heads.nth(6).hover();
+    assert.equal(await heads.nth(4).evaluate(x=>x.classList.contains('truth-rel-contradictory')),true);
+    assert.ok(await heads.nth(4).evaluate(el=>parseFloat(getComputedStyle(el,'::after').height)>el.offsetHeight));
+    assert.deepEqual(errors,[]);
+    await ctx.close();
   }
   // Contrariedade e subcontrariedade apresentam as duas variantes de roxo.
   for(const [sources,kind] of [
