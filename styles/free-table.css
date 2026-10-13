@@ -124,3 +124,27 @@
 .free-recovery h2{margin:0 0 8px;font-size:20px}
 .free-recovery p{font-size:13px;line-height:1.7;color:var(--text)}
 .free-recovery .free-entry-actions{margin-top:14px}
+
+/* Combinações semânticas: não confundir F da fórmula com linha impossível. */
+.free-possibilities>.button{margin:1px 0 10px}
+.free-possibility-limit{display:block;font-size:12px;line-height:1.6;color:var(--muted)}
+.free-possibility-count{font-size:13px;font-weight:700;color:var(--text);margin:16px 0 9px}
+.free-possibility-keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:8px 14px;margin:10px 0 15px}
+.free-possibility-keys>div{display:flex;gap:9px;align-items:baseline;min-width:0;padding:7px;border:1px solid var(--border);border-radius:7px;background:var(--panel2)}
+.free-possibility-keys dt{font-weight:800;color:var(--accent)}
+.free-possibility-keys dd{margin:0;overflow-wrap:anywhere;font-size:12px;line-height:1.6}
+.free-possibility-scroll{overflow-x:auto;max-width:100%;margin:12px 0}
+.free-possibility-table{border-collapse:collapse;min-width:100%;font-size:12px;text-align:center}
+.free-possibility-table th,.free-possibility-table td{border:1px solid var(--border);padding:8px;vertical-align:middle}
+.free-possibility-table thead{background:var(--panel2)}
+.free-possibility-table th{font-weight:700}
+.free-possibility-table .free-impossible{background:var(--panel2)}
+.free-possibility-table .free-impossible .free-possibility-state{font-weight:800;color:var(--danger)}
+.free-possibility-table .free-possible .free-possibility-state{font-weight:750;color:var(--success)}
+.free-possibility-table details{min-width:150px;max-width:340px;text-align:left}
+.free-possibility-table summary{cursor:pointer;font-weight:700;white-space:nowrap}
+.free-possibility-table details p{margin:8px 0 0;line-height:1.65;overflow-wrap:anywhere}
+.free-possibility-table .free-candidate-counterexample td:nth-last-child(3){font-weight:800}
+.free-possibility-verdict{border-left:3px solid var(--accent);background:var(--panel2);padding:10px 14px;border-radius:6px}
+.free-possibility-verdict p{font-size:13px;line-height:1.6;margin:5px 0}
+.free-possibility-unknown{font-size:13px;line-height:1.7;color:var(--muted);margin:12px 0}
