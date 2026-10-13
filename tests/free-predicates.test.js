@@ -44,6 +44,7 @@ test('quantificadores avaliam todos, alguns e nenhum no mesmo domínio',()=>{
  assert.equal(evaluatePredicate(all,s.domain,truth),true);
  assert.equal(evaluatePredicate(some,s.domain,truth),true);
  assert.equal(evaluatePredicate(none,s.domain,truth),false);
+ assert.match(describeFreeFormula(none,s).literal,/Nenhum indivíduo do domínio satisfaz/);
  assert.match(predicateEvidence(some,s.domain,truth),/Sócrates/);
  truth['s|q']='F';
  assert.equal(evaluatePredicate(all,s.domain,truth),false);
