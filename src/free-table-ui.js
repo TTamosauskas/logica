@@ -154,10 +154,11 @@ export function createFreeTable(root){
     if(state.graded&&columns.some(col=>col.kind!=='var')){
       try{grade=gradeFreeTable(state)}catch{state.graded=false}
     }
+    const variableMeanings=Object.fromEntries(state.variables.map(item=>[item.name,item.meaning||'']));
     const diagram=pred?
       renderPredicateVenn({id:'free',variables:columns.filter(col=>col.kind==='var').map(col=>col.name),
-        people:rows,predicateValues:state.predicateValues,filters:vennFilters}):
-      renderTruthVenn({id:'free',variables:state.variables.map(item=>item.name),rows,
+        variableMeanings,people:rows,predicateValues:state.predicateValues,filters:vennFilters}):
+      renderTruthVenn({id:'free',variables:state.variables.map(item=>item.name),variableMeanings,rows,
         columns:columns.map(col=>({...col,derived:col.kind!=='var'})),
         selectedKey:vennSelectedKey,filters:vennFilters,
         getAnswer:(row,col)=>col.kind==='var'?(rows[row][col.node.name]?'V':'F'):
