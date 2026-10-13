@@ -44,7 +44,7 @@ export function removeFreeVariable(state,name){
   if(state.variables.at(-1).name!==name)throw Error('Remova primeiro a última variável da sequência.');
   for(const formula of state.formulas){
     const ast=parseFreeFormula(state,formula.source);
-    const uses=node=>node.type==='var'?node.name===name:Boolean(node.a&&uses(node.a)||node.b&&uses(node.b));
+    const uses=node=>node.type==='var'||node.type==='pred'?node.name===name:Boolean(node.a&&uses(node.a)||node.b&&uses(node.b));
     if(uses(ast))throw Error('Remova ou edite as fórmulas que usam '+name+' antes de excluir a variável.');
   }
   state.variables.pop();invalidate(state);return state;
@@ -174,7 +174,7 @@ function semantic(node,names){
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 export function describeFreeFormula(node,state){
   const names=Object.fromEntries(state.variables.map(x=>[x.name,x.meaning||x.name]));
-  if(freeTableKind(state)==='predicates')return {literal:cap(predicateReading(node,names)).replace(/\.+$/,'')+'.',
+  if(freeTableKind(state)==='predicates')return {literal:cap(predicateReading(node,names,Object.fromEntries(state.domain.map(d=>[d.id,d.label])))).replace(/\.+$/,'')+'.',
     equivalent:'',truth:freeFormulaEvidence(state,node)};
   const literal=cap(semantic(node,names)).replace(/\.+$/,'')+'.';
   let equivalent='',truth='';
