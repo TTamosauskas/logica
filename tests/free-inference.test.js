@@ -58,7 +58,7 @@ test('papéis inválidos são rejeitados e domínio continua opcional',()=>{
   const state=socrates();
   assert.throws(()=>editFreeVariable(state,'q','q','homem','individual'),/predicado cadastrado/);
   assert.throws(()=>parseFreeFormula(state,'p(x)'),/predicado cadastrado/);
-  assert.throws(()=>parseFreeFormula(state,'q(s)'),/indivíduo cadastrado/);
+  assert.equal(parseFreeFormula(state,'q(s)').term,'s'); // indivíduo implícito permitido
   assert.throws(()=>verifyFreeInference(state,'r(x)'),/Feche a variável/);
   assert.equal(freeRows(state).length,4);
   assert.equal(gradeFreeTable(state).total,4);
