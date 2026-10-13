@@ -274,7 +274,7 @@ try{
   await progressPage.locator('#brand').click();
   const downloadPromise=progressPage.waitForEvent('download');
   await progressPage.locator('#exportProgressButton').click();
-  const download=await downloadPromise;
+  const download=await downloadPromise.catch(error=>{throw Error('Backup não iniciou download. Erros JS: '+JSON.stringify(progressErrors)+'; detalhe: '+error.message)});
   assert.match(download.suggestedFilename(),/logiclab-progresso-\d{4}-\d{2}-\d{2}\.json/);
   const {readFileSync}=await import('node:fs');
   const backup=JSON.parse(readFileSync(await download.path(),'utf8'));
