@@ -8,6 +8,7 @@ import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
 import {immediateOperands,propositionalRelations,categoricalForm,categoricalRelation} from './core/table-relations.js';
 import {attachTruthHighlights} from './table-highlights.js';
+import {renderTruthVenn,renderPredicateVenn} from './truth-venn.js';
 
 const esc=value=>escapeHTML(String(value??''));
 const eye=open=>open?
@@ -20,6 +21,7 @@ export function createFreeTable(root){
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
   let lastFormulaInput=null,domainOpen=false;
   let truthHighlightController=null;
+  let vennSelectedKey='',vennFilters={};
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
   function save(){
     try{localStorage.setItem(FREE_TABLE_KEY,JSON.stringify(state));notice('Tabela salva automaticamente neste navegador.')}
@@ -152,6 +154,16 @@ export function createFreeTable(root){
     if(state.graded&&columns.some(col=>col.kind!=='var')){
       try{grade=gradeFreeTable(state)}catch{state.graded=false}
     }
+    const diagram=pred?
+      renderPredicateVenn({id:'free',variables:columns.filter(col=>col.kind==='var').map(col=>col.name),
+        people:rows,predicateValues:state.predicateValues,filters:vennFilters}):
+      renderTruthVenn({id:'free',variables:state.variables.map(item=>item.name),rows,
+        columns:columns.map(col=>({...col,derived:col.kind!=='var'})),
+        selectedKey:vennSelectedKey,filters:vennFilters,
+        getAnswer:(row,col)=>col.kind==='var'?(rows[row][col.node.name]?'V':'F'):
+          (state.answers[row+'|'+col.key]||''),
+        getExpected:(row,col)=>evaluateFreeRow(rows[row],col,state)?'V':'F',
+        checked:state.graded});
     return `<section class="free-card" aria-labelledby="freeTableTitle">
       <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2><span class="free-hint">${rows.length} ${pred?'indivíduos':'combinações V/F'} · ${n}/${columns.length} colunas expandidas</span></div>
       <p class="free-table-tip">${pred?'Preencha V/F dos predicados para cada indivíduo. Depois resolva as expressões. Cada quantificador tem um único resultado para o domínio, na última linha.':'Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas.'} Use o olho de cada cabeçalho para recolher ou mostrar colunas. Passe sobre um cabeçalho (ou toque nele) para ver relações entre colunas completamente corretas, mesmo antes de conferir.</p>
@@ -163,6 +175,7 @@ export function createFreeTable(root){
           ${hasGlobal?`<tr class="free-aggregate-row"><th scope="row">No domínio</th>${columns.map(col=>globalCell(col)).join('')}</tr>`:''}</tbody>
         </table>
       </div>
+      ${diagram}
       ${columns.some(col=>col.kind!=='var')?'<div class="free-table-actions"><button type="button" class="button primary" data-action="grade">Conferir respostas</button></div>':
        '<p class="free-table-tip">Adicione uma fórmula para preencher as colunas derivadas.</p>'}
       ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção inclui as colunas recolhidas.</p>`:''}
@@ -271,6 +284,13 @@ export function createFreeTable(root){
     }
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
+  root.addEventListener('change',e=>{
+    if(e.target.matches('[data-venn-column]'))vennSelectedKey=e.target.value;
+    else if(e.target.matches('[data-venn-filter]'))
+      vennFilters={...vennFilters,[e.target.dataset.vennFilter]:e.target.value};
+    else return;
+    render();
+  });
   root.addEventListener('focusin',e=>{if(e.target.matches('#freeNewFormula,#freeConclusion,[data-formula-source]'))lastFormulaInput=e.target});
   root.addEventListener('click',e=>{
     const sym=e.target.closest('[data-symbol]');
