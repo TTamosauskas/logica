@@ -238,7 +238,7 @@ export function createFreeTable(root){
       const start=input.selectionStart??input.value.length,end=input.selectionEnd??start;
       const predicateInput=freeTableKind(state)==='predicates'||input.value.includes('∀')||input.value.includes('∃');
       const insert=sym.dataset.symbol==='∀'||sym.dataset.symbol==='∃'?sym.dataset.symbol+'x(':
-        (predicateInput&&state.variables.some(v=>v.name===sym.dataset.symbol)?sym.dataset.symbol+'(x)':sym.dataset.symbol);
+        (predicateInput&&state.variables.some(v=>v.name===sym.dataset.symbol&&v.kind!=='individual')?sym.dataset.symbol+'(x)':sym.dataset.symbol);
       input.value=input.value.slice(0,start)+insert+input.value.slice(end);
       input.focus();input.setSelectionRange(start+insert.length,start+insert.length);return;
     }
