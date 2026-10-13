@@ -277,7 +277,7 @@
 
 /* Foco por colunas: o cabeçalho continua visível, a decisão e as respostas continuam do estudante. */
 .truth-table th:has(.truth-col-toggle){position:relative;padding-top:36px}
-.truth-col-toggle{position:absolute;top:4px;right:4px;display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;padding:4px;border:1px solid var(--border-hi);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
+.truth-col-toggle{position:absolute;top:4px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;padding:4px;border:1px solid var(--border-hi);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
 .truth-col-toggle svg{width:15px;height:15px}
 .truth-col-toggle:hover{border-color:var(--accent);color:var(--text);background:var(--accent-bg)}
 .truth-col-toggle:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -285,5 +285,5 @@
 .truth-table th.truth-col-collapsed{width:56px;min-width:56px;max-width:56px;box-sizing:border-box;padding:36px 4px 8px;color:var(--faint);background:var(--panel2);font-weight:650}
 .truth-table th.truth-col-collapsed > :not(.truth-col-short):not(.truth-col-toggle){display:none}
 .truth-table th.truth-col-collapsed .truth-col-short{display:block;width:46px;max-width:100%;margin:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
-.truth-table th.truth-col-collapsed .truth-col-toggle{right:50%;transform:translateX(50%);border-color:var(--border);color:var(--muted)}
+.truth-table th.truth-col-collapsed .truth-col-toggle{border-color:var(--border);color:var(--muted)}
 .truth-table td.truth-cell-collapsed{width:56px;min-width:56px;max-width:56px;box-sizing:border-box;padding:0 3px;background:var(--panel2)}
