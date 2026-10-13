@@ -1,0 +1,77 @@
+/* Laboratório Tabela Livre: independente dos exercícios gerados. */
+#freeTableView{padding-bottom:30px}
+.free-page-head{max-width:850px;margin:10px 0 24px}
+.free-page-head h1{font-size:clamp(27px,4vw,40px);margin:9px 0}
+.free-page-head p{color:var(--muted);max-width:780px;line-height:1.8;margin:0}
+.free-feedback{font-size:13px;margin:12px 0;color:var(--muted);min-height:20px}
+.free-feedback[data-result="error"]{color:var(--danger);font-weight:700}
+#freeBoard{display:grid;gap:18px}
+.free-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:21px;min-width:0}
+.free-card>p{color:var(--muted);font-size:13px;line-height:1.8;margin:6px 0 18px}
+.free-section-heading{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.free-section-heading h2{font-size:19px;margin:0}
+.free-hint{font-size:12px;color:var(--muted)}
+.free-entries{display:grid;gap:11px;margin:14px 0}
+.free-entry,.free-add-line,.free-formula-editor,.free-formula-new{display:flex;align-items:end;flex-wrap:wrap;gap:10px}
+.free-entry{padding:12px;background:var(--panel2);border-radius:10px;border:1px solid var(--border)}
+.free-entry label,.free-add-line label,.free-formula-editor label,.free-formula-new label{display:grid;gap:6px;font-size:12px;font-weight:700;color:var(--muted);min-width:0}
+.free-entry label:first-child,.free-add-line label:first-child{flex:0 1 130px}
+.free-entry label:nth-child(2),.free-add-line label:nth-child(2){flex:1 1 220px}
+.free-entry-actions{display:flex;gap:6px;flex-wrap:wrap}
+.free-entry input,.free-add-line input,.free-formula-editor input,.free-formula-new input{font:inherit;color:var(--text);background:var(--input);border:1px solid var(--border-hi);border-radius:8px;padding:10px;min-width:0;width:100%;box-sizing:border-box}
+.free-entry input:focus-visible,.free-add-line input:focus-visible,.free-formula-editor input:focus-visible,.free-formula-new input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.free-add-line{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--border)}
+.free-formula-card{background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:13px}
+.free-formula-editor label,.free-formula-new label{flex:1 1 250px}
+.free-interpretation{border-left:3px solid var(--teal);padding:11px 13px;background:var(--panel);margin-top:10px;border-radius:0 8px 8px 0}
+.free-interpretation p{margin:5px 0;font-size:13px;line-height:1.7;color:var(--text)}
+.free-interpretation .free-translation{font-size:15px;font-weight:700}
+.free-interpretation code{font-size:14px;color:var(--accent);white-space:normal;overflow-wrap:anywhere}
+.free-formula-new{margin-top:18px}
+.free-keypad{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.free-keypad button{min-width:37px}
+.free-setting-row{display:flex;gap:18px;flex-wrap:wrap;margin:15px 0}
+.free-setting-row fieldset{border:1px solid var(--border);border-radius:9px;display:flex;gap:10px 15px;flex-wrap:wrap;margin:0;padding:12px 13px;min-width:0}
+.free-setting-row legend{font-size:12px;font-weight:800;color:var(--text)}
+.free-setting-row label{font-size:13px;display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.free-setting-row input{accent-color:var(--accent)}
+.free-table-tip{font-size:12px!important;margin:8px 0 11px!important}
+.free-table-scroll{padding:4px 0 16px;max-width:100%}
+.free-truth-table{width:max-content;max-width:none;min-width:100%}
+.free-truth-table th{white-space:normal;overflow-wrap:anywhere;min-width:76px}
+.free-truth-table th.free-var-head{background:var(--panel2)}
+.free-truth-table th .free-column-label{display:block}
+.free-truth-table th.truth-col-collapsed .free-column-label{display:none}
+.free-truth-table td{text-align:center}
+.free-truth-table td select{font:inherit;color:var(--text);background:var(--input);border:1px solid var(--border-hi);border-radius:8px;padding:9px 11px;font-weight:800;min-height:44px}
+.free-truth-table td select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.free-truth-table td.free-evaluated{font-weight:800;color:var(--accent);font-size:14px}
+.free-truth-table td .cell{min-height:44px}
+.free-truth-table td .cell.incorrect{border:1px solid var(--danger)}
+.free-correction{display:block;font-weight:800;font-size:11px;color:var(--success)}
+.free-truth-table th.free-row-action-head{min-width:82px}
+.free-truth-table td .button{padding:7px 9px}
+.free-table-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+.free-grade{margin:14px 0 0;background:var(--panel2);border-left:3px solid var(--teal);padding:11px 13px;color:var(--text)!important}
+@media(max-width:700px){
+  .free-card{padding:15px}
+  .free-entry,.free-add-line,.free-formula-editor,.free-formula-new{align-items:stretch}
+  .free-entry label:first-child,.free-add-line label:first-child{flex:1 1 100px}
+  .free-entry-actions{width:100%}
+  .free-setting-row{gap:9px}
+  .free-setting-row fieldset{width:100%}
+  #topFreeTable{padding:8px 9px;font-size:12px;white-space:nowrap}
+}
+@media(max-width:700px){
+  .topbar{height:auto;min-height:68px;flex-wrap:wrap;align-content:center;padding-top:10px;padding-bottom:10px;gap:5px}
+  .header-actions{width:100%;min-width:0;justify-content:flex-start;flex-wrap:wrap;gap:5px}
+  #themeButton{margin-left:auto}
+}
+@media(max-width:400px){
+  .topbar{gap:6px}
+  #topCourse{padding:8px 7px;font-size:11px}
+  #topFreeTable{padding:8px 7px;font-size:11px}
+}
+
+/* Reserva espaço de rolagem para alcançar todos os controles do rodapé no celular. */
+@media(max-width:700px){.footer{padding-bottom:120px}}

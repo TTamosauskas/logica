@@ -14,6 +14,18 @@ Cada aula articula leitura progressiva, exemplo resolvido, prática com ajuda, r
 
 Leia [Pedagogia](docs/PEDAGOGY.md), [Avaliação](docs/ASSESSMENT.md) e [Bancos de questões](docs/QUESTION_BANKS.md) para rubricas, limitações e critérios editoriais.
 
+## Tabela Livre
+
+Acesse **Tabela Livre** no menu superior ou diretamente por `#tabela-livre`. O laboratório é separado das notas, tentativas e revisões do curso. O estudante pode:
+
+- Definir até seis variáveis com proposições em português, editar seus nomes e significados e adicionar até 16 fórmulas proposicionais.
+- Ver automaticamente a **leitura em linguagem natural** de cada fórmula, suas equivalências clássicas quando aplicáveis e as condições de verdade. Ex.: `u = comprei ingresso`, `t = viajei`, `¬(u → t)` gera **“É falso que se comprei ingresso, então viajei.”** e a forma equivalente `u ∧ ¬t`.
+- Gerar todas as combinações V/F ou editar um conjunto próprio de cenários, com até 64 linhas.
+- Alternar entre **Explorar** (resultados automáticos) e **Praticar** (preenchimento manual e correção), ocultando/reabrindo quaisquer colunas pelos ícones dos cabeçalhos.
+- Salvar automaticamente no navegador; exportar/importar o projeto em JSON e exportar a tabela calculada em CSV. O backup geral do LogicLab também inclui a Tabela Livre.
+
+As traduções são **literais e estruturais**, não uma interpretação livre de contextos em linguagem natural. Fórmulas são analisadas pelo mesmo parser e avaliador lógico do curso. A correção considera também colunas recolhidas; o modo personalizado não é apresentado como tabela-verdade completa.
+
 ## Execução local
 
 A partir da raiz, execute:

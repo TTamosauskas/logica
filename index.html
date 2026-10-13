@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./styles/venn.css">
   <link rel="stylesheet" href="./styles/categorical-models.css">
   <link rel="stylesheet" href="./styles/learning.css">
+  <link rel="stylesheet" href="./styles/free-table.css">
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -18,6 +19,7 @@
     <a href="#inicio" id="brand" class="brand" aria-label="LogicLab, voltar ao início"><span class="brandmark" aria-hidden="true">∴</span><span>LogicLab<small>laboratório de lógica</small></span></a>
     <div class="header-actions">
       <button class="button ghost small" id="topCourse" type="button">Curso Guiado</button><button class="button ghost small hide-mobile" id="topHome" type="button">⌂ &nbsp;Início</button>
+      <button class="button ghost small" id="topFreeTable" type="button">Tabela Livre</button>
       <button class="button ghost small hide-mobile" id="topGuide" type="button">Guia rápido</button>
       <button class="button small" id="themeButton" type="button" aria-label="Alternar tema">☀ &nbsp;Tema</button>
     </div>
@@ -80,6 +82,16 @@
       </div>
     </section>
 
+    <section id="freeTableView" class="hide" aria-labelledby="freePageTitle">
+      <button class="back" id="freeHomeBack" type="button">← Página inicial</button>
+      <div class="free-page-head">
+        <span class="eyebrow">LABORATÓRIO AUTÔNOMO</span>
+        <h1 id="freePageTitle">Tabela Livre</h1>
+        <p>Defina o significado das suas variáveis, construa fórmulas e explore ou resolva sua própria tabela-verdade. Aqui você decide quais colunas manter visíveis.</p>
+      </div>
+      <div id="freeFeedback" class="free-feedback" role="status" aria-live="polite"></div>
+      <div id="freeBoard"></div>
+    </section>
     <section id="courseView" class="hide" aria-label="Curso Guiado de Lógica Formal">
       <button class="back" id="courseHomeBack" type="button">← Página inicial</button>
       <div class="course-head"><div><span class="eyebrow" id="courseLocation"><span class="dot"></span> CURSO GUIADO / MAPA DAS UNIDADES</span><h1>Curso Guiado</h1><p id="courseDescription">Escolha uma aula para estudar e acompanhe suas revisões.</p></div><button type="button" id="courseMapButton" class="button">Mapa das unidades</button></div>

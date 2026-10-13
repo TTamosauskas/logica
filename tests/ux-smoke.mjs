@@ -512,6 +512,75 @@ try{
     await focusContext.close();
   }
 
+  // Tabela Livre: rota, tradução, variáveis próprias, modos e dados salvos.
+  for(const width of [375,1280]){
+    const freeContext=await browser.newContext({viewport:{width,height:812}});
+    const free=await freeContext.newPage(),freeErrors=[];
+    free.on('pageerror',error=>freeErrors.push(error.message));
+    await free.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    assert.equal(await free.locator('#freeTableView').isVisible(),true);
+    assert.equal(await free.locator('#workView').isVisible(),false);
+    assert.equal(await free.locator('#courseView').isVisible(),false);
+    assert.equal(await free.locator('#topFreeTable').isVisible(),true);
+    assert.match(await free.locator('#freeBoard .free-translation').first().innerText(),/É falso que se comprei ingresso, então viajei\./);
+    assert.match(await free.locator('#freeBoard .free-interpretation').first().innerText(),/u ∧ ¬t/);
+    assert.equal(await free.locator('.free-truth-table tbody tr').count(),4);
+    assert.equal(await free.locator('#columnVisibility').count(),0);
+    await free.locator('#freeNewVar').fill('q');
+    await free.locator('#freeNewMeaning').fill('passei no teste');
+    await free.locator('[data-action="add-var"]').click();
+    assert.equal(await free.locator('.free-truth-table tbody tr').count(),8);
+    await free.locator('[data-var-name="1"]').fill('v');
+    await free.locator('[data-var-meaning="1"]').fill('visitei meu amigo');
+    await free.locator('[data-action="save-var"][data-index="1"]').click();
+    assert.match(await free.locator('.free-translation').first().innerText(),/se comprei ingresso, então visitei meu amigo/);
+    await free.locator('#freeNewFormula').fill('q ∧ v');
+    await free.locator('[data-action="add-formula"]').click();
+    assert.equal(await free.locator('.free-formula-card').count(),2);
+    assert.equal(await free.locator('.free-truth-table tbody tr').count(),8);
+    // Todas as colunas continuam personalizáveis, inclusive as variáveis.
+    await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:u"]').click();
+    assert.equal(await free.locator('.free-truth-table th.truth-col-collapsed').count(),1);
+    assert.equal(await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:u"]').getAttribute('aria-pressed'),'false');
+    await free.reload({waitUntil:'networkidle'});
+    assert.equal(await free.locator('.free-truth-table th.truth-col-collapsed').count(),1);
+    assert.equal(await free.locator('.free-formula-card').count(),2);
+    // Cenários personalizados não devem ser tratados como tabela de todas as combinações.
+    await free.locator('input[name="freeRows"][value="custom"]').check();
+    assert.equal(await free.locator('.free-truth-table tbody tr').count(),1);
+    await free.locator('[data-action="add-row"]').click();
+    assert.equal(await free.locator('.free-truth-table tbody tr').count(),2);
+    await free.locator('[data-row-value="1|v"]').selectOption('F');
+    await free.locator('input[name="freeMode"][value="practice"]').check();
+    assert.ok(await free.locator('.free-truth-table [data-action="answer"]').count()>0);
+    await free.locator('.free-truth-table [data-action="answer"]').first().click();
+    await free.locator('[data-action="grade"]').click();
+    assert.match(await free.locator('.free-grade').innerText(),/respostas corretas/);
+    const stored=await free.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
+    assert.equal(stored.rowMode,'custom');
+    assert.equal(stored.viewMode,'practice');
+    assert.deepEqual(stored.hidden,['v:u']);
+    assert.equal(stored.formulas.length,2);
+    await free.reload({waitUntil:'networkidle'});
+    assert.equal(await free.locator('input[name="freeRows"][value="custom"]').isChecked(),true);
+    assert.equal(await free.locator('input[name="freeMode"][value="practice"]').isChecked(),true);
+    assert.equal(await free.locator('.free-truth-table tbody tr').count(),2);
+    // Erros sintáticos são explicados e não substituem a fórmula válida.
+    await free.locator('#freeNewFormula').fill('¬(q →)');
+    await free.locator('[data-action="add-formula"]').click();
+    assert.equal(await free.locator('.free-formula-card').count(),2);
+    assert.equal(await free.locator('#freeFeedback').getAttribute('data-result'),'error');
+    await free.locator('#freeHomeBack').click();
+    assert.equal(await free.locator('#homeView').isVisible(),true);
+    await free.locator('#topFreeTable').click();
+    assert.equal(await free.locator('#freeTableView').isVisible(),true);
+    assert.match(free.url(),/#tabela-livre$/);
+    const overflow=await free.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(overflow<=2,'Tabela Livre excede o viewport de '+width+'px em '+overflow);
+    assert.deepEqual(freeErrors,[]);
+    await freeContext.close();
+  }
+
   // Ciclos 10–13: todas as 23 aulas devem ensinar antes de avaliar.
   // A pergunta formativa permite errar, compreender e tentar novamente sem alterar a nota.
   for(const width of [375,1280]){

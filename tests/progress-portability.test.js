@@ -37,7 +37,8 @@ test('recusa dados desconhecidos, JSON inválido, versão diferente e objetos va
  assert.throws(()=>validateBackup({...valid,version:99}),/incompatível/);
  assert.throws(()=>validateBackup({...valid,data:{logiclab_theme_v1:'blue'}}),/Tema/);
  assert.throws(()=>validateBackup({...valid,data:{logiclab_progress_v1:'{broken'}}),/JSON/);
- assert.equal(PORTABLE_KEYS.length,10);
+ assert.equal(PORTABLE_KEYS.length,11);
+  assert.ok(PORTABLE_KEYS.includes('logiclab_tabela_livre_v1'));
 });
 test('erro de armazenamento recupera os valores anteriores',()=>{
  const storage=memory();
