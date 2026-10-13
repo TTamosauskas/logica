@@ -83,32 +83,19 @@ export function createFreeTable(root){
   }
   function renderTable(){
     const columns=freeColumns(state),rows=freeRows(state),n=columns.length-state.hidden.length;
-    const grade=state.viewMode==='practice'&&state.graded?gradeFreeTable(state):null;
+    const grade=state.graded&&columns.some(col=>col.kind!=='var')?gradeFreeTable(state):null;
     return `<section class="free-card" aria-labelledby="freeTableTitle">
-      <div class="free-section-heading"><h2 id="freeTableTitle">3. Trabalhar com a tabela</h2><span class="free-hint">${rows.length} ${rows.length===1?'linha':'linhas'} · ${n}/${columns.length} colunas expandidas</span></div>
-      <div class="free-setting-row"><fieldset><legend>Linhas da tabela</legend>
-        <label><input type="radio" name="freeRows" value="all" ${state.rowMode==='all'?'checked':''}> Todas as combinações</label>
-        <label><input type="radio" name="freeRows" value="custom" ${state.rowMode==='custom'?'checked':''}> Meus cenários</label></fieldset>
-        <fieldset><legend>Como estudar</legend>
-        <label><input type="radio" name="freeMode" value="explore" ${state.viewMode==='explore'?'checked':''}> Explorar (automático)</label>
-        <label><input type="radio" name="freeMode" value="practice" ${state.viewMode==='practice'?'checked':''}> Praticar (V/F)</label></fieldset>
-      </div>
-      <p class="free-table-tip">Use o olho de cada cabeçalho para recolher ou mostrar uma coluna. No modo Explorar o cálculo é automático; em Praticar você responde e confere.</p>
+      <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2><span class="free-hint">${rows.length} ${rows.length===1?'linha':'linhas'} · ${n}/${columns.length} colunas expandidas</span></div>
+      <p class="free-table-tip">Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas; use o olho do cabeçalho para recolher ou mostrar qualquer coluna.</p>
       <div class="table-scroll free-table-scroll" role="region" tabindex="0" aria-label="Tabela livre, deslize horizontalmente para consultar as colunas">
-        <table class="truth-table free-truth-table"><thead><tr>${columns.map(header).join('')}${state.rowMode==='custom'?'<th scope="col" class="free-row-action-head">Cenário</th>':''}</tr></thead>
-          <tbody>${rows.map((row,r)=>`<tr>${columns.map(col=>cell(row,r,col)).join('')}${state.rowMode==='custom'?`<td><button type="button" class="button small" data-action="remove-row" data-row="${r}" aria-label="Excluir cenário ${r+1}">Excluir</button></td>`:''}</tr>`).join('')}</tbody>
+        <table class="truth-table free-truth-table">
+          <thead><tr>${columns.map(header).join('')}</tr></thead>
+          <tbody>${rows.map((row,r)=>`<tr>${columns.map(col=>cell(row,r,col)).join('')}</tr>`).join('')}</tbody>
         </table>
       </div>
-      <div class="free-table-actions">
-        ${state.rowMode==='custom'?`<button type="button" class="button" data-action="add-row" ${rows.length>=MAX_ROWS?'disabled':''}>+ Adicionar cenário</button>`:''}
-        ${state.viewMode==='practice'&&columns.some(col=>col.kind!=='var')?'<button type="button" class="button primary" data-action="grade">Conferir respostas</button>':''}
-        <button type="button" class="button" data-action="export-csv">Exportar CSV</button>
-        <button type="button" class="button" data-action="export-json">Exportar projeto JSON</button>
-        <button type="button" class="button" data-action="import-json">Importar projeto JSON</button>
-        <input type="file" id="freeImportInput" accept=".json,application/json" hidden>
-      </div>
-      ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção considera também as colunas recolhidas.</p>`:''}
-      ${!rows.length?'<p>Adicione um cenário para começar.</p>':''}
+      ${columns.some(col=>col.kind!=='var')?'<div class="free-table-actions"><button type="button" class="button primary" data-action="grade">Conferir respostas</button></div>':
+       '<p class="free-table-tip">Adicione uma fórmula para preencher as colunas derivadas.</p>'}
+      ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção inclui as colunas recolhidas.</p>`:''}
     </section>`;
   }
   function render(){board.innerHTML=renderVariables()+renderFormulas()+renderTable()}
@@ -117,13 +104,14 @@ export function createFreeTable(root){
   }
   function run(action,button){
     if(action==='add-var'){
-      addFreeVariable(state,root.querySelector('#freeNewVar').value,root.querySelector('#freeNewMeaning').value);
-      refresh('Variável adicionada.');return;
+      const next=nextFreeVariableName(state);
+      addFreeVariable(state,next);
+      refresh('Variável '+next+' adicionada.');return;
     }
     if(action==='save-var'||action==='remove-var'){
       const i=Number(button.dataset.index),entry=state.variables[i];if(!entry)return;
       if(action==='remove-var')removeFreeVariable(state,entry.name);
-      else editFreeVariable(state,entry.name,root.querySelector('[data-var-name="'+i+'"]').value,root.querySelector('[data-var-meaning="'+i+'"]').value);
+      else editFreeVariable(state,entry.name,entry.name,root.querySelector('[data-var-meaning="'+i+'"]').value);
       refresh('Variáveis atualizadas.');return;
     }
     if(action==='add-formula'){
@@ -146,17 +134,7 @@ export function createFreeTable(root){
       if(next)state.answers[id]=next;else delete state.answers[id];
       state.graded=false;refresh();root.querySelector('[data-action="answer"][data-row="'+button.dataset.row+'"][data-key="'+CSS.escape(button.dataset.key)+'"]')?.focus({preventScroll:true});return;
     }
-    if(action==='add-row'){addFreeRow(state);refresh('Novo cenário adicionado.');return}
-    if(action==='remove-row'){removeFreeRow(state,Number(button.dataset.row));refresh('Cenário excluído.');return}
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
-    if(action==='export-json'){exportFile('logiclab-tabela-livre.json',JSON.stringify(state,null,2),'application/json');return}
-    if(action==='export-csv'){
-      const cols=freeColumns(state),rows=freeRows(state);
-      const quote=value=>'"'+String(value).replace(/"/g,'""')+'"';
-      const csv=[cols.map(c=>quote(c.label)).join(';'),...rows.map(row=>cols.map(c=>quote(t(evaluateFreeRow(row,c)))).join(';'))].join('\r\n');
-      exportFile('logiclab-tabela-livre.csv','\uFEFF'+csv,'text/csv;charset=utf-8');return;
-    }
-    if(action==='import-json'){root.querySelector('#freeImportInput').click();return}
   }
   root.addEventListener('focusin',e=>{if(e.target.matches('#freeNewFormula,[data-formula-source]'))lastFormulaInput=e.target});
   root.addEventListener('click',e=>{
@@ -172,36 +150,12 @@ export function createFreeTable(root){
     try{run(button.dataset.action,button)}catch(error){notice(error.message,true)}
   });
   root.addEventListener('keydown',e=>{
-    if(e.key!=='Enter'||!e.target.matches('#freeNewFormula,#freeNewVar,[data-formula-source],[data-var-meaning],[data-var-name]'))return;
+    if(e.key!=='Enter'||!e.target.matches('#freeNewFormula,[data-formula-source],[data-var-meaning]'))return;
     e.preventDefault();
     const selector=e.target.id==='freeNewFormula'?'[data-action="add-formula"]':
-      e.target.id==='freeNewVar'?'[data-action="add-var"]':
       e.target.matches('[data-formula-source]')?'[data-action="save-formula"][data-id="'+e.target.dataset.formulaSource+'"]':
-      '[data-action="save-var"][data-index="'+(e.target.dataset.varMeaning??e.target.dataset.varName)+'"]';
+      '[data-action="save-var"][data-index="'+e.target.dataset.varMeaning+'"]';
     root.querySelector(selector)?.click();
-  });
-  root.addEventListener('change',async e=>{
-    const el=e.target;
-    if(el.name==='freeRows'){
-      try{setFreeRowMode(state,el.value);refresh('Modo de linhas atualizado.')}catch(error){notice(error.message,true)}return;
-    }
-    if(el.name==='freeMode'){state.viewMode=el.value==='practice'?'practice':'explore';refresh('Modo de estudo atualizado.');return}
-    if(el.matches('[data-row-value]')){
-      const [index,name]=el.dataset.rowValue.split('|');
-      if(!state.customRows[Number(index)])return;
-      state.customRows[Number(index)][name]=el.value==='V';state.graded=false;
-      refresh('Cenário atualizado.');return;
-    }
-    if(el.id==='freeImportInput'){
-      const file=el.files?.[0];if(!file)return;
-      try{
-        if(file.size>262144)throw Error('Arquivo de projeto grande demais (máximo 256 KB).');
-        const data=JSON.parse(await file.text());
-        if(!data||data.version!==1||!Array.isArray(data.variables)||!Array.isArray(data.formulas))throw Error('Arquivo de Tabela Livre incompatível.');
-        if(!confirm('Importar este projeto substituirá a Tabela Livre atual. Continuar?'))return;
-        state=readFreeTable(data,{strict:true});refresh('Projeto importado com sucesso.');
-      }catch(error){notice('Não foi possível importar: '+error.message,true)}
-    }
   });
   render();
   return {open(){render();notice('Tabela salva neste navegador.')}};
