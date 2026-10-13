@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./styles/base.css">
   <link rel="stylesheet" href="./styles/translation-deduction.css">
   <link rel="stylesheet" href="./styles/venn.css">
+  <link rel="stylesheet" href="./styles/truth-venn.css">
   <link rel="stylesheet" href="./styles/categorical-models.css">
   <link rel="stylesheet" href="./styles/learning.css">
   <link rel="stylesheet" href="./styles/free-table.css">
@@ -73,7 +74,7 @@
           <section id="vennArea" class="venn-area hide" aria-label="Etapa interativa: Diagrama de Venn"></section>
           <div id="tableStage"><div id="categoricalModelsHelp" class="categorical-model-help hide"></div><section id="categoricalModelWorkbench" class="cat-workbench hide" aria-label="Tabela de modelos, avaliação guiada"></section><div class="table-header" id="tableHeaderBar"><h3 id="tableHeaderTitle">Tabela-verdade <span id="lineCount"></span></h3><small>Toque na célula: vazio → V → F</small></div>
           <div class="table-scroll" id="tableScrollWrap" role="region" aria-label="Tabela-verdade, role horizontalmente se necessário" tabindex="0"><table id="truthTable" class="truth-table"></table></div>
-          <div class="table-legend" id="tableLegendBar"><span><span class="legend-dot"></span> Para preencher</span><span><span class="legend-dot green"></span> Correto</span><span><span class="legend-dot red"></span> Revisar</span></div></div>
+          <div class="table-legend" id="tableLegendBar"><span><span class="legend-dot"></span> Para preencher</span><span><span class="legend-dot green"></span> Correto</span><span><span class="legend-dot red"></span> Revisar</span></div><div id="truthVennPanel" aria-label="Visualização da tabela em diagrama de Venn–Euler"></div></div>
           <div id="decisionArea"></div><section id="specialArea" class="special-area hide" aria-label="Atividade de formação avançada"></section><div id="courseExerciseBanner" class="course-exercise-banner hide"></div>
           <div class="task-actions"><button class="button primary" id="checkButton" type="button">✓ Corrigir tabela</button><button class="button" id="hintButton" type="button" aria-controls="inlineHint independentHintDecision" aria-expanded="false">✧ Dica</button><button class="button" id="clearButton" type="button">Limpar</button><button class="button" id="undoClearButton" type="button" hidden>↶ Desfazer limpeza</button><button class="button" id="revealButton" type="button">Ver resolução</button><button class="button" id="newButton" type="button">↻ Próximo</button></div>
           <p id="draftStatus" class="draft-status" role="status" aria-live="polite">Rascunho salvo neste navegador</p><div id="feedbackArea" role="status" aria-live="polite"></div><div id="feedbackNextActions" class="feedback-next" aria-label="Próximo passo após a correção"></div>
