@@ -186,37 +186,19 @@ export function createFreeTable(root){
     </section>`;
   }
   function freeHighlightRelations(columns){
-    // Identifique relações assim que as colunas estiverem integralmente corretas.
-    // A correção explícita serve para fornecer o relatório, não para liberar o hover.
-    const rows=freeRows(state),pred=freeTableKind(state)==='predicates';
+    if(freeTableKind(state)==='predicates')return [];
+    const rows=freeRows(state);
     const correct=index=>{
       const col=columns[index];
-      if(!pred&&col.kind==='var')return true;
-      if(pred&&col.kind==='var')return rows.length>0&&rows.every(row=>
-        ['V','F'].includes(state.predicateValues[row.id+'|'+col.name]));
-      const target=pred&&col.global?[null]:rows;
-      return target.length>0&&target.every((row,r)=>{
-        const key=(row===null?'global':r)+'|'+col.key;
-        try{return state.answers[key]===(evaluateFreeRow(row,col,state)?'V':'F')}catch{return false}
-      });
+      if(col.kind==='var')return true;
+      return rows.every((row,r)=>state.answers[r+'|'+col.key]===
+        (evaluateFreeRow(row,col,state)?'V':'F'));
     };
-    if(!pred)return propositionalRelations(columns,state.variables.map(x=>x.name),correct)
+    return propositionalRelations(columns,state.variables.map(item=>item.name),correct)
       .filter(rel=>columns[rel.a].kind!=='var'||columns[rel.b].kind!=='var');
-    // Equivalência de valores em um único domínio não demonstra equivalência lógica.
-    // As formas categóricas, ao contrário, possuem relações demonstráveis por sua sintaxe.
-    const result=[];
-    for(let a=0;a<columns.length;a++)for(let b=a+1;b<columns.length;b++){
-      if(!correct(a)||!correct(b))continue;
-      const first=categoricalForm(columns[a].node),second=categoricalForm(columns[b].node);
-      if(!first||!second)continue;
-      const subjectNonempty=state.domain.some(person=>state.predicateValues[person.id+'|'+first.a]==='V');
-      const rel=categoricalRelation(first,second,{subjectNonempty});
-      if(rel)result.push({a,b,...rel});
-    }
-    return result;
   }
   const editableSelector='[data-var-meaning],[data-var-kind],[data-formula-source],[data-ind-label],'+
-    '#freeNewFormula,#freeConclusion,#freeNewIndividualId,#freeNewIndividualLabel';
+    '#freeNewFormula,#freeNewIndividualId,#freeNewIndividualLabel';
   const draftKey=element=>element.id?'id:'+element.id:
     ['data-var-meaning','data-var-kind','data-formula-source','data-ind-label']
       .map(name=>element.hasAttribute(name)?name+':'+element.getAttribute(name):'')
@@ -246,8 +228,7 @@ export function createFreeTable(root){
         '<button type="button" class="button" data-action="reset-recovery">Reiniciar Tabela Livre</button></div></section>';
       return;
     }
-    board.innerHTML=renderVariables()+renderFormulas()+renderInference()+
-      renderPossibilities()+renderTable();
+    board.innerHTML=renderVariables()+renderFormulas()+renderTable();
     for(const control of board.querySelectorAll(editableSelector)){
       const key=draftKey(control);
       if(drafts.has(key)){control.value=drafts.get(key);control.dataset.unsaved='true'}
@@ -318,6 +299,7 @@ export function createFreeTable(root){
       refresh();root.querySelector('[data-action="toggle-col"][data-key="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});return;
     }
     if(action==='answer'){
+      if(freeRowImpossible(state,Number(button.dataset.row)))return;
       const id=key(button.dataset.row,button.dataset.key),old=state.answers[id]||'';
       const next=old===''?'V':old==='V'?'F':'';
       if(next)state.answers[id]=next;else delete state.answers[id];
@@ -346,27 +328,6 @@ export function createFreeTable(root){
       state.graded=false;refresh();
       root.querySelector('[data-action="predicate-value"][data-ind="'+CSS.escape(button.dataset.ind)+'"][data-name="'+CSS.escape(button.dataset.name)+'"]')?.focus({preventScroll:true});return;
     }
-    if(action==='verify-inference'){
-      const source=root.querySelector('#freeConclusion').value;
-      const report=verifyFreeInference(state,source);
-      delete root.querySelector('#freeConclusion').dataset.unsaved;
-      refresh(report.valid?'Inferência examinada.':'Contraexemplo encontrado.');
-      return;
-    }
-    if(action==='analyze-possibilities'){
-      // A conclusão em edição é considerada explicitamente ao solicitar a análise.
-      const input=root.querySelector('#freeConclusion');
-      const conclusion=input?.value.trim()||'';
-      const report=analyzeFreePossibilities(state,{conclusionSource:conclusion,filters:vennFilters});
-      if(input){
-        if(conclusion!==state.inferenceConclusion)state.inferenceReport=null;
-        state.inferenceConclusion=conclusion;
-        delete input.dataset.unsaved;
-      }
-      possibilities={key:possibilityKey(),report};
-      refresh(report.status==='complete'?'Possibilidades analisadas.':'Análise não determinada.');
-      return;
-    }
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
   root.addEventListener('input',e=>{
@@ -381,16 +342,12 @@ export function createFreeTable(root){
       notice('Tipo em edição: clique em Salvar para aplicar a mudança.');return;
     }
     if(e.target.matches('[data-venn-column]'))vennSelectedKey=e.target.value;
-    else if(e.target.matches('[data-venn-filter]')){
+    else if(e.target.matches('[data-venn-filter]'))
       vennFilters={...vennFilters,[e.target.dataset.vennFilter]:e.target.value};
-      if(activePossibilities())
-        possibilities={key:possibilityKey(),
-          report:analyzeFreePossibilities(state,{filters:vennFilters})};
-    }
     else return;
     render();
   });
-  root.addEventListener('focusin',e=>{if(e.target.matches('#freeNewFormula,#freeConclusion,[data-formula-source]'))lastFormulaInput=e.target});
+  root.addEventListener('focusin',e=>{if(e.target.matches('#freeNewFormula,[data-formula-source]'))lastFormulaInput=e.target});
   root.addEventListener('click',e=>{
     const sym=e.target.closest('[data-symbol]');
     if(sym){
@@ -407,10 +364,9 @@ export function createFreeTable(root){
     try{run(button.dataset.action,button)}catch(error){notice(error.message,true)}
   });
   root.addEventListener('keydown',e=>{
-    if(e.key!=='Enter'||!e.target.matches('#freeConclusion,#freeNewFormula,[data-formula-source],[data-var-meaning],#freeNewIndividualId,#freeNewIndividualLabel,[data-ind-label]'))return;
+    if(e.key!=='Enter'||!e.target.matches('#freeNewFormula,[data-formula-source],[data-var-meaning],#freeNewIndividualId,#freeNewIndividualLabel,[data-ind-label]'))return;
     e.preventDefault();
-    const selector=e.target.id==='freeConclusion'?'[data-action="verify-inference"]':
-      e.target.id==='freeNewIndividualId'||e.target.id==='freeNewIndividualLabel'?'[data-action="add-ind"]':
+    const selector=e.target.id==='freeNewIndividualId'||e.target.id==='freeNewIndividualLabel'?'[data-action="add-ind"]':
       e.target.matches('[data-ind-label]')?'[data-action="save-ind"][data-id="'+e.target.dataset.indLabel+'"]':
       e.target.id==='freeNewFormula'?'[data-action="add-formula"]':
       e.target.matches('[data-formula-source]')?'[data-action="save-formula"][data-id="'+e.target.dataset.formulaSource+'"]':
