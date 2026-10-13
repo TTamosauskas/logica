@@ -41,7 +41,7 @@ test('Venn destaca H e não M como impossível sob as premissas, sem depender de
   });
   assert.match(html,/truth-venn-impossible/);
   assert.match(html,/região impossível em todos os modelos/);
-  assert.match(html,/cadastros? conflitante/);
+  assert.match(html,/contradizem as premissas/);
   assert.match(html,/×/);
 });
 
