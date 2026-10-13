@@ -41,15 +41,14 @@ export function attachTruthHighlights(table,configuration){
     marked(index,'truth-rel-structure');
     operands.forEach(i=>marked(i,'truth-rel-structure'));
     const hits=(config.relations||[]).filter(r=>r.a===index||r.b===index);
-    // Prioridade semântica sobre contorno neutro (inclusive fonte e operandos).
+    // Uma única relação cromática por hover evita que a mesma coluna receba
+    // simultaneamente verde e vermelho quando participa de mais de uma relação.
     const rank={equivalent:0,contradictory:1,subaltern:2,contrary:3,subcontrary:4};
     hits.sort((a,b)=>rank[a.kind]-rank[b.kind]);
+    const selected=hits.filter(r=>r.kind===hits[0]?.kind);
     const label=[];
-    const used=new Set();
-    for(const relation of hits){
+    for(const relation of selected){
       const peer=relation.a===index?relation.b:relation.a;
-      if(used.has(peer))continue;
-      used.add(peer);
       const style=CSS_FOR[relation.kind];
       if(!style)continue;
       for(const j of [index,peer]){
