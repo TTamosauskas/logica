@@ -54,10 +54,10 @@ export function createFreeTable(root){
     </section>`;
   }
   function renderDomain(){
-    const pred=freeTableKind(state)==='predicates';
-    return `<details class="free-domain" ${pred||domainOpen?'open':''}>
-      <summary>Indivíduos do domínio (para ∀, ∃ e p(s)) <small>${state.domain.length} cadastrados</small></summary>
-      <p>Use uma constante como s = Sócrates. Cada indivíduo ocupa uma linha; p(x), q(x) representam propriedades cujos valores V/F você define.</p>
+    const hasMembers=state.domain.length>0;
+    return `<details class="free-domain" ${hasMembers||domainOpen?'open':''}>
+      <summary>Indivíduos do domínio (opcional, para testar um modelo V/F) <small>${state.domain.length} cadastrados</small></summary>
+      <p>Esta área não é necessária para verificar se uma conclusão decorre das premissas. Para experimentar V/F em um modelo concreto, cadastre indivíduos, por exemplo s = Sócrates; cada um ocupará uma linha.</p>
       <div class="free-domain-entries">${state.domain.map(item=>`<div class="free-domain-entry">
         <code>${esc(item.id)}</code><label>Nome de ${esc(item.id)} <input type="text" data-ind-label="${esc(item.id)}" maxlength="80" value="${esc(item.label)}"></label>
         <button class="button small" type="button" data-action="save-ind" data-id="${esc(item.id)}">Salvar</button>
