@@ -53,8 +53,10 @@ function svgDiagram(id,names,regions,{solution=false,predicate=false}={}){
       const isInside=Boolean(item.mask&(1<<(names.length-i-1)));
       return '<g clip-path="url(#'+clipName(id,i,isInside)+')">';
     }).join('');
+    const divergent=!predicate&&!solution&&item.expected&&item.answer!==item.expected;
     return opened+'<rect x="0" y="0" width="480" height="330" class="truth-venn-'+shade+'"><title>'+
-      esc(item.label+': '+(predicate?(item.count+' indivíduos'+(item.people?.length?': '+item.people.join(', '):'')):(raw||'pendente')))+'</title></rect>'+
+      esc(item.label+': '+(predicate?(item.count+' indivíduos'+(item.people?.length?': '+item.people.join(', '):'')):(raw||'pendente'))+
+      (divergent?' · revisar':''))+'</title></rect>'+
       '</g>'.repeat(names.length);
   }).join('');
   const outlines=layout.circles.map(([x,y,r],i)=>
