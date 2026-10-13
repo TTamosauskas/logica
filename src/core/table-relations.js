@@ -34,12 +34,9 @@ export function relationOf(a,b){
   const all=(predicate)=>a.every((v,i)=>predicate(v,b[i]));
   if(all((x,y)=>x===y))return {kind:'equivalent'};
   if(all((x,y)=>x!==y))return {kind:'contradictory'};
-  // Em relações não simétricas, mantém-se a direção da consequência.
-  const aToB=all((x,y)=>!x||y),bToA=all((x,y)=>!y||x);
-  // Evitar inferências de existência vazias com tautologias/contradições constantes.
+  // Subalternação A→I e E→O é categórica e exige S não vazio;
+  // não confundir uma implicação como p∧q→p com subalternação tradicional.
   const contingent=(v)=>v.includes(true)&&v.includes(false);
-  if(aToB!==bToA&&contingent(a)&&contingent(b))
-    return {kind:'subaltern',from:aToB?'a':'b',to:aToB?'b':'a'};
   if(all((x,y)=>!(x&&y))&&a.some((x,i)=>!x&&!b[i])&&contingent(a)&&contingent(b))
     return {kind:'contrary'};
   if(all((x,y)=>x||y)&&a.some((x,i)=>x&&b[i])&&contingent(a)&&contingent(b))
