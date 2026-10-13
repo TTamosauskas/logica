@@ -680,6 +680,34 @@ try{
     await context.close();
   }
 
+  // Argumentos como q(p) identificam indivíduos pelo contexto, sem cadastrar p nem usar x.
+  for(const width of [375,1280]){
+    const ctx=await browser.newContext({viewport:{width,height:812}});
+    const page=await ctx.newPage(),errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    assert.equal(await page.locator('[data-var-kind="0"]').inputValue(),'predicate');
+    await page.locator('#freeNewFormula').fill('q(p)');
+    await page.locator('[data-action="add-formula"]').click();
+    assert.equal(await page.locator('.free-formula-card').count(),1);
+    assert.equal(await page.locator('[data-var-kind="0"]').inputValue(),'individual');
+    assert.equal(await page.locator('.free-truth-table tbody tr').count(),2);
+    assert.match(await page.locator('#freeFeedback').innerText(),/reconhecido/);
+    await page.locator('[data-action="add-var"]').click();
+    await page.locator('#freeNewFormula').fill('∀x(q(x) → r(x))');
+    await page.locator('[data-action="add-formula"]').click();
+    await page.locator('#freeNewFormula').fill('r(p)');
+    await page.locator('[data-action="add-formula"]').click();
+    assert.equal(await page.locator('.free-impossible-row').count(),1);
+    assert.match(await page.locator('.free-impossibility-footer').innerText(),/Instanciação universal/);
+    await page.reload({waitUntil:'networkidle'});
+    assert.equal(await page.locator('.free-formula-card').count(),3);
+    assert.equal(await page.locator('[data-var-kind="0"]').inputValue(),'individual');
+    assert.equal(await page.locator('.free-impossible-row').count(),1);
+    assert.deepEqual(errors,[]);
+    await ctx.close();
+  }
+
   // Destaques compartilhados: composição imediata antes da correção, relações depois.
   for(const width of [375,1280]){
     const relationContext=await browser.newContext({viewport:{width,height:812},hasTouch:width===375,isMobile:width===375});
