@@ -27,6 +27,7 @@ test('parser aceita quantificação, predicados com constantes e negações',()=
  assert.equal(parsePredicateFormula('Q(s)',['p','q'],['s']).a,undefined);
  assert.throws(()=>parsePredicateFormula('P(a)',['p','q'],['s']),/indivíduo/);
  assert.throws(()=>parsePredicateFormula('∀y(P(y))',['p','q'],['s']),/x como variável/);
+ assert.throws(()=>parsePredicateFormula('∀x(∃x(∀x(p(x))))',['p','q'],['s']),/no máximo dois quantificadores/);
  assert.throws(()=>parsePredicateFormula('∀x(P(x) → Q(x)',['p','q'],['s']),/parênteses/);
 });
 test('quantificadores avaliam todos, alguns e nenhum no mesmo domínio',()=>{
