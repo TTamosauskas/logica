@@ -567,7 +567,7 @@ try{
     await free.locator('[data-action="grade"]').click();
     assert.match(await free.locator('.free-grade').innerText(),/respostas corretas/);
     const stored=await free.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
-    assert.equal(stored.version,2);
+    assert.equal(stored.version,3);
     assert.equal('rowMode' in stored,false);
     assert.equal('viewMode' in stored,false);
     assert.deepEqual(stored.variables.map(x=>x.name),['p','q','r']);
