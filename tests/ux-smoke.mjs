@@ -440,6 +440,15 @@ try{
     assert.equal(await focus.locator('#columnVisibility').count(),0,'A faixa redundante não deve existir');
     assert.equal(await table.locator('[data-toggle-col]').count(),originalColumns);
     assert.equal(await table.locator('[data-toggle-col][aria-pressed="true"]').count(),originalColumns);
+    // Em ambos os estados, o centro do botão e do SVG coincide com o centro do cabeçalho.
+    const misalignment=()=>table.locator('thead th').evaluateAll(heads=>Math.max(0,...heads.map(head=>{
+      const button=head.querySelector('.truth-col-toggle'),svg=button?.querySelector('svg');
+      if(!button||!svg)return 999;
+      const h=head.getBoundingClientRect(),b=button.getBoundingClientRect(),v=svg.getBoundingClientRect();
+      const hc=(h.left+h.right)/2,bc=(b.left+b.right)/2,vc=(v.left+v.right)/2;
+      return Math.max(Math.abs(hc-bc),Math.abs(hc-vc));
+    })));
+    assert.ok((await misalignment())<=1.5,'Olhos abertos fora do centro em '+width+'px');
     const originalColumn=await table.locator('.cell').first().getAttribute('data-c');
     assert.notEqual(originalColumn,'0','Primeiro campo editável não deve ser uma variável de entrada');
     await table.locator('.cell').first().click();
@@ -455,6 +464,7 @@ try{
     assert.match(await firstHead.locator('[data-toggle-col="0"]').getAttribute('aria-label'),/Mostrar coluna/);
     assert.equal(await firstHead.locator('.truth-col-short').isVisible(),true);
     assert.equal(await firstHead.locator('svg path[d="M3 3l18 18"]').count(),1);
+    assert.ok((await misalignment())<=1.5,'Olhos mistos fora do centro em '+width+'px');
     assert.ok((await firstHead.evaluate(el=>el.getBoundingClientRect().width))<=65);
     assert.equal(await table.locator('tbody tr').first().locator('td').count(),originalColumns);
     assert.equal(await table.locator('.truth-cell-collapsed').count(),originalRows);
@@ -483,6 +493,7 @@ try{
     for(const index of toHide)await table.locator('[data-toggle-col="'+index+'"]').click();
     assert.equal(await table.locator('thead th').count(),originalColumns);
     assert.equal(await table.locator('thead th.truth-col-collapsed').count(),originalColumns);
+    assert.ok((await misalignment())<=1.5,'Olhos riscados fora do centro em '+width+'px');
     assert.equal(await table.locator('.cell').count(),0);
     assert.equal(await table.locator('tbody tr').count(),originalRows);
     await focus.locator('#checkButton').click();
@@ -490,6 +501,7 @@ try{
     assert.ok((await draft()).grade.total>=originalCells,'A correção avalia também as células ocultas');
     for(let i=0;i<originalColumns;i++)await table.locator('[data-toggle-col="'+i+'"]').click();
     assert.equal(await table.locator('thead th.truth-col-collapsed').count(),0);
+    assert.ok((await misalignment())<=1.5,'Olhos reabertos fora do centro em '+width+'px');
     assert.equal(await table.locator('.cell').count(),originalCells);
     assert.equal((await draft()).hiddenColumns.length,0);
     await focus.locator('#newButton').click();
