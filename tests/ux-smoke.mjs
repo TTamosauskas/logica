@@ -567,7 +567,7 @@ try{
     await free.locator('[data-action="grade"]').click();
     assert.match(await free.locator('.free-grade').innerText(),/respostas corretas/);
     const stored=await free.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
-    assert.equal(stored.version,3);
+    assert.equal(stored.version,4);
     assert.equal('rowMode' in stored,false);
     assert.equal('viewMode' in stored,false);
     assert.deepEqual(stored.variables.map(x=>x.name),['p','q','r']);
@@ -653,7 +653,7 @@ try{
     assert.equal(await pred.locator('.free-truth-table .free-person-cell').count(),2);
     assert.equal(await pred.locator('.free-truth-table [data-row="global"]').count(),4);
     const stored=await pred.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
-    assert.equal(stored.version,3);
+    assert.equal(stored.version,4);
     assert.deepEqual(stored.domain.map(x=>x.label),['Sócrates','Platão']);
     assert.equal(stored.formulas.length,4);
     assert.deepEqual(predErrors,[]);
