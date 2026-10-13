@@ -15,7 +15,7 @@ test('tabela livre gera todas as interpretações e traduz condicional negada',(
   assert.match(reading.truth,/é V.*é F/);
   assert.equal(evalAst(node,{u:true,t:false}),true);
   assert.equal(evalAst(node,{u:true,t:true}),false);
-  assert.deepEqual(freeColumns(s).map(c=>c.label),['u','t','u → t','¬(u → t)']);
+  assert.deepEqual(freeColumns(s).map(c=>c.label),['u','t','u → t','¬((u → t))']);
 });
 test('tradução é composicional e usa os significados editados',()=>{
   const s=blankFreeTable();
