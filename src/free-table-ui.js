@@ -65,7 +65,7 @@ export function createFreeTable(root){
       <div class="free-formula-new"><label>Adicionar fórmula <input id="freeNewFormula" type="text" maxlength="240" placeholder="Ex.: ¬(p → q)" spellcheck="false"></label>
         <button type="button" class="button primary" data-action="add-formula">+ Adicionar fórmula</button></div>
       <div class="free-keypad" role="group" aria-label="Inserir variáveis e símbolos lógicos">
-        ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','(',')'].map(sym=>`<button class="button small" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
+        ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','(',')'].map(sym=>`<button class="button small ${state.variables.some(v=>v.name===sym)?'free-key-variable':''}" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
       </div>
       <small class="free-hint">Aceita também !, ~, &, |, →, ->, ↔ e parênteses. Ou (∨) é inclusivo.</small>
     </section>`;
