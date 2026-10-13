@@ -16,7 +16,7 @@ export function createFreeTable(root){
   let state;
   try{state=readFreeTable(localStorage.getItem(FREE_TABLE_KEY))}catch{state=blankFreeTable()}
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
-  let lastFormulaInput=null;
+  let lastFormulaInput=null,domainOpen=false;
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
   function save(){
     try{localStorage.setItem(FREE_TABLE_KEY,JSON.stringify(state));notice('Tabela salva automaticamente neste navegador.')}
@@ -51,7 +51,7 @@ export function createFreeTable(root){
   }
   function renderDomain(){
     const pred=freeTableKind(state)==='predicates';
-    return `<details class="free-domain" ${pred?'open':''}>
+    return `<details class="free-domain" ${pred||domainOpen?'open':''}>
       <summary>Indivíduos do domínio (para ∀, ∃ e p(s)) <small>${state.domain.length} cadastrados</small></summary>
       <p>Use uma constante como s = Sócrates. Cada indivíduo ocupa uma linha; p(x), q(x) representam propriedades cujos valores V/F você define.</p>
       <div class="free-domain-entries">${state.domain.map(item=>`<div class="free-domain-entry">
@@ -174,10 +174,12 @@ export function createFreeTable(root){
       state.graded=false;refresh();root.querySelector('[data-action="answer"][data-row="'+button.dataset.row+'"][data-key="'+CSS.escape(button.dataset.key)+'"]')?.focus({preventScroll:true});return;
     }
     if(action==='add-ind'){
+      domainOpen=true;
       addFreeIndividual(state,root.querySelector('#freeNewIndividualId').value,root.querySelector('#freeNewIndividualLabel').value);
       refresh('Indivíduo cadastrado.');return;
     }
     if(action==='save-ind'||action==='remove-ind'){
+      domainOpen=true;
       const id=button.dataset.id;
       if(action==='remove-ind')removeFreeIndividual(state,id);
       else editFreeIndividual(state,id,root.querySelector('[data-ind-label="'+CSS.escape(id)+'"]').value);
