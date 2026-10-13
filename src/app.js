@@ -940,12 +940,13 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   }
   function renderCategoricalModelWorkbench(){
     const area=$('categoricalModelWorkbench'),ex=exercise,active=ex?.mode==='categoricos';
-    const tableBar=$('tableHeaderBar'),tableWrap=$('tableScrollWrap'),legend=$('tableLegendBar');
-    if(!active){area.classList.add('hide');tableBar.classList.remove('hide');tableWrap.classList.remove('hide');legend.classList.remove('hide');return}
+    const tableBar=$('tableHeaderBar'),tableWrap=$('tableScrollWrap'),legend=$('tableLegendBar'),columnControls=$('columnVisibility');
+    if(!active){area.classList.add('hide');tableBar.classList.remove('hide');tableWrap.classList.remove('hide');legend.classList.remove('hide');columnControls.classList.toggle('hide',!ex?.cols?.length);return}
     const cat=ex.cat,unlocked=cat.venn.verdictVerified||ex.revealed;
     area.classList.toggle('hide',!unlocked);
     tableBar.classList.toggle('hide',!cat.showFullTable);
     tableWrap.classList.toggle('hide',!cat.showFullTable);
+    columnControls.classList.toggle('hide',!cat.showFullTable);
     legend.classList.toggle('hide',!cat.showFullTable);
     if(!unlocked)return;
     const r=Math.max(0,Math.min(ex.envs.length-1,cat.modelRow||0));cat.modelRow=r;
@@ -1018,25 +1019,57 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('tableHeaderTitle').firstChild.textContent='Tabela-verdade ';$('lineCount').textContent=`· ${ex.envs.length} linhas`;renderTranslation();renderDeduction();document.querySelectorAll('.segment').forEach(b=>{const active=b.dataset.level===level;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});renderTable();renderChoice();renderFeedback();renderFeedbackActions();renderExerciseHelp();renderSidebar();renderInlineHint();renderCategorical();$('checkButton').disabled=ex.revealed||!!(ex.translation&&!ex.translation.unlocked)||!!(ex.cat&&!ex.cat.venn.verdictVerified);$('clearButton').disabled=ex.revealed;$('revealButton').disabled=ex.revealed;$('hintButton').disabled=false;renderSpecial();renderCourseExerciseBanner();$('undoClearButton').hidden=!undoClearState;saveExerciseDraft();}
   function fieldKey(row,col){return row+'-'+col}
   function expected(ex,row,col){const cell=ex.cols[col];if(ex.mode==='categoricos'){const mask=ex.envs[row].__model;if(cell.key==='model')return modelLabel(mask);if(cell.key==='counter')return t(ex.cat.forms.slice(0,2).every(x=>catValue(x,mask))&&!catValue(ex.cat.forms[2],mask));return t(catValue(ex.cat.forms[cell.catIndex],mask))}return cell.assignmentIndex!==undefined?ex.metadata.items[ex.envs[row].__assignment[cell.assignmentIndex]]:t(evalAst(cell.node,ex.envs[row]))}
-  function renderTable(){const ex=exercise;let str='<thead><tr>'+ex.cols.map((c,index)=>{
+  // A ocultação é apenas visual: índices e respostas permanecem no exercício original.
+  function hiddenTableColumns(ex){
+    return new Set(Array.isArray(ex.hiddenColumns)
+      ?ex.hiddenColumns.filter(i=>Number.isInteger(i)&&i>=0&&i<ex.cols.length):[]);
+  }
+  function columnHideButton(index,label){
+    return `<button type="button" class="truth-col-hide" data-hide-col="${index}" title="Ocultar coluna ${escapeHTML(label)}" aria-label="Ocultar coluna ${escapeHTML(label)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3l18 18"></path><path d="M10.5 5.1A11 11 0 0 1 12 5c6.6 0 10 7 10 7a14 14 0 0 1-3.3 4.1"></path><path d="M6.6 6.6C3.6 8.6 2 12 2 12s3.4 7 10 7c1.3 0 2.5-.3 3.6-.7"></path></svg></button>`;
+  }
+  function renderColumnControls(){
+    const panel=$('columnVisibility'),ex=exercise,hidden=hiddenTableColumns(ex);
+    panel.classList.toggle('hide',!ex.cols.length);
+    if(!ex.cols.length){panel.innerHTML='';return}
+    const visible=ex.cols.length-hidden.size;
+    const restore=ex.cols.map((col,i)=>hidden.has(i)
+      ?`<button type="button" class="truth-col-restore" data-show-col="${i}" aria-label="Mostrar coluna ${escapeHTML(col.label)}" title="Restaurar esta coluna">↶ ${escapeHTML(col.label)}</button>`
+      :'').join('');
+    panel.innerHTML=`<div class="truth-column-summary"><span class="truth-column-count" role="status">${visible} de ${ex.cols.length} colunas visíveis</span>${hidden.size?'<button type="button" class="truth-col-show-all" data-show-all-columns>Mostrar todas</button>':''}</div><div class="truth-hidden-columns" role="group" aria-label="Colunas ocultas">${restore||'<span class="truth-column-hint">Use o ícone no cabeçalho para ocultar a coluna que desejar.</span>'}</div>`;
+  }
+  function changeColumnVisibility(index,hide){
+    if(!exercise||!Number.isInteger(index)||index<0||index>=exercise.cols.length)return;
+    const hidden=hiddenTableColumns(exercise);
+    if(hide)hidden.add(index);else hidden.delete(index);
+    exercise.hiddenColumns=[...hidden].sort((a,b)=>a-b);
+    renderTable();
+    saveExerciseDraft();
+  }
+  function renderTable(){const ex=exercise,hidden=hiddenTableColumns(ex);
+    renderColumnControls();
+    if(ex.cols.length&&hidden.size===ex.cols.length){
+      $('truthTable').innerHTML='<thead><tr><th scope="col">Colunas ocultas</th></tr></thead><tbody><tr><td class="truth-no-columns">Escolha uma coluna acima para continuar a atividade.</td></tr></tbody>';
+      renderCategoricalModelWorkbench();return;
+    }
+    let str='<thead><tr>'+ex.cols.map((c,index)=>{if(hidden.has(index))return '';
       if(ex.mode==='deducao'&&c.key.startsWith('clue')){
         const i=Number(c.key.slice(4)),tr=ex.translation;
         // A fórmula escrita pelo aluno tem prioridade: o corretor já validou equivalência semântica.
         // Ao pedir a resolução antes de concluir a tradução, mostramos a fórmula-modelo.
         const formula=tr?.unlocked?tr.values[i]:ex.revealed?pretty(tr.correctNodes[i]):'';
         const phrase=ex.metadata.clueTexts[i];
-        return `<th scope="col" class="derived deduction-clue-header"><span class="deduction-header-id">${escapeHTML(c.label)}</span><span class="deduction-header-text">${escapeHTML(phrase)}</span><code class="deduction-header-formula">${escapeHTML(formula)}</code></th>`;
+        return `<th scope="col" class="derived deduction-clue-header"><span class="deduction-header-id">${escapeHTML(c.label)}</span><span class="deduction-header-text">${escapeHTML(phrase)}</span><code class="deduction-header-formula">${escapeHTML(formula)}</code>${columnHideButton(index,c.label)}</th>`;
       }
-      if(ex.mode==='categoricos'&&c.catIndex!==undefined){return `<th scope="col" class="derived categorical-clue-header"><b>${escapeHTML(c.label)}</b><div class="deduction-header-text">${escapeHTML(ex.cat.texts[c.catIndex])}</div><code>${escapeHTML(ex.cat.unlocked?ex.cat.values[c.catIndex]:catFormula(ex.cat.forms[c.catIndex]))}</code></th>`;}
-      if(ex.mode==='silogismos'&&c.key.startsWith('out')){const i=Number(c.key.slice(3));const formula=ex.translation?.unlocked?ex.translation.values[i]:ex.revealed?pretty(ex.roots[i]):'';return `<th scope="col" class="derived deduction-clue-header"><span class="deduction-header-id">${escapeHTML(ex.translation.labels[i])}</span><span class="deduction-header-text">${escapeHTML(ex.translation.statements[i])}</span><code class="deduction-header-formula" aria-label="Fórmula validada: ${escapeHTML(formula)}">${escapeHTML(formula)}</code></th>`;}
+      if(ex.mode==='categoricos'&&c.catIndex!==undefined){return `<th scope="col" class="derived categorical-clue-header"><b>${escapeHTML(c.label)}</b><div class="deduction-header-text">${escapeHTML(ex.cat.texts[c.catIndex])}</div><code>${escapeHTML(ex.cat.unlocked?ex.cat.values[c.catIndex]:catFormula(ex.cat.forms[c.catIndex]))}</code>${columnHideButton(index,c.label)}</th>`;}
+      if(ex.mode==='silogismos'&&c.key.startsWith('out')){const i=Number(c.key.slice(3));const formula=ex.translation?.unlocked?ex.translation.values[i]:ex.revealed?pretty(ex.roots[i]):'';return `<th scope="col" class="derived deduction-clue-header"><span class="deduction-header-id">${escapeHTML(ex.translation.labels[i])}</span><span class="deduction-header-text">${escapeHTML(ex.translation.statements[i])}</span><code class="deduction-header-formula" aria-label="Fórmula validada: ${escapeHTML(formula)}">${escapeHTML(formula)}</code>${columnHideButton(index,c.label)}</th>`;}
       if(ex.mode==='deducao'&&c.key==='condition'){
         const k=ex.metadata.falseCount;
         const ruleText=k===0?'Todas as afirmações verdadeiras':`Exatamente ${k} afirmação${k===1?'':'ões'} falsa${k===1?'':'s'}`;
-        return `<th scope="col" class="derived deduction-condition-header"><span class="deduction-condition-label">Condição geral</span><span class="deduction-condition-rule">${escapeHTML(ruleText)}</span><span class="deduction-condition-question">Esta distribuição cumpre a condição?</span><span class="deduction-condition-legend"><span class="deduction-legend-yes">V = Sim</span><span class="deduction-legend-no">F = Não</span></span></th>`;
+        return `<th scope="col" class="derived deduction-condition-header"><span class="deduction-condition-label">Condição geral</span><span class="deduction-condition-rule">${escapeHTML(ruleText)}</span><span class="deduction-condition-question">Esta distribuição cumpre a condição?</span><span class="deduction-condition-legend"><span class="deduction-legend-yes">V = Sim</span><span class="deduction-legend-no">F = Não</span></span>${columnHideButton(index,c.label)}</th>`;
       }
-      return `<th scope="col" class="${c.editable?'derived':''}">${escapeHTML(c.label)}<div class="col-sub">${escapeHTML(c.sub)}</div></th>`;
+      return `<th scope="col" class="${c.editable?'derived':''}">${escapeHTML(c.label)}<div class="col-sub">${escapeHTML(c.sub)}</div>${columnHideButton(index,c.label)}</th>`;
     }).join('')+'</tr></thead><tbody>';
-    ex.envs.forEach((env,r)=>{str+='<tr>';ex.cols.forEach((col,c)=>{const exp=expected(ex,r,c);if(!col.editable){str+=`<td class="given ${ex.mode==='deducao'?'assignment':ex.mode==='categoricos'?'model-cell':''}" title="Valor conhecido">${escapeHTML(exp)}</td>`;return}const key=fieldKey(r,c),answer=ex.answers[key]||'',grade=ex.grade,checked=grade!==null&&!(ex.mode==='deducao'&&ex.metadata.contest),isCorrect=answer===exp;let cls='cell'+(answer?' filled':'');if(ex.revealed)cls+=' revealed';else if(checked)cls+=!answer?' empty-grade':isCorrect?' correct':' incorrect';const visible=ex.revealed?exp:answer||'<span class="cell-placeholder">·</span>';const expectedBadge=(checked&&(!isCorrect))?`<span class="expected" title="Resposta correta">${exp}</span>`:'';str+=`<td><button type="button" class="${cls}" data-r="${r}" data-c="${c}" ${ex.revealed?'disabled':''} aria-label="Linha ${r+1}, ${col.label}: ${ex.revealed?exp:answer||'vazio'}" title="Clique para alternar V, F e vazio. Também aceita teclas V, F e Delete.">${visible}${expectedBadge}</button></td>`});str+='</tr>'});str+='</tbody>';$('truthTable').innerHTML=str;renderCategoricalModelWorkbench()}
+    ex.envs.forEach((env,r)=>{str+='<tr>';ex.cols.forEach((col,c)=>{if(hidden.has(c))return;const exp=expected(ex,r,c);if(!col.editable){str+=`<td class="given ${ex.mode==='deducao'?'assignment':ex.mode==='categoricos'?'model-cell':''}" title="Valor conhecido">${escapeHTML(exp)}</td>`;return}const key=fieldKey(r,c),answer=ex.answers[key]||'',grade=ex.grade,checked=grade!==null&&!(ex.mode==='deducao'&&ex.metadata.contest),isCorrect=answer===exp;let cls='cell'+(answer?' filled':'');if(ex.revealed)cls+=' revealed';else if(checked)cls+=!answer?' empty-grade':isCorrect?' correct':' incorrect';const visible=ex.revealed?exp:answer||'<span class="cell-placeholder">·</span>';const expectedBadge=(checked&&(!isCorrect))?`<span class="expected" title="Resposta correta">${exp}</span>`:'';str+=`<td><button type="button" class="${cls}" data-r="${r}" data-c="${c}" ${ex.revealed?'disabled':''} aria-label="Linha ${r+1}, ${col.label}: ${ex.revealed?exp:answer||'vazio'}" title="Clique para alternar V, F e vazio. Também aceita teclas V, F e Delete.">${visible}${expectedBadge}</button></td>`});str+='</tr>'});str+='</tbody>';$('truthTable').innerHTML=str;renderCategoricalModelWorkbench()}
   function renderChoice(){const ex=exercise;if(!ex.choice){$('decisionArea').innerHTML='';return}const c=ex.choice;let buttons=c.options.map(option=>{const selected=ex.picked===option,cls='choice'+(selected?' selected':'')+(ex.revealed&&option===c.correct?' right':'')+(ex.grade&&selected?(selected&&option===c.correct?' right':' wrong'):'');return `<button class="${cls}" type="button" data-choice="${option}" ${ex.revealed?'disabled':''} aria-pressed="${selected}">${option}</button>`}).join('');$('decisionArea').innerHTML=`<section class="decision"><h3>${c.question}</h3><p>${ex.mode==='deducao'&&ex.metadata.contest?'No modo concurso, escolha sua resposta após analisar as pistas.':'Escolha uma resposta após completar a tabela.'}</p>${ex.mode==='deducao'?`<div class="deduction-options"><h3>Alternativas</h3>${ex.metadata.options.map(o=>`<p><b>${o.letter})</b>${escapeHTML(o.text)}</p>`).join('')}</div>`:''}<div class="choices" role="group" aria-label="${c.question}">${buttons}</div>${(ex.revealed||ex.grade)?`<p class="explanation"><strong>Resposta: ${c.correct}.</strong> ${c.explanation}</p>`:''}</section>`}
   function renderFeedback(){
     const ex=exercise,place=$('feedbackArea');
@@ -1192,8 +1225,30 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     if(e.target.closest('[data-cat-comparison]')){cat.showComparison=!cat.showComparison;renderCategoricalModelWorkbench();return}
     if(e.target.closest('[data-cat-full-table]')){cat.showFullTable=!cat.showFullTable;renderCategoricalModelWorkbench();return}
   });
-  $('truthTable').addEventListener('click',e=>{const btn=e.target.closest('[data-r]');if(!btn)return;const r=+btn.dataset.r,c=+btn.dataset.c;setAnswer(r,c);const next=$('truthTable').querySelector(`[data-r="${r}"][data-c="${c}"]`);next?.focus({preventScroll:true})});
-  $('truthTable').addEventListener('keydown',e=>{const btn=e.target.closest('[data-r]');if(!btn)return;const r=+btn.dataset.r,c=+btn.dataset.c;const key=e.key.toLowerCase();if(key==='v'||key==='f'||key==='backspace'||key==='delete'||key===' '){e.preventDefault();setAnswer(r,c,key==='v'?'V':key==='f'?'F':'');$('truthTable').querySelector(`[data-r="${r}"][data-c="${c}"]`)?.focus({preventScroll:true})}if(['arrowright','arrowleft','arrowup','arrowdown'].includes(key)){e.preventDefault();const targets=Array.from($('truthTable').querySelectorAll('.cell:not(:disabled)')),index=targets.findIndex(b=>b.dataset.r==r&&b.dataset.c==c);const editableCols=exercise.cols.filter(c=>c.editable).length;const offset={arrowright:1,arrowleft:-1,arrowup:-editableCols,arrowdown:editableCols}[key];targets[Math.max(0,Math.min(targets.length-1,index+offset))]?.focus({preventScroll:true})}});
+  $('columnVisibility').addEventListener('click',e=>{
+    if(e.target.closest('[data-show-all-columns]')){
+      if(!exercise)return;
+      exercise.hiddenColumns=[];renderTable();saveExerciseDraft();
+      $('truthTable').querySelector('[data-hide-col]')?.focus({preventScroll:true});return;
+    }
+    const button=e.target.closest('[data-show-col]');
+    if(!button)return;
+    const index=Number(button.dataset.showCol);
+    changeColumnVisibility(index,false);
+    $('truthTable').querySelector(`[data-hide-col="${index}"]`)?.focus({preventScroll:true});
+  });
+  $('truthTable').addEventListener('click',e=>{
+    const hide=e.target.closest('[data-hide-col]');
+    if(hide){
+      const index=Number(hide.dataset.hideCol);
+      changeColumnVisibility(index,true);
+      $('columnVisibility').querySelector(`[data-show-col="${index}"]`)?.focus({preventScroll:true});return;
+    }
+    const btn=e.target.closest('[data-r]');if(!btn)return;
+    const r=+btn.dataset.r,c=+btn.dataset.c;setAnswer(r,c);
+    $('truthTable').querySelector(`[data-r="${r}"][data-c="${c}"]`)?.focus({preventScroll:true});
+  });
+  $('truthTable').addEventListener('keydown',e=>{const btn=e.target.closest('[data-r]');if(!btn)return;const r=+btn.dataset.r,c=+btn.dataset.c;const key=e.key.toLowerCase();if(key==='v'||key==='f'||key==='backspace'||key==='delete'||key===' '){e.preventDefault();setAnswer(r,c,key==='v'?'V':key==='f'?'F':'');$('truthTable').querySelector(`[data-r="${r}"][data-c="${c}"]`)?.focus({preventScroll:true})}if(['arrowright','arrowleft','arrowup','arrowdown'].includes(key)){e.preventDefault();const targets=Array.from($('truthTable').querySelectorAll('.cell:not(:disabled)')),index=targets.findIndex(b=>b.dataset.r==r&&b.dataset.c==c);if(key==='arrowup'||key==='arrowdown'){const delta=key==='arrowup'?-1:1;$('truthTable').querySelector(`[data-r="${r+delta}"][data-c="${c}"]`)?.focus({preventScroll:true})}else{const delta=key==='arrowright'?1:-1;targets[Math.max(0,Math.min(targets.length-1,index+delta))]?.focus({preventScroll:true})}}});
   $('decisionArea').addEventListener('click',e=>{const b=e.target.closest('[data-choice]');if(b)setChoice(b.dataset.choice)});
   $('translationArea').addEventListener('click',e=>{
     const option=e.target.closest('[data-tr-choice]');if(option&&exercise?.translation&&!exercise.translation.unlocked){const tr=exercise.translation;if(tr.kind==='deduction-guided'||tr.kind==='syllogism-guided'){const [i,j]=option.dataset.trChoice.split(':').map(Number);tr.values[i]=tr.options[i][j];tr.flags[i]=false}else tr.values[0]=tr.options[Number(option.dataset.trChoice)];tr.message='';renderTranslation();return}
