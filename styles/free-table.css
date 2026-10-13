@@ -62,9 +62,13 @@
   .free-setting-row fieldset{width:100%}
   #topFreeTable{padding:8px 9px;font-size:12px;white-space:nowrap}
 }
+@media(max-width:700px){
+  .topbar{height:auto;min-height:68px;flex-wrap:wrap;align-content:center;padding-top:10px;padding-bottom:10px;gap:5px}
+  .header-actions{width:100%;min-width:0;justify-content:flex-start;flex-wrap:wrap;gap:5px}
+  #themeButton{margin-left:auto}
+}
 @media(max-width:400px){
-  .topbar{gap:8px}
-  .header-actions{gap:3px}
+  .topbar{gap:6px}
   #topCourse{padding:8px 7px;font-size:11px}
   #topFreeTable{padding:8px 7px;font-size:11px}
 }
