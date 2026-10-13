@@ -73,3 +73,53 @@ test('rótulos dos indivíduos não inserem marcação HTML no diagrama',()=>{
   assert.doesNotMatch(html,/<script>/);
   assert.match(html,/&lt;script&gt;/);
 });
+
+test('legenda mostra significados básicos uma vez, sem repetir fórmulas das regiões',()=>{
+  const rows=truthRows(['p','q']);
+  for(const checked of [false,true]){
+    const html=renderTruthVenn({
+      variables:['p','q'],variableMeanings:{p:'a luz acendeu',q:'a porta está aberta'},
+      rows,columns:[{key:'f',label:'p → q',derived:true}],
+      getAnswer:()=> 'V',getExpected:()=> 'V',checked
+    });
+    assert.equal((html.match(/class="truth-venn-legend"/g)||[]).length,1);
+    assert.match(html,/Significado das variáveis/);
+    assert.match(html,/<code>p<\/code><\/dt><dd>a luz acendeu<\/dd>/);
+    assert.match(html,/<code>q<\/code><\/dt><dd>a porta está aberta<\/dd>/);
+    assert.doesNotMatch(html,/class="truth-venn-regions"/);
+    assert.doesNotMatch(html,/<code>¬p ∧ q<\/code>/);
+  }
+});
+
+test('legenda inclui variáveis filtradas e indica significados ausentes',()=>{
+  const vars=['p','q','r','s'];
+  const html=renderTruthVenn({
+    variables:vars,rows:truthRows(vars),
+    variableMeanings:{p:'chove',s:'faz frio'},
+    columns:[{key:'f',label:'p',derived:true}],getAnswer:()=> ''
+  });
+  assert.match(html,/<code>s<\/code><\/dt><dd>faz frio<\/dd>/);
+  assert.match(html,/<code>q<\/code><\/dt><dd>Significado não informado neste exercício\.<\/dd>/);
+});
+
+test('legenda de predicados usa os significados cadastrados pelo usuário',()=>{
+  const html=renderPredicateVenn({
+    variables:['p','q'],variableMeanings:{p:'x é aluno',q:'x está presente'},
+    people:[{id:'a',label:'Ana'}],predicateValues:{'a|p':'V','a|q':'F'}
+  });
+  assert.match(html,/<code>p<\/code><\/dt><dd>x é aluno<\/dd>/);
+  assert.match(html,/<code>q<\/code><\/dt><dd>x está presente<\/dd>/);
+  assert.doesNotMatch(html,/class="truth-venn-regions"/);
+  assert.match(html,/Ana/);
+});
+
+test('legenda não interpreta HTML fornecido no significado',()=>{
+  const html=renderTruthVenn({
+    variables:['p'],rows:truthRows(['p']),
+    variableMeanings:{p:'<img src=x onerror=alert(1)>'},
+    columns:[{key:'p',label:'p',derived:true}],
+    getAnswer:()=> ''
+  });
+  assert.doesNotMatch(html,/<img src=x/);
+  assert.match(html,/&lt;img src=x onerror=alert\(1\)&gt;/);
+});
