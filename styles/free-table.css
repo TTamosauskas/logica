@@ -148,3 +148,17 @@
 .free-possibility-verdict{border-left:3px solid var(--accent);background:var(--panel2);padding:10px 14px;border-radius:6px}
 .free-possibility-verdict p{font-size:13px;line-height:1.6;margin:5px 0}
 .free-possibility-unknown{font-size:13px;line-height:1.7;color:var(--muted);margin:12px 0}
+
+/* Tabela única: impossibilidade semântica comprovada, sem impedir a visualização de V/F. */
+.free-truth-table .free-status-head{min-width:72px}
+.free-truth-table tbody tr.free-impossible-row{opacity:.40;background:var(--panel2)}
+.free-truth-table tbody tr.free-impossible-row th,
+.free-truth-table tbody tr.free-impossible-row td{background:var(--panel2)}
+.free-truth-table .free-impossible-marker{font-weight:850;white-space:nowrap}
+.free-truth-table .free-impossible-cell{font-size:19px;text-align:center;cursor:not-allowed;min-width:70px}
+.free-impossibility-footer{margin:16px 0 12px;padding:13px 16px;border:1px solid var(--border);border-radius:10px;background:var(--panel2);font-size:13px;line-height:1.65}
+.free-impossibility-footer h3{margin:0 0 9px;font-size:15px}
+.free-impossibility-footer ol{padding-left:21px;margin:8px 0;max-height:290px;overflow-y:auto}
+.free-impossibility-footer li{margin:5px 0;overflow-wrap:anywhere}
+.free-impossibility-footer p{margin:7px 0}
+.free-impossibility-footer .free-impossibility-note{color:var(--muted)}

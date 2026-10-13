@@ -2,7 +2,7 @@
 import {parseFormula} from './parser.js';
 import {checkSymbolicInference,analyzePredicateRegions} from './free-inference.js';
 import {analyzeLogicalPossibilities} from './logical-possibilities.js';
-import {truthRows,evalAst,pretty,stepNodes,sig,v,A,not} from './logic.js';
+import {truthRows,evalAst,pretty,stepNodes,sig,v,A,I,not} from './logic.js';
 import {isPredicateSource,parsePredicateFormula,predicateSignature,predicatePretty,predicateSteps,
  predicateAtomicNames,rootHasFreeX,hasQuantifier,evaluatePredicate,predicateReading,predicateEvidence} from './free-predicates.js';
 
@@ -10,6 +10,7 @@ export const FREE_TABLE_KEY='logiclab_tabela_livre_v1';
 export const VARIABLE_SEQUENCE=Object.freeze(['p','q','r','s','t','u']);
 export const MAX_VARS=VARIABLE_SEQUENCE.length;
 export const MAX_FORMULAS=16;
+export const MAX_PREDICATE_TABLE_FORMULAS=6;
 export const MAX_INDIVIDUALS=20;
 const RESERVED=new Set(['e','ou','xor','nao','não','se','sse']);
 const validName=name=>/^[a-z][a-z0-9_]*$/.test(name)&&!RESERVED.has(name);
@@ -122,6 +123,10 @@ function assertSameKind(state,source,id=null){
 export function addFreeFormula(state,source){
   const ast=parseFreeFormula(state,source);
   assertSameKind(state,source);
+  if(isPredicateSource(source)&&rootHasFreeX(ast))
+    throw Error('Feche x com ∀x(...) ou ∃x(...) para que cada fórmula tenha V/F na tabela.');
+  if(isPredicateSource(source)&&state.formulas.length>=MAX_PREDICATE_TABLE_FORMULAS)
+    throw Error('A tabela de predicados admite até seis fórmulas (64 linhas).');
   if(state.formulas.length>=MAX_FORMULAS)throw Error('O limite é de 16 fórmulas.');
   if(state.formulas.some(f=>formulaSignature(parseFreeFormula(state,f.source))===formulaSignature(ast)))throw Error('Essa fórmula já está cadastrada.');
   state.formulas.push({id:'f'+state.nextId++,source:clean(source)});
@@ -132,6 +137,8 @@ export function editFreeFormula(state,id,source){
   if(!entry)throw Error('Fórmula não encontrada.');
   const ast=parseFreeFormula(state,source);
   assertSameKind(state,source,id);
+  if(isPredicateSource(source)&&rootHasFreeX(ast))
+    throw Error('Feche x com ∀x(...) ou ∃x(...) para que cada fórmula tenha V/F na tabela.');
   if(state.formulas.some(f=>f.id!==id&&formulaSignature(parseFreeFormula(state,f.source))===formulaSignature(ast)))throw Error('Essa fórmula já está cadastrada.');
   entry.source=clean(source);invalidate(state);return state;
 }
@@ -172,16 +179,43 @@ export function analyzeFreePossibilities(state,{conclusionSource=state.inference
     analyzePredicateRegions(roots,vars,filters):null;
   return {...report,expressions,region};
 }
+/** No modo de predicados, cada fórmula fechada funciona como coluna-base da
+ * mesma tabela-verdade: combinações V/F sem modelo são desativadas.
+ * Os resultados são cacheados pela lista de fórmulas para não reenumerar modelos a cada clique.
+ */
+const predicateTableCache=new WeakMap();
+export function predicateTruthAnalysis(state){
+  if(freeTableKind(state)!=='predicates')return null;
+  const sources=state.formulas.map(item=>item.source);
+  const visible=sources.slice(0,MAX_PREDICATE_TABLE_FORMULAS);
+  const cacheKey=JSON.stringify(visible);
+  const cached=predicateTableCache.get(state);
+  if(cached?.key===cacheKey)return cached.report;
+  const labels=visible.map((_,i)=>'ABCDEF'[i]);
+  const report=!visible.length?{status:'empty',rows:[]}:
+    analyzeLogicalPossibilities({formulas:visible.map(source=>parseFreeFormula(state,source)),
+      mode:'predicates'});
+  const result={...report,labels,expressions:visible,
+    truncated:sources.length>MAX_PREDICATE_TABLE_FORMULAS};
+  predicateTableCache.set(state,{key:cacheKey,report:result});
+  return result;
+}
 export function freeColumns(state){
   const roots=state.formulas.map(f=>parseFreeFormula(state,f.source));
   if(freeTableKind(state)==='predicates'){
-    const used=predicateAtomicNames(roots);
-    const vars=state.variables.filter(v=>used.has(v.name)).map(v=>({key:'v:'+v.name,label:v.name+'(x)',name:v.name,kind:'var'}));
-    const steps=predicateSteps(roots).map(node=>({key:'s:'+predicateSignature(node),label:predicatePretty(node),
-      node,kind:'step',global:!rootHasFreeX(node)}));
-    const formulas=roots.map((node,i)=>({key:'f:'+state.formulas[i].id,label:predicatePretty(node),node,
-      kind:'formula',global:!rootHasFreeX(node)}));
-    return [...vars,...steps,...formulas];
+    const analysis=predicateTruthAnalysis(state);
+    const letters=analysis.labels;
+    const given=letters.map((letter,i)=>({
+      key:'v:'+state.formulas[i].id,label:letter+' · '+predicatePretty(roots[i]),
+      name:letter,node:v(letter),kind:'var',given:true
+    }));
+    if(!letters.length)return given;
+    // Para uma fórmula, pratique sua negação; a partir de duas, a última
+    // é a conclusão e as anteriores são as premissas da implicação.
+    const node=letters.length===1?not(v(letters[0])):
+      I(letters.slice(0,-1).map(letter=>v(letter)).reduce((acc,current)=>
+        acc?A(acc,current):current,null),v(letters.at(-1)));
+    return [...given,{key:'f:combined',label:pretty(node),node,kind:'formula'}];
   }
   const vars=state.variables.map(item=>({key:'v:'+item.name,label:item.name,node:v(item.name),kind:'var'}));
   const steps=stepNodes(roots).map(node=>({key:'s:'+sig(node),label:pretty(node),node,kind:'step'}));
@@ -189,31 +223,30 @@ export function freeColumns(state){
   return [...vars,...steps,...formulas];
 }
 export function freeRows(state){
-  return freeTableKind(state)==='predicates'?state.domain:truthRows(state.variables.map(x=>x.name));
+  if(freeTableKind(state)==='predicates'){
+    const analysis=predicateTruthAnalysis(state);
+    return analysis.labels.length?truthRows(analysis.labels):[];
+  }
+  return truthRows(state.variables.map(x=>x.name));
+}
+export function freeRowImpossible(state,index){
+  const report=predicateTruthAnalysis(state);
+  return Boolean(report?.status==='complete'&&report.rows[index]?.possible===false);
 }
 export function evaluateFreeRow(row,column,state){
-  if(freeTableKind(state)==='predicates')
-    return evaluatePredicate(column.node,state.domain,state.predicateValues,row?.id??null);
   return Boolean(evalAst(column.node,row));
 }
 export function gradeFreeTable(state){
   const rows=freeRows(state),cols=freeColumns(state),derived=cols.filter(c=>c.kind!=='var');
-  const pred=freeTableKind(state)==='predicates';
-  if(pred){
-    if(!rows.length)throw Error('Cadastre ao menos um indivíduo no domínio.');
-    if(rows.some(row=>cols.some(col=>col.kind==='var'&&
-       !['V','F'].includes(state.predicateValues[row.id+'|'+col.name]))))
-      throw Error('Preencha V/F para os predicados de cada indivíduo antes da correção.');
-  }
   let correct=0,total=0,missing=0;
-  derived.forEach(col=>{
-    (pred&&col.global?[null]:rows).forEach((row,r)=>{
-      total++;const answer=state.answers[(row===null?'global':r)+'|'+col.key];
-      const expected=evaluateFreeRow(row,col,state)?'V':'F';
-      if(!answer)missing++;
-      if(answer===expected)correct++;
-    });
-  });
+  derived.forEach(col=>rows.forEach((row,r)=>{
+    if(freeRowImpossible(state,r))return;
+    total++;
+    const answer=state.answers[r+'|'+col.key];
+    const expected=evaluateFreeRow(row,col,state)?'V':'F';
+    if(!answer)missing++;
+    if(answer===expected)correct++;
+  }));
   state.graded=true;return {correct,total,missing};
 }
 export function freeFormulaEvidence(state,node){
@@ -347,6 +380,22 @@ export function readFreeTable(raw,{strict=false}={}){
     }
     state.nextId=Math.max(1,...state.formulas.map(f=>Number(f.id.slice(1))+1));
     if(Number.isInteger(input.nextId))state.nextId=Math.max(state.nextId,Math.min(input.nextId,99999));
+    // A conclusão do painel aposentado é integrada à tabela como a última
+    // fórmula, em vez de desaparecer na migração dos projetos anteriores.
+    if(state.inferenceConclusion&&freeTableKind(state)==='predicates'){
+      const source=state.inferenceConclusion;
+      if(state.formulas.length<MAX_PREDICATE_TABLE_FORMULAS){
+        try{
+          addFreeFormula(state,source);
+          state.inferenceConclusion='';
+          state.inferenceReport=null;
+        }catch(error){
+          if(!/já está cadastrada/.test(error.message))throw error;
+          state.inferenceConclusion='';
+          state.inferenceReport=null;
+        }
+      }
+    }
     return state;
   }catch(error){
     if(strict)throw Error('Projeto inválido: '+error.message);

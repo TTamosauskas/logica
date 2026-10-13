@@ -47,7 +47,8 @@ function svgDiagram(id,names,regions,{solution=false,predicate=false}={}){
       ' A'+r+' '+r+' 0 1 0 '+(x-r)+' '+y+' A'+r+' '+r+' 0 1 0 '+(x+r)+' '+y+'Z"/></clipPath>';
   }).join('');
   const fills=regions.map(item=>{
-    const raw=predicate?(item.impossible?'impossible':item.count>0?'member':'pending'):(solution?item.expected:item.answer);
+    const raw=item.impossible?'impossible':
+      predicate?(item.count>0?'member':'pending'):(solution?item.expected:item.answer);
     const shade=raw==='V'?'true':raw==='F'?'false':raw==='member'?'member':
       raw==='impossible'?'impossible':'pending';
     const opened=layout.circles.map((_,i)=>{
@@ -56,7 +57,8 @@ function svgDiagram(id,names,regions,{solution=false,predicate=false}={}){
     }).join('');
     const divergent=!predicate&&!solution&&item.expected&&item.answer!==item.expected;
     return opened+'<rect x="0" y="0" width="480" height="330" class="truth-venn-'+shade+'"><title>'+
-      esc(item.label+': '+(predicate?(item.impossible?'Região impossível sob as premissas'+
+      esc(item.label+': '+(!predicate&&item.impossible?'🚫 Combinação semanticamente impossível':
+        predicate?(item.impossible?'Região impossível sob as premissas'+
         (item.count?'; '+item.count+' cadastro(s) conflitante(s)':''):
         item.count+' indivíduos'+(item.people?.length?': '+item.people.join(', '):'')):(raw||'pendente'))+
         (divergent?' · revisar':''))+'</title></rect>'+
@@ -67,7 +69,7 @@ function svgDiagram(id,names,regions,{solution=false,predicate=false}={}){
     '<text x="'+layout.labels[i][0]+'" y="'+layout.labels[i][1]+'" class="truth-venn-name" text-anchor="middle">'+esc(names[i])+'</text>').join('');
   const texts=regions.map(item=>{
     const [x,y]=layout.points[item.mask];
-    const value=predicate?(item.impossible?'×':item.count?String(item.count):'0'):(solution?item.expected:item.answer)||'·';
+    const value=item.impossible?'×':predicate?(item.count?String(item.count):'0'):(solution?item.expected:item.answer)||'·';
     return '<text x="'+x+'" y="'+y+'" class="truth-venn-value" text-anchor="middle" dominant-baseline="central">'+esc(value)+'</text>';
   }).join('');
   return '<svg class="truth-venn-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+
@@ -97,7 +99,7 @@ function variableLegend(variables,meanings={}){
 /** Retorna um painel contendo exclusivamente as entradas do aluno até a correção. */
 export function renderTruthVenn({
   id='exercise',variables=[],variableMeanings={},rows=[],columns=[],selectedKey='',filters={},
-  getAnswer=()=>'',getExpected=()=>'',checked=false
+  getAnswer=()=>'',getExpected=()=>'',checked=false,impossibleRows=[]
 }={}){
   if(!variables.length||!columns.length||
      !rows.length||!rows.every(env=>variables.every(name=>typeof env[name]==='boolean')))return '';
@@ -109,8 +111,10 @@ export function renderTruthVenn({
     getExpected:index=>getExpected(index,selection),
     filters,checked});
   const shown=variables.slice(0,3);
-  const differences=checked?regions.filter(item=>item.answer!==item.expected).length:0;
-  const empty=regions.filter(item=>!item.answer).length;
+  const impossibleSet=new Set(impossibleRows);
+  regions.forEach(region=>{region.impossible=impossibleSet.has(region.rowIndex)});
+  const differences=checked?regions.filter(item=>!item.impossible&&item.answer!==item.expected).length:0;
+  const empty=regions.filter(item=>!item.impossible&&!item.answer).length;
   const selector='<label class="truth-venn-control">Coluna <select data-venn-column data-venn-scope="'+esc(id)+
     '" aria-label="Fórmula representada no diagrama">'+columns.map(col=>
       '<option value="'+esc(col.key)+'"'+(col.key===chosenKey?' selected':'')+'>'+esc(col.label)+'</option>').join('')+
@@ -120,14 +124,15 @@ export function renderTruthVenn({
     svgDiagram(id+'-answer',shown,regions,{solution:true})+'</div>':'';
   return '<section class="truth-venn-panel" aria-label="Venn–Euler das respostas">'+
     '<div class="truth-venn-heading"><div><h3>Diagrama de Venn–Euler</h3>'+
-    '<p>Os círculos representam conjuntos de interpretações. Verde = V; vermelho = F; cinza = pendente.</p></div></div>'+
+    '<p>Os círculos representam conjuntos de interpretações. Verde = V; vermelho = F; cinza = pendente; × = impossível.</p></div></div>'+
     '<div class="truth-venn-controls">'+selector+filtersHtml(variables,filters,id)+'</div>'+
     (variables.length>3?'<p class="truth-venn-note">Recorte: os círculos mostram '+esc(shown.join(', '))+
     '; as demais variáveis são fixadas pelos filtros. Alterar um filtro seleciona outras linhas da tabela.</p>':'')+
     '<div class="truth-venn-views">'+user+correct+'</div>'+variableLegend(variables,variableMeanings)+
     '<p class="truth-venn-status" role="status">'+
     (checked?differences+' região(ões) divergente(s), incluindo pendências. Compare os dois diagramas.':
-      empty+' região(ões) ainda sem resposta. A solução aparecerá somente depois de Conferir respostas.')+'</p>'+
+      empty+' região(ões) ainda sem resposta. A solução aparecerá somente depois de Conferir respostas.')+
+    (impossibleSet.size?' As regiões × não são editáveis e estão justificadas no rodapé da tabela.':'')+'</p>'+
     '</section>';
 }
 

@@ -80,18 +80,15 @@ test('limites e variáveis livres geram não determinado, nunca falsa impossibil
   assert.equal(unsupported.status,'undetermined');
   assert.match(unsupported.reason,/até três propriedades/);
   const open=blankFreeTable();
-  addFreeFormula(open,'p(x)');
-  const free=analyzeFreePossibilities(open);
-  assert.equal(free.status,'undetermined');
-  assert.match(free.reason,/Feche a variável/);
+  assert.throws(()=>addFreeFormula(open,'p(x)'),/Feche x com/);
 });
 
-test('mais de quatro fórmulas não é classificado como impossível',()=>{
+test('mais de seis fórmulas recebe não determinado, sem classificar incorretamente',()=>{
   const state=blankFreeTable();
-  for(const source of ['p','q','¬p','¬q','p → q'])addFreeFormula(state,source);
+  for(const source of ['p','q','¬p','¬q','p → q','q → p','p ↔ q'])addFreeFormula(state,source);
   const result=analyzeFreePossibilities(state);
   assert.equal(result.status,'undetermined');
-  assert.match(result.reason,/até quatro afirmações/);
+  assert.match(result.reason,/até seis afirmações/);
 });
 
 test('premissas inconsistentes não criam zonas impossíveis artificiais no Venn',()=>{

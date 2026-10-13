@@ -2,8 +2,8 @@
 import {truthRows,evalAst} from './logic.js';
 import {analyzePredicateCombinations} from './free-inference.js';
 
-export const MAX_POSSIBILITY_FORMULAS=4;
-const letter=i=>'ABCD'[i];
+export const MAX_POSSIBILITY_FORMULAS=6;
+const letter=i=>'ABCDEF'[i];
 const combinations=count=>Array.from({length:2**count},(_,index)=>{
   const mask=2**count-1-index;
   return {mask,values:Array.from({length:count},(_,i)=>
@@ -36,7 +36,7 @@ export function analyzeLogicalPossibilities({formulas,conclusion=null,variables=
     return {status:'undetermined',reason:'Cadastre ao menos uma fórmula para analisar.'};
   const hasConclusion=Boolean(conclusion),nodes=hasConclusion?[...formulas,conclusion]:[...formulas];
   if(nodes.length>MAX_POSSIBILITY_FORMULAS)
-    return {status:'undetermined',reason:'A análise tabular aceita até quatro afirmações completas (incluindo a conclusão). Remova fórmulas ou analise um conjunto menor.'};
+    return {status:'undetermined',reason:'A análise tabular aceita até seis afirmações completas (incluindo a conclusão). Remova fórmulas ou analise um conjunto menor.'};
   const labels=nodes.map((_,i)=>letter(i));
   const rows=combinations(nodes.length);
   let witnesses=new Map(),checked=0;

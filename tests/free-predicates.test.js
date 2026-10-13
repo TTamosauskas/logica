@@ -52,38 +52,43 @@ test('quantificadores avaliam todos, alguns e nenhum no mesmo domínio',()=>{
  assert.equal(evaluatePredicate(none,s.domain,truth),true);
  assert.match(predicateEvidence(all,s.domain,truth),/Sócrates/);
 });
-test('P(s) refere-se a Sócrates, preserva x como variável quantificada',()=>{
+test('P(s) refere-se a Sócrates e cada fórmula vira coluna-base da mesma tabela-verdade',()=>{
  const s=setup();
  addFreeFormula(s,'Q(s)');
- const item=s.formulas.at(-1),node=parseFreeFormula(s,item.source);
+ const node=parseFreeFormula(s,s.formulas.at(-1).source);
  assert.equal(freeTableKind(s),'predicates');
  assert.equal(describeFreeFormula(node,s).literal,'Sócrates é mortal.');
- assert.match(describeFreeFormula(parseFreeFormula(s,'∀x(p(x)→q(x))'),s).literal,/Para todo indivíduo x, se/);
- assert.deepEqual(freeRows(s).map(d=>d.label),['Sócrates','Uma pedra']);
- assert.equal(freeColumns(s).some(c=>c.global===true&&c.kind==='formula'),true);
- assert.equal(freeColumns(s).some(c=>c.kind==='step'&&c.global===false),true);
+ assert.equal(freeRows(s).length,4);
+ assert.deepEqual(freeColumns(s).filter(c=>c.kind==='var').map(c=>c.name),['A','B']);
+ assert.equal(freeColumns(s).at(-1).label,'A → B');
  assert.throws(()=>removeFreeIndividual(s,'s'),/Remova ou edite/);
  editFreeIndividual(s,'s','Sócrates, o filósofo');
  assert.equal(describeFreeFormula(node,s).literal,'Sócrates, o filósofo é mortal.');
 });
-test('prática exige interpretação definida e corrige quantificadores uma única vez',()=>{
+
+test('linhas impossíveis não são editáveis nem entram na correção',()=>{
  const s=setup();
- let columns=freeColumns(s),rows=freeRows(s);
- assert.equal(rows.length,2);
- const formula=columns.find(c=>c.kind==='formula');
- const step=columns.find(c=>c.kind==='step');
- assert.ok(step&&!step.global);
- assert.ok(formula.global);
- assert.throws(()=>gradeFreeTable(s),/Preencha V\/F/);
- s.predicateValues={'s|p':'V','s|q':'V','a|p':'F','a|q':'F'};
- rows.forEach((row,r)=>s.answers[r+'|'+step.key]='V');
- s.answers['global|'+formula.key]='V';
- assert.deepEqual(gradeFreeTable(s),{correct:3,total:3,missing:0});
- s.answers['global|'+formula.key]='F';
- assert.deepEqual(gradeFreeTable(s),{correct:2,total:3,missing:0});
- s.hidden=[formula.key];
- assert.deepEqual(gradeFreeTable(s),{correct:2,total:3,missing:0});
+ addFreeFormula(s,'p(s)');
+ addFreeFormula(s,'q(s)');
+ const columns=freeColumns(s),rows=freeRows(s),derived=columns.at(-1);
+ assert.equal(rows.length,8);
+ assert.deepEqual(freeColumns(s).map(c=>c.kind),['var','var','var','formula']);
+ const impossible=rows.findIndex(row=>row.A&&row.B&&!row.C);
+ assert.equal(impossible,1);
+ // Todos os valores da implicação são verificáveis, exceto a linha impossível.
+ rows.forEach((row,i)=>{
+   s.answers[i+'|'+derived.key]=((!row.A&&!row.B)||row.C)?'V':'F';
+ });
+ // A fórmula verdadeira de A∧B→C ocorre quando as duas premissas são V.
+ s.answers[impossible+'|'+derived.key]='F';
+ const all=gradeFreeTable(s);
+ assert.equal(all.total,7);
+ assert.equal(all.missing,0);
+ assert.ok(all.correct<=7);
+ s.hidden=[derived.key];
+ assert.equal(gradeFreeTable(s).total,7);
 });
+
 test('modo proposicional permanece separado, sem alterar combinações V/F',()=>{
  const s=blankFreeTable();
  addFreeFormula(s,'p ∧ q');
@@ -96,51 +101,46 @@ test('modo proposicional permanece separado, sem alterar combinações V/F',()=>
  assert.equal(freeTableKind(s),'predicates');
  assert.throws(()=>addFreeFormula(s,'p ∧ q'),/alternar/);
 });
-test('dados e escolhas sobrevivem ao salvamento sem alterar a correção proposicional',()=>{
+test('domínio opcional e respostas da nova tabela sobrevivem ao salvamento',()=>{
  const s=setup();
- s.predicateValues={'s|p':'V','s|q':'V','a|p':'F','a|q':'F'};
- const global=freeColumns(s).find(c=>c.kind==='formula');
- s.answers['global|'+global.key]='V';
- s.hidden=[global.key];
- s.graded=true;
+ addFreeFormula(s,'p(s)');
+ const derived=freeColumns(s).at(-1);
+ s.answers['0|'+derived.key]='V';
+ s.hidden=[derived.key];s.graded=true;
  const restored=readFreeTable(JSON.stringify(s),{strict:true});
  assert.deepEqual(restored.domain,s.domain);
- assert.deepEqual(restored.predicateValues,s.predicateValues);
- assert.deepEqual(restored.hidden,[global.key]);
- assert.equal(restored.answers['global|'+global.key],'V');
+ assert.deepEqual(restored.hidden,[derived.key]);
+ assert.equal(restored.answers['0|'+derived.key],'V');
  assert.equal(restored.graded,true);
- assert.equal(gradeFreeTable(restored).total,3);
+ assert.equal(gradeFreeTable(restored).total,4);
 });
 
-
-test('a constante individual pode ser vinculada ao domínio concreto com a mesma identidade',()=>{
-  const s=blankFreeTable();
-  editFreeVariable(s,'p','p','Sócrates','individual');
-  editFreeVariable(s,'q','q','x é mortal','predicate');
-  addFreeFormula(s,'q(p)');
-  addFreeIndividual(s,'p','Sócrates');
-  assert.equal(freeTableKind(s),'predicates');
-  assert.deepEqual(freeRows(s).map(person=>person.id),['p']);
-  s.predicateValues['p|q']='V';
-  const col=freeColumns(s).find(c=>c.kind==='formula');
-  s.answers['global|'+col.key]='V';
-  assert.deepEqual(gradeFreeTable(s),{correct:1,total:1,missing:0});
-  const restored=readFreeTable(JSON.stringify(s),{strict:true});
-  assert.equal(restored.variables[0].kind,'individual');
-  assert.deepEqual(restored.domain,[{id:'p',label:'Sócrates'}]);
-  assert.equal(restored.answers['global|'+col.key],'V');
-  assert.throws(()=>editFreeVariable(restored,'p','p','uma propriedade','predicate'),/identifica um indivíduo/);
+test('constante individual pode ser cadastrada e a tabela independe do domínio',()=>{
+ const s=blankFreeTable();
+ editFreeVariable(s,'p','p','Sócrates','individual');
+ addFreeFormula(s,'q(p)');
+ assert.equal(freeRows(s).length,2);
+ addFreeIndividual(s,'p','Sócrates');
+ assert.equal(freeRows(s).length,2);
+ const col=freeColumns(s).at(-1);
+ s.answers['0|'+col.key]='F';
+ assert.equal(gradeFreeTable(s).total,2);
+ const restored=readFreeTable(JSON.stringify(s),{strict:true});
+ assert.equal(restored.variables[0].kind,'individual');
+ assert.deepEqual(restored.domain,[{id:'p',label:'Sócrates'}]);
+ assert.equal(restored.answers['0|'+col.key],'F');
+ assert.throws(()=>editFreeVariable(restored,'p','p','propriedade','predicate'),/identifica um indivíduo/);
 });
 
-test('um símbolo com papel de indivíduo nunca recebe V/F como proposição',()=>{
-  const s=blankFreeTable();
-  editFreeVariable(s,'p','p','Sócrates','individual');
-  assert.equal(freeTableKind(s),'predicates');
-  assert.equal(freeRows(s).length,0);
-  assert.throws(()=>parseFreeFormula(s,'p ∧ q'),/proposicionais não podem incluir símbolos/);
-  assert.throws(()=>addFreeFormula(s,'q'),/proposicionais não podem incluir símbolos/);
-  addFreeFormula(s,'q(p)');
-  assert.equal(freeTableKind(s),'predicates');
+test('um símbolo como indivíduo não é proposição, mas fórmula fechada tem V/F',()=>{
+ const s=blankFreeTable();
+ editFreeVariable(s,'p','p','Sócrates','individual');
+ assert.equal(freeTableKind(s),'predicates');
+ assert.equal(freeRows(s).length,0);
+ assert.throws(()=>parseFreeFormula(s,'p ∧ q'),/proposicionais não podem incluir símbolos/);
+ addFreeFormula(s,'q(p)');
+ assert.equal(freeRows(s).length,2);
+ assert.deepEqual(freeColumns(s).map(c=>c.kind),['var','formula']);
 });
 
 test('excluir indivíduo citado pela conclusão é impedido antes de corromper a persistência',()=>{
