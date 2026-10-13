@@ -9,6 +9,7 @@ export const PORTABLE_KEYS=Object.freeze([
  'logiclab_deduction_history_v1',
  'logiclab_categorical_v1',
  'logiclab_practice_sections_v1',
+ 'logiclab_tabela_livre_v1',
  'logiclab_theme_v1'
 ]);
 export const BACKUP_VERSION=1;
