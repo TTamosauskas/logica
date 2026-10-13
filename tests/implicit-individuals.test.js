@@ -81,3 +81,12 @@ test('o cadastro nominal opcional de p atualiza seu tipo automaticamente',()=>{
   assert.equal(state.formulas.length,1);
   assert.equal(freeRows(state).length,2);
 });
+
+test('não altera o modo de uma tabela proposicional já preenchida ao cadastrar indivíduo',()=>{
+  const state=blankFreeTable();
+  addFreeFormula(state,'p → q');
+  assert.throws(()=>addFreeIndividual(state,'p','Sócrates'),/Remova as fórmulas proposicionais/);
+  assert.equal(state.variables[0].kind,'predicate');
+  assert.deepEqual(state.domain,[]);
+  assert.equal(state.formulas[0].source,'p → q');
+});
