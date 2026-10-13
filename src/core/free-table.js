@@ -201,7 +201,7 @@ function semantic(node,names){
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 export function describeFreeFormula(node,state){
   const names=Object.fromEntries(state.variables.map(x=>[x.name,x.meaning||x.name]));
-  if(freeTableKind(state)==='predicates')return {literal:cap(predicateReading(node,names,Object.fromEntries(state.domain.map(d=>[d.id,d.label])))).replace(/\.+$/,'')+'.',
+  if(freeTableKind(state)==='predicates')return {literal:cap(predicateReading(node,names,Object.fromEntries([...state.domain.map(d=>[d.id,d.label]),...state.variables.filter(v=>v.kind==='individual').map(v=>[v.name,v.meaning||v.name])]))).replace(/\.+$/,'')+'.',
     equivalent:'',truth:freeFormulaEvidence(state,node)};
   const literal=cap(semantic(node,names)).replace(/\.+$/,'')+'.';
   let equivalent='',truth='';
