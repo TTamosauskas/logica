@@ -763,6 +763,7 @@ try{
     assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
     await headers.nth(5).click();
     assert.equal(await rel.locator('thead .truth-rel-contradictory').count(),0);
+    await headers.nth(4).focus();
     await headers.nth(5).focus();
     assert.equal(await headers.nth(5).evaluate(el=>el.classList.contains('truth-rel-contradictory')),true);
     const over=await rel.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
