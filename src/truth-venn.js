@@ -54,7 +54,7 @@ function svgDiagram(id,names,regions,{solution=false,predicate=false}={}){
       return '<g clip-path="url(#'+clipName(id,i,isInside)+')">';
     }).join('');
     return opened+'<rect x="0" y="0" width="480" height="330" class="truth-venn-'+shade+'"><title>'+
-      esc(item.label+': '+(predicate?(item.count+' indivíduos'):(raw||'pendente')))+'</title></rect>'+
+      esc(item.label+': '+(predicate?(item.count+' indivíduos'+(item.people?.length?': '+item.people.join(', '):'')):(raw||'pendente')))+'</title></rect>'+
       '</g>'.repeat(names.length);
   }).join('');
   const outlines=layout.circles.map(([x,y,r],i)=>
