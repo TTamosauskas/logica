@@ -32,6 +32,7 @@ export function addFreeVariable(state,name,meaning=''){
   const next=nextFreeVariableName(state);
   if(!next)throw Error('O limite da tabela é de seis variáveis (64 linhas).');
   if(name!==next)throw Error('A próxima variável é '+next+'.');
+  if(state.domain.some(d=>d.id===next))throw Error('O símbolo '+next+' já identifica um indivíduo do domínio. Exclua esse indivíduo antes de acrescentar a variável.');
   state.variables.push({name:next,meaning:clean(meaning).slice(0,160),kind:'predicate'});
   invalidate(state);return state;
 }
@@ -42,6 +43,9 @@ export function editFreeVariable(state,oldName,newName,meaning,kind){
   const type=kind??entry.kind??'predicate';
   if(!['individual','predicate'].includes(type))throw Error('Tipo de símbolo inválido.');
   if(type!==entry.kind){
+    if(type==='individual'&&state.domain.some(d=>d.id===oldName))throw Error('O símbolo já identifica um indivíduo no domínio.');
+    if(type==='individual'&&freeTableKind(state)==='propositional'&&state.formulas.length)
+      throw Error('Remova as fórmulas proposicionais antes de transformar uma variável em indivíduo.');
     const proposed={...state,variables:state.variables.map(v=>v.name===oldName?{...v,kind:type}:v)};
     proposed.formulas.forEach(f=>parseFreeFormula(proposed,f.source));
     if(proposed.inferenceConclusion)parseFreeFormula(proposed,proposed.inferenceConclusion);
@@ -55,7 +59,7 @@ export function removeFreeVariable(state,name){
   if(state.variables.at(-1).name!==name)throw Error('Remova primeiro a última variável da sequência.');
   for(const formula of state.formulas){
     const ast=parseFreeFormula(state,formula.source);
-    const uses=node=>node.type==='var'||node.type==='pred'?node.name===name:Boolean(node.a&&uses(node.a)||node.b&&uses(node.b));
+    const uses=node=>node.type==='var'||node.type==='pred'?(node.name===name||node.term===name):Boolean(node.a&&uses(node.a)||node.b&&uses(node.b));
     if(uses(ast))throw Error('Remova ou edite as fórmulas que usam '+name+' antes de excluir a variável.');
   }
   if(state.inferenceConclusion&&isPredicateSource(state.inferenceConclusion)){
@@ -73,7 +77,7 @@ export function addFreeIndividual(state,id,label){
     throw Error('Use um identificador como a, b ou s para o indivíduo (não x).');
   if(!clean(label))throw Error('Informe o nome do indivíduo, como Sócrates.');
   if(state.domain.length>=MAX_INDIVIDUALS)throw Error('Máximo de 20 indivíduos.');
-  if(state.domain.some(d=>d.id===name)||state.variables.some(v=>v.kind==='individual'&&v.name===name))throw Error('Já existe um indivíduo com esse símbolo.');
+  if(state.domain.some(d=>d.id===name)||state.variables.some(v=>v.name===name))throw Error('Já existe um indivíduo com esse símbolo.');
   state.domain.push({id:name,label:clean(label).slice(0,80)});
   state.graded=false;state.answers={};state.inferenceReport=null;return state;
 }
