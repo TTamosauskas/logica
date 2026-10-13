@@ -6,6 +6,8 @@ import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableNam
   addFreeIndividual,editFreeIndividual,removeFreeIndividual,verifyFreeInference} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
+import {immediateOperands,propositionalRelations,categoricalForm,categoricalRelation} from './core/table-relations.js';
+import {attachTruthHighlights} from './table-highlights.js';
 
 const esc=value=>escapeHTML(String(value??''));
 const eye=open=>open?
@@ -23,9 +25,9 @@ export function createFreeTable(root){
     catch{notice('Não foi possível salvar: armazenamento indisponível.',true)}
   }
   const has=col=>state.hidden.includes(col.key);
-  const header=(col)=>{
+  const header=(col,index)=>{
     const hidden=has(col),label=esc(col.label),name=hidden?'Mostrar':'Ocultar';
-    return `<th scope="col" class="free-column-head ${hidden?'truth-col-collapsed':''} ${col.kind==='var'?'free-var-head':'derived'}">
+    return `<th scope="col" data-rel-col="${index}" tabindex="0" class="free-column-head ${hidden?'truth-col-collapsed':''} ${col.kind==='var'?'free-var-head':'derived'}">
       <span class="free-column-label">${label}</span>
       <span class="truth-col-short" title="${label}">${label}</span>
       <button type="button" class="truth-col-toggle" data-action="toggle-col" data-key="${esc(col.key)}" aria-pressed="${!hidden}" aria-label="${name} coluna ${label}" title="${name} coluna ${label}">
@@ -165,7 +167,43 @@ export function createFreeTable(root){
       ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção inclui as colunas recolhidas.</p>`:''}
     </section>`;
   }
-  function render(){board.innerHTML=renderVariables()+renderFormulas()+renderInference()+renderTable()}
+  function freeHighlightRelations(columns){
+    if(!state.graded)return [];
+    const rows=freeRows(state),pred=freeTableKind(state)==='predicates';
+    const correct=index=>{
+      const col=columns[index];
+      if(!pred&&col.kind==='var')return true;
+      if(pred&&col.kind==='var')return rows.length>0&&rows.every(row=>
+        ['V','F'].includes(state.predicateValues[row.id+'|'+col.name]));
+      const target=pred&&col.global?[null]:rows;
+      return target.length>0&&target.every((row,r)=>{
+        const key=(row===null?'global':r)+'|'+col.key;
+        try{return state.answers[key]===(evaluateFreeRow(row,col,state)?'V':'F')}catch{return false}
+      });
+    };
+    if(!pred)return propositionalRelations(columns,state.variables.map(x=>x.name),correct)
+      .filter(rel=>columns[rel.a].kind!=='var'||columns[rel.b].kind!=='var');
+    // Equivalência de valores em um único domínio não demonstra equivalência lógica.
+    // As formas categóricas, ao contrário, possuem relações demonstráveis por sua sintaxe.
+    const result=[];
+    for(let a=0;a<columns.length;a++)for(let b=a+1;b<columns.length;b++){
+      if(!correct(a)||!correct(b))continue;
+      const first=categoricalForm(columns[a].node),second=categoricalForm(columns[b].node);
+      if(!first||!second)continue;
+      const subjectNonempty=state.domain.some(person=>state.predicateValues[person.id+'|'+first.a]==='V');
+      const rel=categoricalRelation(first,second,{subjectNonempty});
+      if(rel)result.push({a,b,...rel});
+    }
+    return result;
+  }
+  function render(){
+    board.innerHTML=renderVariables()+renderFormulas()+renderInference()+renderTable();
+    const table=board.querySelector('.free-truth-table');
+    if(!table)return;
+    const columns=freeColumns(state);
+    attachTruthHighlights(table,{columns,operands:index=>immediateOperands(columns,index),
+      relations:freeHighlightRelations(columns)});
+  }
   function refresh(msg){
     save();render();if(msg)notice(msg);
   }
