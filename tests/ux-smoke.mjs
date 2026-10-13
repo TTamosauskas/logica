@@ -426,58 +426,77 @@ try{
   }
 
 
-  // Foco por colunas: o estudante decide quais colunas mostrar, inclusive variáveis básicas.
+  // O cabeçalho permanece, alternando entre olho aberto e riscado no próprio título.
   for(const width of [375,1280]){
     const focusContext=await browser.newContext({viewport:{width,height:812}});
     const focus=await focusContext.newPage(),focusErrors=[];
     focus.on('pageerror',e=>focusErrors.push(e.message));
     await focus.goto(root+'#compostas',{waitUntil:'networkidle'});
-    const originalColumns=await focus.locator('#truthTable thead th').count();
-    const originalCells=await focus.locator('#truthTable .cell').count();
+    const table=focus.locator('#truthTable');
+    const originalColumns=await table.locator('thead th').count();
+    const originalCells=await table.locator('.cell').count();
+    const originalRows=await table.locator('tbody tr').count();
     assert.ok(originalColumns>=3&&originalCells>0);
-    assert.equal(await focus.locator('#columnVisibility').isVisible(),true);
-    const originalColumn=await focus.locator('#truthTable .cell').first().getAttribute('data-c');
-    await focus.locator('#truthTable .cell').first().click();
+    assert.equal(await focus.locator('#columnVisibility').count(),0,'A faixa redundante não deve existir');
+    assert.equal(await table.locator('[data-toggle-col]').count(),originalColumns);
+    assert.equal(await table.locator('[data-toggle-col][aria-pressed="true"]').count(),originalColumns);
+    const originalColumn=await table.locator('.cell').first().getAttribute('data-c');
+    assert.notEqual(originalColumn,'0','Primeiro campo editável não deve ser uma variável de entrada');
+    await table.locator('.cell').first().click();
     const draft=()=>focus.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_exercise_drafts_v1')).byMode.compostas.exercise);
-    const before=await draft();
-    assert.equal(before.answers['0-'+originalColumn],'V');
-    // A primeira coluna pode ser escondida mesmo se for uma variável de entrada.
-    await focus.locator('#truthTable [data-hide-col="0"]').focus();
-    await focus.keyboard.press('Enter');
-    assert.equal(await focus.locator('#truthTable thead th').count(),originalColumns-1);
-    assert.equal(await focus.locator('#columnVisibility [data-show-col="0"]').count(),1);
-    assert.equal(await focus.locator('#truthTable [data-hide-col="0"]').count(),0);
-    await focus.locator('#truthTable [data-hide-col="'+originalColumn+'"]').click();
-    assert.equal(await focus.locator('#truthTable .cell[data-c="'+originalColumn+'"]').count(),0);
     assert.equal((await draft()).answers['0-'+originalColumn],'V');
+    const firstHead=table.locator('thead th').first();
+    // O controle de qualquer variável de entrada também pode ser usado pelo teclado.
+    await table.locator('[data-toggle-col="0"]').focus();
+    await focus.keyboard.press('Enter');
+    assert.equal(await table.locator('thead th').count(),originalColumns);
+    assert.equal(await firstHead.getAttribute('class')?.then(s=>s.includes('truth-col-collapsed')),true);
+    assert.equal(await firstHead.locator('[data-toggle-col="0"]').getAttribute('aria-pressed'),'false');
+    assert.match(await firstHead.locator('[data-toggle-col="0"]').getAttribute('aria-label'),/Mostrar coluna/);
+    assert.equal(await firstHead.locator('.truth-col-short').isVisible(),true);
+    assert.equal(await firstHead.locator('svg path[d="M3 3l18 18"]').count(),1);
+    assert.ok((await firstHead.evaluate(el=>el.getBoundingClientRect().width))<=65);
+    assert.equal(await table.locator('tbody tr').first().locator('td').count(),originalColumns);
+    assert.equal(await table.locator('.truth-cell-collapsed').count(),originalRows);
+    assert.equal(await focus.evaluate(()=>document.activeElement?.dataset.toggleCol),'0');
+    // A coluna intermediária desaparece do corpo, mas conserva cabeçalho e respostas.
+    await table.locator('[data-toggle-col="'+originalColumn+'"]').click();
+    assert.equal(await table.locator('thead th.truth-col-collapsed').count(),2);
+    assert.equal(await table.locator('.cell[data-c="'+originalColumn+'"]').count(),0);
+    assert.equal((await draft()).answers['0-'+originalColumn],'V');
+    assert.equal(await table.locator('thead th').count(),originalColumns);
     await focus.reload({waitUntil:'networkidle'});
-    assert.deepEqual((await draft()).hiddenColumns,[0,Number(originalColumn)].filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b));
-    assert.equal(await focus.locator('#truthTable thead th').count(),originalColumns-2);
-    // Restituir uma coluna conserva o valor digitado e os índices originais.
-    await focus.locator('#columnVisibility [data-show-col="'+originalColumn+'"]').click();
-    assert.equal(await focus.locator('#truthTable .cell[data-r="0"][data-c="'+originalColumn+'"]').innerText(),'V');
-    const restoredCell=focus.locator('#truthTable .cell[data-r="0"][data-c="'+originalColumn+'"]');
+    assert.deepEqual((await draft()).hiddenColumns,[0,Number(originalColumn)].sort((a,b)=>a-b));
+    assert.equal(await table.locator('thead th.truth-col-collapsed').count(),2);
+    // Reabrir pelo próprio olho riscado recupera a resposta digitada.
+    await table.locator('[data-toggle-col="'+originalColumn+'"]').click();
+    assert.equal(await table.locator('.cell[data-r="0"][data-c="'+originalColumn+'"]').innerText(),'V');
+    assert.equal(await table.locator('[data-toggle-col="'+originalColumn+'"]').getAttribute('aria-pressed'),'true');
+    assert.equal(await table.locator('thead th.truth-col-collapsed').count(),1);
+    const restoredCell=table.locator('.cell[data-r="0"][data-c="'+originalColumn+'"]');
     await restoredCell.focus();
     await focus.keyboard.press('ArrowDown');
     assert.equal(await focus.evaluate(()=>document.activeElement?.dataset.r),'1');
     assert.equal(await focus.evaluate(()=>document.activeElement?.dataset.c),originalColumn);
-    // Todas as colunas são opcionais; não é permitido perder as respostas ocultadas.
-    const otherColumns=await focus.locator('#truthTable [data-hide-col]').evaluateAll(els=>els.map(el=>Number(el.dataset.hideCol)));
-    for(const index of otherColumns)await focus.locator('#truthTable [data-hide-col="'+index+'"]').click();
-    assert.equal(await focus.locator('#truthTable .cell').count(),0);
-    assert.match(await focus.locator('#truthTable .truth-no-columns').innerText(),/Escolha uma coluna/);
+    // Até com todas as colunas recolhidas, os cabeçalhos permanecem clicáveis.
+    const toHide=await table.locator('[data-toggle-col][aria-pressed="true"]').evaluateAll(els=>els.map(el=>el.dataset.toggleCol));
+    for(const index of toHide)await table.locator('[data-toggle-col="'+index+'"]').click();
+    assert.equal(await table.locator('thead th').count(),originalColumns);
+    assert.equal(await table.locator('thead th.truth-col-collapsed').count(),originalColumns);
+    assert.equal(await table.locator('.cell').count(),0);
+    assert.equal(await table.locator('tbody tr').count(),originalRows);
     await focus.locator('#checkButton').click();
     assert.equal((await draft()).answers['0-'+originalColumn],'V');
-    assert.ok((await draft()).grade.total>=originalCells);
-    await focus.locator('#columnVisibility [data-show-all-columns]').click();
-    assert.equal(await focus.locator('#truthTable thead th').count(),originalColumns);
-    assert.equal(await focus.locator('#truthTable .cell').count(),originalCells);
+    assert.ok((await draft()).grade.total>=originalCells,'A correção avalia também as células ocultas');
+    for(let i=0;i<originalColumns;i++)await table.locator('[data-toggle-col="'+i+'"]').click();
+    assert.equal(await table.locator('thead th.truth-col-collapsed').count(),0);
+    assert.equal(await table.locator('.cell').count(),originalCells);
     assert.equal((await draft()).hiddenColumns.length,0);
     await focus.locator('#newButton').click();
-    assert.equal(await focus.locator('#columnVisibility [data-show-col]').count(),0);
+    assert.equal(await table.locator('thead th.truth-col-collapsed').count(),0);
     assert.deepEqual(focusErrors,[]);
     const overflow=await focus.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
-    assert.ok(overflow<=2,'Foco por colunas excedeu a tela de '+width+'px');
+    assert.ok(overflow<=2,'Cabeçalhos compactos excederam o viewport de '+width+'px');
     await focusContext.close();
   }
 
