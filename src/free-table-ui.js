@@ -19,6 +19,7 @@ export function createFreeTable(root){
   try{state=readFreeTable(localStorage.getItem(FREE_TABLE_KEY))}catch{state=blankFreeTable()}
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
   let lastFormulaInput=null,domainOpen=false;
+  let truthHighlightController=null;
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
   function save(){
     try{localStorage.setItem(FREE_TABLE_KEY,JSON.stringify(state));notice('Tabela salva automaticamente neste navegador.')}
@@ -197,11 +198,13 @@ export function createFreeTable(root){
     return result;
   }
   function render(){
+    truthHighlightController?.destroy();
+    truthHighlightController=null;
     board.innerHTML=renderVariables()+renderFormulas()+renderInference()+renderTable();
     const table=board.querySelector('.free-truth-table');
     if(!table)return;
     const columns=freeColumns(state);
-    attachTruthHighlights(table,{columns,operands:index=>immediateOperands(columns,index),
+    truthHighlightController=attachTruthHighlights(table,{columns,operands:index=>immediateOperands(columns,index),
       relations:freeHighlightRelations(columns)});
   }
   function refresh(msg){
