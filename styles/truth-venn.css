@@ -26,6 +26,7 @@
 .truth-venn-false{fill:#df5266;fill-opacity:.38}
 .truth-venn-pending{fill:#8c9bae;fill-opacity:.12}
 .truth-venn-member{fill:#2688bd;fill-opacity:.25}
+.truth-venn-impossible{fill:#df5266;fill-opacity:.45}
 .truth-venn-circle{fill:none;stroke:var(--text);stroke-opacity:.65;stroke-width:2.5}
 .truth-venn-name,.truth-venn-value{fill:var(--text);font:750 17px/1.4 ui-sans-serif,system-ui,sans-serif}
 .truth-venn-name{font-size:16px}
