@@ -11,6 +11,7 @@ import { EXERCISE_DRAFTS_KEY, EXAM_DRAFT_KEY, DRAFT_VERSION, hasPendingWork, rea
 import { SYMBOLS, rng, pick, v, not, bin, A, O, X, I, B, t, evalAst, fmt, pretty, sig, varsOf, relevantNames, truthRows, varColumns, stepNodes, formulaColumns, build } from './core/logic.js';
 import {immediateOperands,propositionalRelations,categoricalRelation} from './core/table-relations.js';
 import {attachTruthHighlights} from './table-highlights.js';
+import {renderTruthVenn} from './truth-venn.js';
 import { tokens, parseFormula, equivalentFormula } from './core/parser.js';
 import { escapeHTML } from './core/html.js';
 import { fundamentals, operators, composed, demorgan, classification, equivalences, argumentsMode } from './modes/propositional.js';
@@ -1087,6 +1088,27 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     return propositionalRelations(safe,ex.vars||[],correct).filter(rel=>
       columns[rel.a].editable||columns[rel.b].editable);
   }
+  function renderExerciseVenn(){
+    const panel=$('truthVennPanel'),ex=exercise;
+    if(!panel||!ex||ex.mode==='categoricos'||!ex.vars?.length||
+       !Array.isArray(ex.envs)||!ex.envs.length||
+       !ex.envs.every(env=>ex.vars.every(name=>typeof env[name]==='boolean'))){
+      if(panel)panel.innerHTML='';
+      return;
+    }
+    const columns=ex.cols.map((col,index)=>({...col,index}))
+      .filter(col=>col.node&&col.assignmentIndex===undefined);
+    panel.innerHTML=renderTruthVenn({
+      id:'exercise',variables:ex.vars,rows:ex.envs,
+      columns:columns.map(col=>({key:col.key,label:col.label,index:col.index,
+        derived:col.editable})),
+      selectedKey:ex.vennColumnKey||'',filters:ex.vennFilters||{},
+      getAnswer:(row,col)=>ex.cols[col.index].editable?
+        (ex.answers[fieldKey(row,col.index)]||''):expected(ex,row,col.index),
+      getExpected:(row,col)=>expected(ex,row,col.index),
+      checked:ex.grade!==null
+    });
+  }
   function renderTable(){const ex=exercise,hidden=hiddenTableColumns(ex);
     let str='<thead><tr>'+ex.cols.map((c,index)=>{
       if(ex.mode==='deducao'&&c.key.startsWith('clue')){
@@ -1115,7 +1137,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       relations:exerciseColumnRelations(ex)};
     if(truthHighlights)truthHighlights.update(config);
     else truthHighlights=attachTruthHighlights(table,config);
-    renderCategoricalModelWorkbench()}
+    renderCategoricalModelWorkbench();renderExerciseVenn()}
   function renderChoice(){const ex=exercise;if(!ex.choice){$('decisionArea').innerHTML='';return}const c=ex.choice;let buttons=c.options.map(option=>{const selected=ex.picked===option,cls='choice'+(selected?' selected':'')+(ex.revealed&&option===c.correct?' right':'')+(ex.grade&&selected?(selected&&option===c.correct?' right':' wrong'):'');return `<button class="${cls}" type="button" data-choice="${option}" ${ex.revealed?'disabled':''} aria-pressed="${selected}">${option}</button>`}).join('');$('decisionArea').innerHTML=`<section class="decision"><h3>${c.question}</h3><p>${ex.mode==='deducao'&&ex.metadata.contest?'No modo concurso, escolha sua resposta após analisar as pistas.':'Escolha uma resposta após completar a tabela.'}</p>${ex.mode==='deducao'?`<div class="deduction-options"><h3>Alternativas</h3>${ex.metadata.options.map(o=>`<p><b>${o.letter})</b>${escapeHTML(o.text)}</p>`).join('')}</div>`:''}<div class="choices" role="group" aria-label="${c.question}">${buttons}</div>${(ex.revealed||ex.grade)?`<p class="explanation"><strong>Resposta: ${c.correct}.</strong> ${c.explanation}</p>`:''}</section>`}
   function renderFeedback(){
     const ex=exercise,place=$('feedbackArea');
@@ -1270,6 +1292,16 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     const hint=e.target.closest('[data-cat-hint]');if(hint){const key=hint.dataset.catHint;cat.modelHelpKey=cat.modelHelpKey===key?'':key;renderCategoricalModelWorkbench();return}
     if(e.target.closest('[data-cat-comparison]')){cat.showComparison=!cat.showComparison;renderCategoricalModelWorkbench();return}
     if(e.target.closest('[data-cat-full-table]')){cat.showFullTable=!cat.showFullTable;renderCategoricalModelWorkbench();return}
+  });
+  $('truthVennPanel').addEventListener('change',event=>{
+    if(!exercise)return;
+    const target=event.target;
+    if(target.matches('[data-venn-column]'))exercise.vennColumnKey=target.value;
+    else if(target.matches('[data-venn-filter]')){
+      exercise.vennFilters={...(exercise.vennFilters||{}),[target.dataset.vennFilter]:target.value};
+    }else return;
+    renderExerciseVenn();
+    saveExerciseDraft();
   });
   $('truthTable').addEventListener('click',e=>{
     const toggle=e.target.closest('[data-toggle-col]');
