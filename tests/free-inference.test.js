@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {blankFreeTable,addFreeVariable,addFreeFormula,editFreeVariable,parseFreeFormula,
-  verifyFreeInference,readFreeTable,freeRows,gradeFreeTable} from '../src/core/free-table.js';
+  verifyFreeInference,readFreeTable,freeRows,gradeFreeTable,removeFreeVariable,addFreeIndividual} from '../src/core/free-table.js';
 
 function socrates(){
   const state=blankFreeTable();
@@ -74,6 +74,15 @@ test('papéis, premissas e conclusão persistem após recarregar',()=>{
   assert.equal(restored.inferenceReport.valid,report.valid);
   assert.equal(restored.domain.length,0);
 });
+test('não permite excluir a constante usada como argumento nem duplicar símbolos do domínio',()=>{
+  const state=blankFreeTable();
+  addFreeVariable(state,'r');
+  editFreeVariable(state,'r','r','Sócrates','individual');
+  addFreeFormula(state,'q(r)');
+  assert.throws(()=>state.variables.length>2&&removeLast(state),/Remova ou edite/);
+  assert.throws(()=>editFreeVariable(state,'q','q','homem','individual'),/predicado cadastrado/);
+});
+function removeLast(state){return removeFreeVariable(state,'r')}
 test('limites do verificador são explícitos para não sobrecarregar a página',()=>{
   const state=blankFreeTable();
   for(const name of ['r','s'])addFreeVariable(state,name);
