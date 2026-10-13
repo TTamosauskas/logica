@@ -2,7 +2,8 @@
 import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableName,
   addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,
   removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
-  parseFreeFormula,describeFreeFormula} from './core/free-table.js';
+  parseFreeFormula,describeFreeFormula,freeTableKind,MAX_INDIVIDUALS,
+  addFreeIndividual,editFreeIndividual,removeFreeIndividual} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
 
@@ -45,12 +46,31 @@ export function createFreeTable(root){
       </div>`).join('')}</div>
       ${next?`<button type="button" class="button" data-action="add-var">+ Adicionar variável ${next}</button>`:
         '<small class="free-hint">Máximo de seis variáveis (64 linhas).</small>'}
+      ${renderDomain()}
     </section>`;
+  }
+  function renderDomain(){
+    const pred=freeTableKind(state)==='predicates';
+    return `<details class="free-domain" ${pred?'open':''}>
+      <summary>Indivíduos do domínio (para ∀, ∃ e p(s)) <small>${state.domain.length} cadastrados</small></summary>
+      <p>Use uma constante como s = Sócrates. Cada indivíduo ocupa uma linha; p(x), q(x) representam propriedades cujos valores V/F você define.</p>
+      <div class="free-domain-entries">${state.domain.map(item=>`<div class="free-domain-entry">
+        <code>${esc(item.id)}</code><label>Nome de ${esc(item.id)} <input type="text" data-ind-label="${esc(item.id)}" maxlength="80" value="${esc(item.label)}"></label>
+        <button class="button small" type="button" data-action="save-ind" data-id="${esc(item.id)}">Salvar</button>
+        <button class="button small" type="button" data-action="remove-ind" data-id="${esc(item.id)}" aria-label="Excluir indivíduo ${esc(item.label)}">Excluir</button>
+      </div>`).join('')}</div>
+      <div class="free-domain-add">
+        <label>Símbolo <input id="freeNewIndividualId" maxlength="24" placeholder="s" spellcheck="false"></label>
+        <label>Nome <input id="freeNewIndividualLabel" maxlength="80" placeholder="Sócrates"></label>
+        <button type="button" class="button" data-action="add-ind" ${state.domain.length>=MAX_INDIVIDUALS?'disabled':''}>+ Adicionar indivíduo</button>
+      </div>
+      <small class="free-hint">O símbolo x é reservado aos quantificadores. Cadastre ao menos um indivíduo para avaliar o domínio.</small>
+    </details>`;
   }
   function renderFormulas(){
     return `<section class="free-card" aria-labelledby="freeFormulaTitle">
       <div class="free-section-heading"><h2 id="freeFormulaTitle">2. Fórmulas e tradução</h2><span class="free-hint">${state.formulas.length} cadastradas</span></div>
-      <p>Use as variáveis acima. A leitura literal respeita os conectivos; quando pertinente, mostramos uma equivalência clássica e a condição de verdade.</p>
+      <p>Use p, q etc. como proposições ou como propriedades p(x), q(x). Com ∀x(...) ou ∃x(...), a leitura considera os indivíduos cadastrados acima.</p>
       <div class="free-entries">${!state.formulas.length?'<p class="free-empty-formulas">Nenhuma fórmula cadastrada. Use os botões abaixo para criar a primeira.</p>':''}${state.formulas.map(f=>{
         const parsed=parseFreeFormula(state,f.source),d=describeFreeFormula(parsed,state);
         return `<div class="free-formula-card">
@@ -65,9 +85,9 @@ export function createFreeTable(root){
       <div class="free-formula-new"><label>Adicionar fórmula <input id="freeNewFormula" type="text" maxlength="240" placeholder="Ex.: ¬(p → q)" spellcheck="false"></label>
         <button type="button" class="button primary" data-action="add-formula">+ Adicionar fórmula</button></div>
       <div class="free-keypad" role="group" aria-label="Inserir variáveis e símbolos lógicos">
-        ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','(',')'].map(sym=>`<button class="button small ${state.variables.some(v=>v.name===sym)?'free-key-variable':''}" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
+        ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','∀','∃','(',')'].map(sym=>`<button class="button small ${state.variables.some(v=>v.name===sym)?'free-key-variable':''}" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
       </div>
-      <small class="free-hint">Aceita também !, ~, &, |, →, ->, ↔ e parênteses. Ou (∨) é inclusivo.</small>
+      <small class="free-hint">Para predicados, use p(x), p(s), ∀x(p(x) → q(x)) e ∃x(p(x) ∧ q(x)). Nenhum equivale a ¬∃.</small>
     </section>`;
   }
   function cell(row,r,col){
@@ -134,6 +154,23 @@ export function createFreeTable(root){
       if(next)state.answers[id]=next;else delete state.answers[id];
       state.graded=false;refresh();root.querySelector('[data-action="answer"][data-row="'+button.dataset.row+'"][data-key="'+CSS.escape(button.dataset.key)+'"]')?.focus({preventScroll:true});return;
     }
+    if(action==='add-ind'){
+      addFreeIndividual(state,root.querySelector('#freeNewIndividualId').value,root.querySelector('#freeNewIndividualLabel').value);
+      refresh('Indivíduo cadastrado.');return;
+    }
+    if(action==='save-ind'||action==='remove-ind'){
+      const id=button.dataset.id;
+      if(action==='remove-ind')removeFreeIndividual(state,id);
+      else editFreeIndividual(state,id,root.querySelector('[data-ind-label="'+CSS.escape(id)+'"]').value);
+      refresh('Domínio atualizado.');return;
+    }
+    if(action==='predicate-value'){
+      const id=button.dataset.ind+'|'+button.dataset.name,old=state.predicateValues[id]||'';
+      const next=old===''?'V':old==='V'?'F':'';
+      if(next)state.predicateValues[id]=next;else delete state.predicateValues[id];
+      state.graded=false;refresh();
+      root.querySelector('[data-action="predicate-value"][data-ind="'+CSS.escape(button.dataset.ind)+'"][data-name="'+CSS.escape(button.dataset.name)+'"]')?.focus({preventScroll:true});return;
+    }
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
   root.addEventListener('focusin',e=>{if(e.target.matches('#freeNewFormula,[data-formula-source]'))lastFormulaInput=e.target});
@@ -143,16 +180,20 @@ export function createFreeTable(root){
       const input=lastFormulaInput?.isConnected?lastFormulaInput:root.querySelector('#freeNewFormula');
       if(!input)return;
       const start=input.selectionStart??input.value.length,end=input.selectionEnd??start;
-      input.value=input.value.slice(0,start)+sym.dataset.symbol+input.value.slice(end);
-      input.focus();input.setSelectionRange(start+sym.dataset.symbol.length,start+sym.dataset.symbol.length);return;
+      const insert=sym.dataset.symbol==='∀'||sym.dataset.symbol==='∃'?sym.dataset.symbol+'x(':
+        (freeTableKind(state)==='predicates'&&state.variables.some(v=>v.name===sym.dataset.symbol)?sym.dataset.symbol+'(x)':sym.dataset.symbol);
+      input.value=input.value.slice(0,start)+insert+input.value.slice(end);
+      input.focus();input.setSelectionRange(start+insert.length,start+insert.length);return;
     }
     const button=e.target.closest('[data-action]');if(!button)return;
     try{run(button.dataset.action,button)}catch(error){notice(error.message,true)}
   });
   root.addEventListener('keydown',e=>{
-    if(e.key!=='Enter'||!e.target.matches('#freeNewFormula,[data-formula-source],[data-var-meaning]'))return;
+    if(e.key!=='Enter'||!e.target.matches('#freeNewFormula,[data-formula-source],[data-var-meaning],#freeNewIndividualId,#freeNewIndividualLabel,[data-ind-label]'))return;
     e.preventDefault();
-    const selector=e.target.id==='freeNewFormula'?'[data-action="add-formula"]':
+    const selector=e.target.id==='freeNewIndividualId'||e.target.id==='freeNewIndividualLabel'?'[data-action="add-ind"]':
+      e.target.matches('[data-ind-label]')?'[data-action="save-ind"][data-id="'+e.target.dataset.indLabel+'"]':
+      e.target.id==='freeNewFormula'?'[data-action="add-formula"]':
       e.target.matches('[data-formula-source]')?'[data-action="save-formula"][data-id="'+e.target.dataset.formulaSource+'"]':
       '[data-action="save-var"][data-index="'+e.target.dataset.varMeaning+'"]';
     root.querySelector(selector)?.click();
