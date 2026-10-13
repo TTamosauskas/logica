@@ -54,7 +54,7 @@ export function createFreeTable(root){
     const next=nextFreeVariableName(state);
     return `<section class="free-card" aria-labelledby="freeVarTitle">
       <div class="free-section-heading"><h2 id="freeVarTitle">1. Variáveis e significados</h2><span class="free-hint">${state.variables.length}/${MAX_VARS}</span></div>
-      <p>Os símbolos seguem p, q, r, s, t, u. Identifique quais representam indivíduos (Sócrates) e quais representam propriedades (x é mortal). As fórmulas fechadas, inclusive com quantificadores, formarão as colunas da tabela-verdade.</p>
+      <p>Os símbolos seguem p, q, r, s, t, u. Ao escrever q(p), o sistema reconhece automaticamente p como indivíduo e q como propriedade. Você pode informar os significados depois, sem cadastrar o indivíduo. A letra x é usada apenas como variável ligada por quantificadores.</p>
       <div class="free-entries">${state.variables.map((v,i)=>`<div class="free-entry">
         <span class="free-variable-symbol" aria-label="Variável ${esc(v.name)}">${esc(v.name)}</span>
         <label>Tipo de ${esc(v.name)} <select data-var-kind="${i}" aria-label="Tipo lógico de ${esc(v.name)}">
@@ -73,7 +73,7 @@ export function createFreeTable(root){
   function renderDomain(){
     return `<details class="free-domain" ${domainOpen?'open':''}>
       <summary>Nomes de indivíduos (opcional) <small>${state.domain.length} cadastrados</small></summary>
-      <p>Esta área permite nomear constantes como s = Sócrates, sem criar linhas adicionais. A tabela sempre representa combinações V/F das fórmulas. Também é possível declarar um dos símbolos p–u como indivíduo.</p>
+      <p>Use esta área apenas se quiser dar um nome a um indivíduo, como s = Sócrates. Não é obrigatório cadastrar o símbolo para escrever q(s) ou q(p), e isso não cria linhas adicionais na tabela.</p>
       <div class="free-domain-entries">${state.domain.map(item=>`<div class="free-domain-entry">
         <code>${esc(item.id)}</code><label>Nome de ${esc(item.id)} <input type="text" data-ind-label="${esc(item.id)}" maxlength="80" value="${esc(item.label)}"></label>
         <button class="button small" type="button" data-action="save-ind" data-id="${esc(item.id)}">Salvar</button>
@@ -84,13 +84,13 @@ export function createFreeTable(root){
         <label>Nome <input id="freeNewIndividualLabel" maxlength="80" placeholder="Sócrates"></label>
         <button type="button" class="button" data-action="add-ind" ${state.domain.length>=MAX_INDIVIDUALS?'disabled':''}>+ Adicionar indivíduo</button>
       </div>
-      <small class="free-hint">O símbolo x é reservado aos quantificadores. Esse cadastro não altera as linhas da tabela-verdade.</small>
+      <small class="free-hint">Em q(p), p representa um indivíduo particular; use x apenas dentro de expressões quantificadas, como ∀x(q(x)).</small>
     </details>`;
   }
   function renderFormulas(){
     return `<section class="free-card" aria-labelledby="freeFormulaTitle">
       <div class="free-section-heading"><h2 id="freeFormulaTitle">2. Fórmulas e tradução</h2><span class="free-hint">${state.formulas.length} cadastradas</span></div>
-      <p>Cadastre as fórmulas da tabela. No modo de predicados, cada fórmula fechada corresponde a uma coluna V/F. Com duas ou mais fórmulas, as anteriores são premissas e a última é a conclusão. Exemplo: q(p), ∀x(q(x) → r(x)) e r(p).</p>
+      <p>Cadastre as fórmulas da tabela. Basta digitar q(p), sem declarar p antes: ele será reconhecido como indivíduo automaticamente. Para quantificadores, use x, como em ∀x(q(x) → r(x)). Com duas ou mais fórmulas, as anteriores são premissas e a última é a conclusão. Exemplo: q(p), ∀x(q(x) → r(x)) e r(p).</p>
       <div class="free-entries">${!state.formulas.length?'<p class="free-empty-formulas">Nenhuma fórmula cadastrada. Use os botões abaixo para criar a primeira.</p>':''}${state.formulas.map(f=>{
         const parsed=parseFreeFormula(state,f.source),d=describeFreeFormula(parsed,state);
         return `<div class="free-formula-card">
@@ -107,7 +107,7 @@ export function createFreeTable(root){
       <div class="free-keypad" role="group" aria-label="Inserir variáveis e símbolos lógicos">
         ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','∀','∃','(',')'].map(sym=>`<button class="button small ${state.variables.some(v=>v.name===sym)?'free-key-variable':''}" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
       </div>
-      <small class="free-hint">Para predicados, use p(x), p(s), ∀x(p(x) → q(x)) e ∃x(p(x) ∧ q(x)). Nenhum equivale a ¬∃.</small>
+      <small class="free-hint">Exemplos: q(p) e q(s) (indivíduos reconhecidos automaticamente); ∀x(q(x) → r(x)) e ∃x(q(x)) (variável x quantificada). Nenhum equivale a ¬∃.</small>
     </section>`;
   }
   function truthButton(r,col){
@@ -280,8 +280,11 @@ export function createFreeTable(root){
       refresh('Variáveis atualizadas.');return;
     }
     if(action==='add-formula'){
+      const before=new Set(state.variables.filter(v=>v.kind==='individual').map(v=>v.name));
       addFreeFormula(state,root.querySelector('#freeNewFormula').value);
-      refresh('Fórmula adicionada e traduzida.',{resetNewFormula:true});return;
+      const detected=state.variables.filter(v=>v.kind==='individual'&&!before.has(v.name)).map(v=>v.name);
+      refresh(detected.length?'Fórmula adicionada. '+detected.join(', ')+' reconhecido(s) automaticamente como indivíduo(s).':
+        'Fórmula adicionada e traduzida.',{resetNewFormula:true});return;
     }
     if(action==='save-formula'||action==='remove-formula'){
       const id=button.dataset.id;
