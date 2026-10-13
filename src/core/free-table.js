@@ -23,10 +23,12 @@ export const nextFreeVariableName=state=>VARIABLE_SEQUENCE[state.variables.lengt
 export function parseFreeFormula(state,source){
   const text=clean(source);
   if(!text||text.length>240)throw Error('A fórmula precisa ter entre 1 e 240 caracteres.');
-  return isPredicateSource(text)?parsePredicateFormula(text,
+  if(isPredicateSource(text))return parsePredicateFormula(text,
     state.variables.filter(v=>v.kind!=='individual').map(v=>v.name),
-    [...state.domain.map(d=>d.id),...state.variables.filter(v=>v.kind==='individual').map(v=>v.name)]):
-    parseFormula(text,state.variables.map(item=>item.name));
+    [...state.domain.map(d=>d.id),...state.variables.filter(v=>v.kind==='individual').map(v=>v.name)]);
+  if(state.variables.some(v=>v.kind==='individual'))
+    throw Error('Fórmulas proposicionais não podem incluir símbolos cadastrados como indivíduos. Use predicados, como q(p).');
+  return parseFormula(text,state.variables.map(item=>item.name));
 }
 export function addFreeVariable(state,name,meaning=''){
   const next=nextFreeVariableName(state);
@@ -43,7 +45,7 @@ export function editFreeVariable(state,oldName,newName,meaning,kind){
   const type=kind??entry.kind??'predicate';
   if(!['individual','predicate'].includes(type))throw Error('Tipo de símbolo inválido.');
   if(type!==entry.kind){
-    if(type==='individual'&&state.domain.some(d=>d.id===oldName))throw Error('O símbolo já identifica um indivíduo no domínio.');
+    if(state.domain.some(d=>d.id===oldName))throw Error('O símbolo já identifica um indivíduo no domínio.');
     if(type==='individual'&&freeTableKind(state)==='propositional'&&state.formulas.length)
       throw Error('Remova as fórmulas proposicionais antes de transformar uma variável em indivíduo.');
     const proposed={...state,variables:state.variables.map(v=>v.name===oldName?{...v,kind:type}:v)};
@@ -70,14 +72,17 @@ export function removeFreeVariable(state,name){
   }
   state.variables.pop();invalidate(state);return state;
 }
-export const freeTableKind=state=>state.formulas.some(f=>isPredicateSource(f.source))?'predicates':'propositional';
+export const freeTableKind=state=>state.formulas.some(f=>isPredicateSource(f.source))||
+  state.variables?.some(v=>v.kind==='individual')?'predicates':'propositional';
 export function addFreeIndividual(state,id,label){
   const name=normalName(id);
   if(!/^[a-z][a-z0-9_]*$/.test(name)||name==='x'||RESERVED.has(name))
     throw Error('Use um identificador como a, b ou s para o indivíduo (não x).');
   if(!clean(label))throw Error('Informe o nome do indivíduo, como Sócrates.');
   if(state.domain.length>=MAX_INDIVIDUALS)throw Error('Máximo de 20 indivíduos.');
-  if(state.domain.some(d=>d.id===name)||state.variables.some(v=>v.name===name))throw Error('Já existe um indivíduo com esse símbolo.');
+  if(state.domain.some(d=>d.id===name)||
+     state.variables.some(v=>v.name===name&&v.kind!=='individual'))
+    throw Error('Já existe uma proposição, propriedade ou indivíduo com esse símbolo.');
   state.domain.push({id:name,label:clean(label).slice(0,80)});
   state.graded=false;state.answers={};state.inferenceReport=null;return state;
 }
@@ -88,6 +93,13 @@ export function editFreeIndividual(state,id,label){
   entry.label=clean(label).slice(0,80);return state;
 }
 export function removeFreeIndividual(state,id){
+  // Uma conclusão com a constante excluída tornaria o projeto impossível de recarregar.
+  if(state.inferenceConclusion&&isPredicateSource(state.inferenceConclusion)){
+    const conclusion=parseFreeFormula(state,state.inferenceConclusion);
+    const uses=node=>node.type==='pred'?node.term===id:
+      Boolean((node.a&&uses(node.a))||(node.b&&uses(node.b)));
+    if(uses(conclusion))throw Error('Remova ou edite a conclusão que usa '+id+' antes de excluir o indivíduo.');
+  }
   for(const formula of state.formulas){
     if(isPredicateSource(formula.source)){
       const ast=parseFreeFormula(state,formula.source);
@@ -97,7 +109,7 @@ export function removeFreeIndividual(state,id){
   }
   state.domain=state.domain.filter(d=>d.id!==id);
   Object.keys(state.predicateValues).filter(k=>k.startsWith(id+'|')).forEach(k=>delete state.predicateValues[k]);
-  state.answers={};state.graded=false;return state;
+  state.answers={};state.graded=false;state.inferenceReport=null;return state;
 }
 function assertSameKind(state,source,id=null){
   const previous=state.formulas.filter(f=>f.id!==id);
