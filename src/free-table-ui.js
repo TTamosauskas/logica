@@ -1,8 +1,8 @@
 /** Interface isolada da Tabela Livre: sem interferir em exercícios ou avaliações. */
-import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,MAX_ROWS,
+import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableName,
   addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,
-  removeFreeFormula,freeColumns,freeRows,setFreeRowMode,addFreeRow,removeFreeRow,
-  evaluateFreeRow,gradeFreeTable,parseFreeFormula,describeFreeFormula} from './core/free-table.js';
+  removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
+  parseFreeFormula,describeFreeFormula} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
 
@@ -11,11 +11,6 @@ const eye=open=>open?
   '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle>':
   '<path d="M3 3l18 18"></path><path d="M10.5 5.1A11 11 0 0 1 12 5c6.6 0 10 7 10 7a14 14 0 0 1-3.3 4.1"></path><path d="M6.6 6.6C3.6 8.6 2 12 2 12s3.4 7 10 7c1.3 0 2.5-.3 3.6-.7"></path>';
 const key=(r,col)=>r+'|'+col;
-function exportFile(name,content,type){
-  const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),link=document.createElement('a');
-  link.href=url;link.download=name;document.body.append(link);link.click();link.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
 export function createFreeTable(root){
   let state;
   try{state=readFreeTable(localStorage.getItem(FREE_TABLE_KEY))}catch{state=blankFreeTable()}
@@ -38,27 +33,25 @@ export function createFreeTable(root){
     </th>`;
   };
   function renderVariables(){
+    const next=nextFreeVariableName(state);
     return `<section class="free-card" aria-labelledby="freeVarTitle">
       <div class="free-section-heading"><h2 id="freeVarTitle">1. Variáveis e significados</h2><span class="free-hint">${state.variables.length}/${MAX_VARS}</span></div>
-      <p>Defina uma proposição completa para cada variável. O significado é usado na tradução das fórmulas.</p>
+      <p>As variáveis começam com p e q e seguem r, s, t, u. Informe uma proposição para gerar traduções em português.</p>
       <div class="free-entries">${state.variables.map((v,i)=>`<div class="free-entry">
-        <label>Variável <input type="text" data-var-name="${i}" value="${esc(v.name)}" maxlength="24" spellcheck="false" aria-label="Nome da variável ${esc(v.name)}"></label>
-        <label>Significado <input type="text" data-var-meaning="${i}" value="${esc(v.meaning)}" maxlength="160" placeholder="ex.: comprei ingresso" aria-label="Significado de ${esc(v.name)}"></label>
+        <span class="free-variable-symbol" aria-label="Variável ${esc(v.name)}">${esc(v.name)}</span>
+        <label>Significado de ${esc(v.name)} <input type="text" data-var-meaning="${i}" value="${esc(v.meaning)}" maxlength="160" placeholder="ex.: comprei ingresso" aria-label="Significado de ${esc(v.name)}"></label>
         <div class="free-entry-actions"><button type="button" class="button small" data-action="save-var" data-index="${i}">Salvar</button>
-        <button type="button" class="button small" data-action="remove-var" data-index="${i}" aria-label="Excluir variável ${esc(v.name)}">Excluir</button></div>
+        ${i===state.variables.length-1&&i>=2?`<button type="button" class="button small" data-action="remove-var" data-index="${i}" aria-label="Excluir variável ${esc(v.name)}">Excluir</button>`:''}</div>
       </div>`).join('')}</div>
-      <div class="free-add-line">
-        <label>Nova variável <input type="text" id="freeNewVar" maxlength="24" placeholder="p" spellcheck="false"></label>
-        <label>Significado <input type="text" id="freeNewMeaning" maxlength="160" placeholder="ex.: estudei lógica"></label>
-        <button type="button" class="button" data-action="add-var" ${state.variables.length>=MAX_VARS?'disabled':''}>+ Adicionar variável</button>
-      </div>
+      ${next?`<button type="button" class="button" data-action="add-var">+ Adicionar variável ${next}</button>`:
+        '<small class="free-hint">Máximo de seis variáveis (64 linhas).</small>'}
     </section>`;
   }
   function renderFormulas(){
     return `<section class="free-card" aria-labelledby="freeFormulaTitle">
       <div class="free-section-heading"><h2 id="freeFormulaTitle">2. Fórmulas e tradução</h2><span class="free-hint">${state.formulas.length} cadastradas</span></div>
       <p>Use as variáveis acima. A leitura literal respeita os conectivos; quando pertinente, mostramos uma equivalência clássica e a condição de verdade.</p>
-      <div class="free-entries">${state.formulas.map(f=>{
+      <div class="free-entries">${!state.formulas.length?'<p class="free-empty-formulas">Nenhuma fórmula cadastrada. Use os botões abaixo para criar a primeira.</p>':''}${state.formulas.map(f=>{
         const parsed=parseFreeFormula(state,f.source),d=describeFreeFormula(parsed,state);
         return `<div class="free-formula-card">
           <div class="free-formula-editor"><label>Fórmula <input data-formula-source="${esc(f.id)}" type="text" maxlength="240" spellcheck="false" value="${esc(f.source)}" aria-label="Fórmula ${esc(f.id)}"></label>
@@ -69,10 +62,10 @@ export function createFreeTable(root){
           ${d.truth?`<p><strong>Interpretação:</strong> ${esc(d.truth)}</p>`:''}</div>
         </div>`;
       }).join('')}</div>
-      <div class="free-formula-new"><label>Adicionar fórmula <input id="freeNewFormula" type="text" maxlength="240" placeholder="¬(u → t)" spellcheck="false"></label>
+      <div class="free-formula-new"><label>Adicionar fórmula <input id="freeNewFormula" type="text" maxlength="240" placeholder="Ex.: ¬(p → q)" spellcheck="false"></label>
         <button type="button" class="button primary" data-action="add-formula">+ Adicionar fórmula</button></div>
-      <div class="free-keypad" role="group" aria-label="Inserir símbolos lógicos">
-        ${['¬','∧','∨','→','↔','⊕','(',')'].map(sym=>`<button class="button small" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
+      <div class="free-keypad" role="group" aria-label="Inserir variáveis e símbolos lógicos">
+        ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','(',')'].map(sym=>`<button class="button small" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
       </div>
       <small class="free-hint">Aceita também !, ~, &, |, →, ->, ↔ e parênteses. Ou (∨) é inclusivo.</small>
     </section>`;
@@ -81,11 +74,9 @@ export function createFreeTable(root){
     if(has(col))return '<td class="truth-cell-collapsed" aria-hidden="true"></td>';
     if(col.kind==='var'){
       const value=t(row[col.node.name]);
-      if(state.rowMode==='custom')return `<td><select data-row-value="${r}|${esc(col.node.name)}" aria-label="Linha ${r+1}, variável ${esc(col.label)}"><option value="V" ${value==='V'?'selected':''}>V</option><option value="F" ${value==='F'?'selected':''}>F</option></select></td>`;
       return `<td class="given">${value}</td>`;
     }
     const want=t(evaluateFreeRow(row,col));
-    if(state.viewMode==='explore')return `<td class="free-evaluated">${want}</td>`;
     const answer=state.answers[key(r,col.key)]||'',graded=state.graded;
     const status=!graded?'':answer===want?' correct':' incorrect';
     return `<td><button type="button" class="cell${answer?' filled':''}${status}" data-action="answer" data-row="${r}" data-key="${esc(col.key)}" aria-label="Linha ${r+1}, ${esc(col.label)}: ${answer||'vazio'}">${answer||'<span class="cell-placeholder">·</span>'}</button>${graded&&answer!==want?`<small class="free-correction" title="Valor esperado">${want}</small>`:''}</td>`;
