@@ -131,6 +131,7 @@ export const formulaSignature=ast=>ast.type==='pred'||hasQuantifier(ast)||isPred
 /** As fórmulas cadastradas são premissas; a conclusão é verificada em todos os modelos. */
 export function verifyFreeInference(state,source){
   if(freeTableKind(state)!=='predicates')throw Error('Cadastre premissas com predicados, como q(p) e ∀x(q(x) → r(x)).');
+  if(!isPredicateSource(source))throw Error('A conclusão deve usar predicados, como r(p) ou ∀x(q(x) → r(x)).');
   const conclusion=parseFreeFormula(state,source);
   const premises=state.formulas.map(f=>parseFreeFormula(state,f.source));
   const report=checkSymbolicInference(premises,conclusion);
