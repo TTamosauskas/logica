@@ -60,8 +60,8 @@ test('papéis inválidos são rejeitados e domínio continua opcional',()=>{
   assert.throws(()=>parseFreeFormula(state,'p(x)'),/predicado cadastrado/);
   assert.throws(()=>parseFreeFormula(state,'q(s)'),/indivíduo cadastrado/);
   assert.throws(()=>verifyFreeInference(state,'r(x)'),/Feche a variável/);
-  assert.equal(freeRows(state).length,0);
-  assert.throws(()=>gradeFreeTable(state),/ao menos um indivíduo/);
+  assert.equal(freeRows(state).length,4);
+  assert.equal(gradeFreeTable(state).total,4);
 });
 test('papéis, premissas e conclusão persistem após recarregar',()=>{
   const state=socrates();
@@ -70,8 +70,9 @@ test('papéis, premissas e conclusão persistem após recarregar',()=>{
   assert.equal(restored.version,4);
   assert.equal(restored.variables[0].kind,'individual');
   assert.equal(restored.variables[0].meaning,'Sócrates');
-  assert.equal(restored.inferenceConclusion,'r(p)');
-  assert.equal(restored.inferenceReport.valid,report.valid);
+  assert.equal(restored.inferenceConclusion,'');
+  assert.equal(restored.formulas.at(-1).source,'r(p)');
+  assert.equal(restored.inferenceReport,null);
   assert.equal(restored.domain.length,0);
 });
 test('não permite excluir a constante usada como argumento nem duplicar símbolos do domínio',()=>{
