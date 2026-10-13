@@ -197,7 +197,7 @@ export function createFreeTable(root){
       '</div>';
     return '<section class="free-card free-possibilities" aria-labelledby="freePossibilitiesTitle">'+
       '<div class="free-section-heading"><h2 id="freePossibilitiesTitle">'+
-      (pred?'4':'3')+'. Analisar possibilidades lógicas</h2><span class="free-hint">Análise opcional</span></div>'+
+      'Análise complementar · possibilidades lógicas</h2><span class="free-hint">Opcional</span></div>'+
       '<p>As letras A, B, C e D representam fórmulas completas, não proposições independentes. '+
       'A tabela mantém todas as combinações V/F e identifica se existe algum modelo compatível. '+
       (pred?'Se você informou uma conclusão acima, ela entra como última coluna. ':'')+
