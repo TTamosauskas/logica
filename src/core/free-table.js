@@ -1,6 +1,7 @@
 /** Estado e semântica da Tabela Livre — independente do DOM e das avaliações do curso. */
 import {parseFormula} from './parser.js';
-import {checkSymbolicInference} from './free-inference.js';
+import {checkSymbolicInference,analyzePredicateRegions} from './free-inference.js';
+import {analyzeLogicalPossibilities} from './logical-possibilities.js';
 import {truthRows,evalAst,pretty,stepNodes,sig,v,A,not} from './logic.js';
 import {isPredicateSource,parsePredicateFormula,predicateSignature,predicatePretty,predicateSteps,
  predicateAtomicNames,rootHasFreeX,hasQuantifier,evaluatePredicate,predicateReading,predicateEvidence} from './free-predicates.js';
@@ -150,6 +151,26 @@ export function verifyFreeInference(state,source){
   state.inferenceConclusion=clean(source);
   state.inferenceReport=report;
   return report;
+}
+/** Analisa a realizabilidade de linhas formadas pelas fórmulas completas cadastradas.
+ * A tabela de modelos concretos do aluno é independente dessa verificação.
+ */
+export function analyzeFreePossibilities(state,{conclusionSource=state.inferenceConclusion,filters={}}={}){
+  const mode=freeTableKind(state);
+  const roots=state.formulas.map(item=>parseFreeFormula(state,item.source));
+  const conclusionText=String(conclusionSource||'').trim();
+  if(conclusionText&&mode!=='predicates')
+    throw Error('A conclusão simbólica deve ser analisada no modo de predicados.');
+  const conclusion=conclusionText?parseFreeFormula(state,conclusionText):null;
+  const report=analyzeLogicalPossibilities({
+    formulas:roots,conclusion,variables:state.variables.map(v=>v.name),mode
+  });
+  const expressions=[...state.formulas.map(f=>f.source),...(conclusionText?[conclusionText]:[])];
+  const vars=mode==='predicates'?state.variables.filter(v=>roots.some(ast=>
+    predicateAtomicNames([ast]).has(v.name))).map(v=>v.name):[];
+  const region=mode==='predicates'&&report.status==='complete'&&vars.length?
+    analyzePredicateRegions(roots,vars,filters):null;
+  return {...report,expressions,region};
 }
 export function freeColumns(state){
   const roots=state.formulas.map(f=>parseFreeFormula(state,f.source));
