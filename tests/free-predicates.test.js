@@ -129,7 +129,7 @@ test('constante individual pode ser cadastrada e a tabela independe do domínio'
  assert.equal(restored.variables[0].kind,'individual');
  assert.deepEqual(restored.domain,[{id:'p',label:'Sócrates'}]);
  assert.equal(restored.answers['0|'+col.key],'F');
- assert.throws(()=>editFreeVariable(restored,'p','p','propriedade','predicate'),/identifica um indivíduo/);
+ assert.throws(()=>editFreeVariable(restored,'p','p','propriedade','predicate'),/indivíduo/);
 });
 
 test('um símbolo como indivíduo não é proposição, mas fórmula fechada tem V/F',()=>{

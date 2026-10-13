@@ -22,7 +22,7 @@ export function predicateTokens(input){
 }
 export const isPredicateSource=source=>/[∀∃]|\b[a-z]\s*\(/i.test(String(source||''));
 
-export function parsePredicateFormula(source,variables,individuals){
+export function parsePredicateFormula(source,variables,individuals,{allowImplicitIndividuals=false}={}){
   const list=predicateTokens(source),names=new Set(variables),constants=new Set(individuals);
   if(list.filter(t=>t.type==='forall'||t.type==='exists').length>2)
     throw Error('Use no máximo dois quantificadores por fórmula nesta versão.');
@@ -46,7 +46,10 @@ export function parsePredicateFormula(source,variables,individuals){
     if(name?.type!=='name'||!names.has(name.value))throw Error('Use um predicado cadastrado (p, q, r, s, t ou u).');
     expect('(','Predicados precisam de argumento, como p(x) ou p(s).');
     const arg=list[pos++];
-    if(arg?.type!=='name'||(arg.value!=='x'&&!constants.has(arg.value)))throw Error('Use x ou o símbolo de um indivíduo cadastrado.');
+    // Na Tabela Livre, q(p) identifica p como constante pelo lugar que ocupa.
+    // A API estrita continua disponível a outros consumidores do parser.
+    if(arg?.type!=='name'||(arg.value!=='x'&&!constants.has(arg.value)&&!allowImplicitIndividuals))
+      throw Error('Use x ou um símbolo de indivíduo, como p ou s.');
     expect(')','Feche os parênteses do predicado.');
     return {type:'pred',name:name.value,term:arg.value};
   }

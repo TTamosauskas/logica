@@ -27,17 +27,47 @@ export function parseFreeFormula(state,source){
   if(!text||text.length>240)throw Error('A fórmula precisa ter entre 1 e 240 caracteres.');
   if(isPredicateSource(text))return parsePredicateFormula(text,
     state.variables.filter(v=>v.kind!=='individual').map(v=>v.name),
-    [...state.domain.map(d=>d.id),...state.variables.filter(v=>v.kind==='individual').map(v=>v.name)]);
+    [...state.domain.map(d=>d.id),...state.variables.filter(v=>v.kind==='individual').map(v=>v.name)],
+    {allowImplicitIndividuals:true});
   if(state.variables.some(v=>v.kind==='individual'))
     throw Error('Fórmulas proposicionais não podem incluir símbolos cadastrados como indivíduos. Use predicados, como q(p).');
   return parseFormula(text,state.variables.map(item=>item.name));
+}
+
+/** Em q(p), p é indivíduo pelo papel sintático. O formulário só é atualizado
+ * quando a fórmula inteira é válida; um mesmo símbolo não pode ser simultaneamente
+ * nome de predicado e de indivíduo nas fórmulas cadastradas.
+ */
+function predicateTerms(node,output=new Set()){
+  if(node.type==='pred'&&node.term!=='x')output.add(node.term);
+  if(node.a)predicateTerms(node.a,output);
+  if(node.b)predicateTerms(node.b,output);
+  return output;
+}
+function inferIndividualRoles(state,ast,excludedId=null){
+  const roots=[...state.formulas.filter(f=>f.id!==excludedId)
+    .map(f=>parseFreeFormula(state,f.source)),ast];
+  const names=predicateAtomicNames(roots);
+  const terms=new Set();
+  roots.forEach(root=>predicateTerms(root,terms));
+  for(const term of terms){
+    if(names.has(term))
+      throw Error('O símbolo '+term+' foi usado como propriedade e como indivíduo. Escolha símbolos diferentes para cada papel.');
+  }
+  for(const entry of state.variables){
+    if(terms.has(entry.name))entry.kind='individual';
+  }
 }
 export function addFreeVariable(state,name,meaning=''){
   const next=nextFreeVariableName(state);
   if(!next)throw Error('O limite da tabela é de seis variáveis (64 linhas).');
   if(name!==next)throw Error('A próxima variável é '+next+'.');
-  if(state.domain.some(d=>d.id===next))throw Error('O símbolo '+next+' já identifica um indivíduo do domínio. Exclua esse indivíduo antes de acrescentar a variável.');
-  state.variables.push({name:next,meaning:clean(meaning).slice(0,160),kind:'predicate'});
+  const usedAsIndividual=state.domain.some(d=>d.id===next)||
+    state.formulas.some(f=>predicateTerms(parseFreeFormula(state,f.source)).has(next));
+  if(usedAsIndividual&&state.formulas.length&&freeTableKind(state)==='propositional')
+    throw Error('Remova as fórmulas proposicionais antes de adicionar um símbolo individual.');
+  state.variables.push({name:next,meaning:clean(meaning).slice(0,160),
+    kind:usedAsIndividual?'individual':'predicate'});
   invalidate(state);return state;
 }
 export function editFreeVariable(state,oldName,newName,meaning,kind){
@@ -47,6 +77,9 @@ export function editFreeVariable(state,oldName,newName,meaning,kind){
   const type=kind??entry.kind??'predicate';
   if(!['individual','predicate'].includes(type))throw Error('Tipo de símbolo inválido.');
   if(type!==entry.kind){
+    if(type==='predicate'&&state.formulas.some(f=>
+      predicateTerms(parseFreeFormula(state,f.source)).has(oldName)))
+      throw Error('O símbolo '+oldName+' é usado como indivíduo em uma fórmula. Altere a fórmula antes de trocar seu tipo.');
     if(state.domain.some(d=>d.id===oldName))throw Error('O símbolo já identifica um indivíduo no domínio.');
     if(type==='individual'&&freeTableKind(state)==='propositional'&&state.formulas.length)
       throw Error('Remova as fórmulas proposicionais antes de transformar uma variável em indivíduo.');
@@ -82,9 +115,16 @@ export function addFreeIndividual(state,id,label){
     throw Error('Use um identificador como a, b ou s para o indivíduo (não x).');
   if(!clean(label))throw Error('Informe o nome do indivíduo, como Sócrates.');
   if(state.domain.length>=MAX_INDIVIDUALS)throw Error('Máximo de 20 indivíduos.');
-  if(state.domain.some(d=>d.id===name)||
-     state.variables.some(v=>v.name===name&&v.kind!=='individual'))
-    throw Error('Já existe uma proposição, propriedade ou indivíduo com esse símbolo.');
+  if(state.domain.some(d=>d.id===name))
+    throw Error('Já existe um indivíduo com esse símbolo.');
+  const variable=state.variables.find(v=>v.name===name);
+  if(variable?.kind!=='individual'&&variable){
+    if(state.formulas.length&&freeTableKind(state)==='propositional')
+      throw Error('Remova as fórmulas proposicionais antes de transformar uma variável em indivíduo.');
+    if(state.formulas.some(f=>predicateAtomicNames([parseFreeFormula(state,f.source)]).has(name)))
+      throw Error('O símbolo '+name+' já representa uma propriedade em fórmula cadastrada.');
+    variable.kind='individual';
+  }
   state.domain.push({id:name,label:clean(label).slice(0,80)});
   state.graded=false;state.answers={};state.inferenceReport=null;return state;
 }
@@ -129,6 +169,7 @@ export function addFreeFormula(state,source){
     throw Error('A tabela de predicados admite até seis fórmulas (64 linhas).');
   if(state.formulas.length>=MAX_FORMULAS)throw Error('O limite é de 16 fórmulas.');
   if(state.formulas.some(f=>formulaSignature(parseFreeFormula(state,f.source))===formulaSignature(ast)))throw Error('Essa fórmula já está cadastrada.');
+  if(isPredicateSource(source))inferIndividualRoles(state,ast);
   state.formulas.push({id:'f'+state.nextId++,source:clean(source)});
   invalidate(state);return state;
 }
@@ -140,6 +181,7 @@ export function editFreeFormula(state,id,source){
   if(isPredicateSource(source)&&rootHasFreeX(ast))
     throw Error('Feche x com ∀x(...) ou ∃x(...) para que cada fórmula tenha V/F na tabela.');
   if(state.formulas.some(f=>f.id!==id&&formulaSignature(parseFreeFormula(state,f.source))===formulaSignature(ast)))throw Error('Essa fórmula já está cadastrada.');
+  if(isPredicateSource(source))inferIndividualRoles(state,ast,id);
   entry.source=clean(source);invalidate(state);return state;
 }
 export function removeFreeFormula(state,id){
@@ -312,7 +354,8 @@ export function readFreeTable(raw,{strict=false}={}){
       if(typeof f?.source!=='string')throw Error('Fórmula inválida.');
       if(isPredicateSource(f.source))parsePredicateFormula(f.source,
         names.filter((n,i)=>input.variables[i].kind!=='individual'),
-        [...(input.domain||[]).map(d=>d.id),...names.filter((n,i)=>input.variables[i].kind==='individual')]);
+        [...(input.domain||[]).map(d=>d.id),...names.filter((n,i)=>input.variables[i].kind==='individual')],
+        {allowImplicitIndividuals:true});
       else parseFormula(f.source,names);
       return f.source;
     });
