@@ -75,3 +75,9 @@
 
 /* Reserva espaço de rolagem para alcançar todos os controles do rodapé no celular. */
 @media(max-width:700px){.footer{padding-bottom:120px}}
+
+/* Variáveis imutáveis na sequência lógica, com significado editável. */
+.free-variable-symbol{display:inline-flex;align-items:center;justify-content:center;width:46px;min-height:44px;flex:none;border:1px solid var(--border-hi);border-radius:9px;background:var(--panel);font-size:18px;font-weight:800;color:var(--accent)}
+.free-entry label:nth-child(2){flex:1 1 230px}
+.free-keypad .free-key-variable{font-weight:800;border-color:var(--accent);color:var(--accent);background:var(--panel2)}
+.free-empty-formulas{padding:15px;border:1px dashed var(--border-hi);border-radius:9px;background:var(--panel2);color:var(--muted);font-size:13px;margin:0}

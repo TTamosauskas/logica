@@ -512,7 +512,7 @@ try{
     await focusContext.close();
   }
 
-  // Tabela Livre: rota, tradução, variáveis próprias, modos e dados salvos.
+  // Tabela Livre: padrão de variáveis, teclado contextual, combinações, prática e persistência.
   for(const width of [375,1280]){
     const freeContext=await browser.newContext({viewport:{width,height:812}});
     const free=await freeContext.newPage(),freeErrors=[];
@@ -522,53 +522,62 @@ try{
     assert.equal(await free.locator('#workView').isVisible(),false);
     assert.equal(await free.locator('#courseView').isVisible(),false);
     assert.equal(await free.locator('#topFreeTable').isVisible(),true);
-    assert.match(await free.locator('#freeBoard .free-translation').first().innerText(),/É falso que se comprei ingresso, então viajei\./);
-    assert.match(await free.locator('#freeBoard .free-interpretation').first().innerText(),/u ∧ ¬t/);
+    assert.deepEqual(await free.locator('.free-variable-symbol').allTextContents(),['p','q']);
+    assert.equal(await free.locator('.free-formula-card').count(),0);
+    assert.match(await free.locator('.free-empty-formulas').innerText(),/Nenhuma fórmula/);
     assert.equal(await free.locator('.free-truth-table tbody tr').count(),4);
-    assert.equal(await free.locator('#columnVisibility').count(),0);
-    await free.locator('#freeNewVar').fill('q');
-    await free.locator('#freeNewMeaning').fill('passei no teste');
-    await free.locator('[data-action="add-var"]').click();
-    assert.equal(await free.locator('.free-truth-table tbody tr').count(),8);
-    await free.locator('[data-var-name="1"]').fill('v');
-    await free.locator('[data-var-meaning="1"]').fill('visitei meu amigo');
-    await free.locator('[data-action="save-var"][data-index="1"]').click();
-    assert.match(await free.locator('.free-translation').first().innerText(),/se comprei ingresso, então visitei meu amigo/);
-    await free.locator('#freeNewFormula').fill('q ∧ v');
+    assert.equal(await free.locator('.free-truth-table [data-action="answer"]').count(),0);
+    assert.equal(await free.locator('input[name="freeRows"],input[name="freeMode"]').count(),0);
+    assert.equal(await free.locator('[data-action="export-csv"],[data-action="export-json"],[data-action="import-json"]').count(),0);
+    assert.deepEqual(await free.locator('.free-keypad .free-key-variable').allTextContents(),['p','q']);
+    await free.locator('.free-keypad [data-symbol="p"]').click();
+    await free.locator('.free-keypad [data-symbol="→"]').click();
+    await free.locator('.free-keypad [data-symbol="q"]').click();
+    assert.equal(await free.locator('#freeNewFormula').inputValue(),'p→q');
     await free.locator('[data-action="add-formula"]').click();
-    assert.equal(await free.locator('.free-formula-card').count(),2);
+    assert.equal(await free.locator('.free-formula-card').count(),1);
+    await free.locator('[data-var-meaning="0"]').fill('comprei ingresso');
+    await free.locator('[data-action="save-var"][data-index="0"]').click();
+    await free.locator('[data-var-meaning="1"]').fill('viajei');
+    await free.locator('[data-action="save-var"][data-index="1"]').click();
+    assert.match(await free.locator('.free-translation').first().innerText(),/Se comprei ingresso, então viajei/);
+    await free.locator('#freeNewFormula').fill('¬(p → q)');
+    await free.locator('[data-action="add-formula"]').click();
+    assert.match(await free.locator('.free-translation').last().innerText(),/É falso que se comprei ingresso, então viajei/);
+    assert.match(await free.locator('.free-interpretation').last().innerText(),/p ∧ ¬q/);
+    await free.locator('[data-action="add-var"]').click();
+    assert.deepEqual(await free.locator('.free-variable-symbol').allTextContents(),['p','q','r']);
+    assert.deepEqual(await free.locator('.free-keypad .free-key-variable').allTextContents(),['p','q','r']);
     assert.equal(await free.locator('.free-truth-table tbody tr').count(),8);
-    // Todas as colunas continuam personalizáveis, inclusive as variáveis.
-    await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:u"]').click();
+    await free.locator('.free-keypad [data-symbol="r"]').click();
+    await free.locator('.free-keypad [data-symbol="∧"]').click();
+    await free.locator('.free-keypad [data-symbol="p"]').click();
+    assert.equal(await free.locator('#freeNewFormula').inputValue(),'r∧p');
+    await free.locator('[data-action="add-formula"]').click();
+    assert.equal(await free.locator('.free-formula-card').count(),3);
+    await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:p"]').click();
     assert.equal(await free.locator('.free-truth-table th.truth-col-collapsed').count(),1);
-    assert.equal(await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:u"]').getAttribute('aria-pressed'),'false');
+    assert.equal(await free.locator('.free-truth-table [data-action="toggle-col"][data-key="v:p"]').getAttribute('aria-pressed'),'false');
     await free.reload({waitUntil:'networkidle'});
     assert.equal(await free.locator('.free-truth-table th.truth-col-collapsed').count(),1);
-    assert.equal(await free.locator('.free-formula-card').count(),2);
-    // Cenários personalizados não devem ser tratados como tabela de todas as combinações.
-    await free.locator('input[name="freeRows"][value="custom"]').check();
-    assert.equal(await free.locator('.free-truth-table tbody tr').count(),1);
-    await free.locator('[data-action="add-row"]').click();
-    assert.equal(await free.locator('.free-truth-table tbody tr').count(),2);
-    await free.locator('[data-row-value="1|v"]').selectOption('F');
-    await free.locator('input[name="freeMode"][value="practice"]').check();
-    assert.ok(await free.locator('.free-truth-table [data-action="answer"]').count()>0);
-    await free.locator('.free-truth-table [data-action="answer"]').first().click();
+    assert.equal(await free.locator('.free-formula-card').count(),3);
+    assert.equal(await free.locator('.free-truth-table tbody tr').count(),8);
+    const answer=free.locator('.free-truth-table [data-action="answer"]').first();
+    await answer.click();
     await free.locator('[data-action="grade"]').click();
     assert.match(await free.locator('.free-grade').innerText(),/respostas corretas/);
     const stored=await free.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
-    assert.equal(stored.rowMode,'custom');
-    assert.equal(stored.viewMode,'practice');
-    assert.deepEqual(stored.hidden,['v:u']);
-    assert.equal(stored.formulas.length,2);
+    assert.equal(stored.version,2);
+    assert.equal('rowMode' in stored,false);
+    assert.equal('viewMode' in stored,false);
+    assert.deepEqual(stored.variables.map(x=>x.name),['p','q','r']);
+    assert.deepEqual(stored.hidden,['v:p']);
+    assert.equal(stored.formulas.length,3);
     await free.reload({waitUntil:'networkidle'});
-    assert.equal(await free.locator('input[name="freeRows"][value="custom"]').isChecked(),true);
-    assert.equal(await free.locator('input[name="freeMode"][value="practice"]').isChecked(),true);
-    assert.equal(await free.locator('.free-truth-table tbody tr').count(),2);
-    // Erros sintáticos são explicados e não substituem a fórmula válida.
+    assert.equal(await free.locator('.free-grade').count(),1);
     await free.locator('#freeNewFormula').fill('¬(q →)');
     await free.locator('[data-action="add-formula"]').click();
-    assert.equal(await free.locator('.free-formula-card').count(),2);
+    assert.equal(await free.locator('.free-formula-card').count(),3);
     assert.equal(await free.locator('#freeFeedback').getAttribute('data-result'),'error');
     await free.locator('#freeHomeBack').click();
     assert.equal(await free.locator('#homeView').isVisible(),true);

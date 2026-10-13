@@ -1,97 +1,117 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {blankFreeTable,addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,removeFreeFormula,
-  freeColumns,freeRows,parseFreeFormula,describeFreeFormula,gradeFreeTable,readFreeTable,setFreeRowMode,addFreeRow,MAX_VARS} from '../src/core/free-table.js';
-import {evalAst,pretty} from '../src/core/logic.js';
+import {blankFreeTable,VARIABLE_SEQUENCE,nextFreeVariableName,addFreeVariable,editFreeVariable,removeFreeVariable,
+  addFreeFormula,editFreeFormula,removeFreeFormula,freeColumns,freeRows,parseFreeFormula,
+  describeFreeFormula,gradeFreeTable,readFreeTable,MAX_VARS} from '../src/core/free-table.js';
+import {evalAst} from '../src/core/logic.js';
 
-test('tabela livre gera todas as interpretações e traduz condicional negada',()=>{
-  const s=blankFreeTable();
-  assert.equal(s.rowMode,'all');
-  assert.equal(freeRows(s).length,4);
-  const node=parseFreeFormula(s,'¬(u → t)');
-  const reading=describeFreeFormula(node,s);
-  assert.match(reading.literal,/É falso que se comprei ingresso, então viajei\./);
-  assert.equal(reading.equivalent,'u ∧ ¬t');
-  assert.match(reading.truth,/é V.*é F/);
-  assert.equal(evalAst(node,{u:true,t:false}),true);
-  assert.equal(evalAst(node,{u:true,t:true}),false);
-  assert.deepEqual(freeColumns(s).map(c=>c.label),['u','t','u → t','¬((u → t))']);
+test('começa apenas com p e q, sem fórmulas, em tabela completa de prática',()=>{
+  const state=blankFreeTable();
+  assert.equal(state.version,2);
+  assert.deepEqual(state.variables,[{name:'p',meaning:''},{name:'q',meaning:''}]);
+  assert.deepEqual(state.formulas,[]);
+  assert.deepEqual(freeColumns(state).map(c=>c.label),['p','q']);
+  assert.equal(freeRows(state).length,4);
+  assert.equal(nextFreeVariableName(state),'r');
+  assert.equal('rowMode' in state,false);
+  assert.equal('viewMode' in state,false);
+  assert.equal('customRows' in state,false);
 });
-test('tradução é composicional e usa os significados editados',()=>{
+
+test('adiciona variáveis somente na sequência r s t u; p e q não são excluíveis',()=>{
   const s=blankFreeTable();
-  editFreeVariable(s,'u','u','estudei');
-  addFreeFormula(s,'u ∧ t');
-  addFreeFormula(s,'u ↔ t');
-  addFreeFormula(s,'u ⊕ t');
-  const formulas=s.formulas.map(f=>describeFreeFormula(parseFreeFormula(s,f.source),s).literal);
-  assert.match(formulas[0],/estudei/);
-  assert.match(formulas[1],/estudei.*e.*viajei/);
-  assert.match(formulas[2],/se, e somente se/);
-  assert.match(formulas[3],/mas não ambos/);
-});
-test('edita variáveis nas fórmulas e impede exclusão de dependências',()=>{
-  const s=blankFreeTable();
-  assert.throws(()=>removeFreeVariable(s,'u'),/Remova ou edite/);
-  editFreeVariable(s,'t','v','visitei meu amigo');
-  assert.match(s.formulas[0].source,/v/);
-  assert.doesNotThrow(()=>parseFreeFormula(s,s.formulas[0].source));
-  assert.throws(()=>addFreeVariable(s,'v','duplicada'),/já existe/);
-  assert.throws(()=>addFreeVariable(s,'ou','reservada'),/reservado/);
-  assert.throws(()=>addFreeFormula(s,'u & desconhecida'),/variáveis/);
-  assert.throws(()=>addFreeFormula(s,'u →'),/incompleta/);
-  assert.throws(()=>addFreeFormula(s,'¬(u → v)'),/já está cadastrada/);
-  removeFreeFormula(s,s.formulas[0].id);
-  removeFreeVariable(s,'u');
-  assert.equal(s.variables.length,1);
-});
-test('personaliza cenários sem confundir com tabela completa',()=>{
-  const s=blankFreeTable();
-  setFreeRowMode(s,'custom');
-  assert.equal(freeRows(s).length,1);
-  addFreeRow(s);
-  s.customRows[1].u=false;
-  assert.deepEqual(freeRows(s).map(x=>x.u),[true,false]);
-  setFreeRowMode(s,'all');
-  assert.equal(freeRows(s).length,4);
-  setFreeRowMode(s,'custom');
-  assert.equal(freeRows(s).length,2);
-});
-test('nota considera todas as células derivadas, inclusive ocultas',()=>{
-  const s=blankFreeTable();
-  s.viewMode='practice';
-  const columns=freeColumns(s);
-  const derived=columns.filter(c=>c.kind!=='var');
-  const rows=freeRows(s);
-  s.hidden=derived.map(c=>c.key);
-  rows.forEach((row,r)=>derived.forEach(c=>s.answers[r+'|'+c.key]=evalAst(c.node,row)?'V':'F'));
-  let grade=gradeFreeTable(s);
-  assert.deepEqual(grade,{correct:8,total:8,missing:0});
-  s.answers['0|'+derived[0].key]='F'===s.answers['0|'+derived[0].key]?'V':'F';
-  grade=gradeFreeTable(s);
-  assert.deepEqual(grade,{correct:7,total:8,missing:0});
-});
-test('retomada preserva ids de fórmulas e respostas por coluna',()=>{
-  const s=blankFreeTable();
-  addFreeFormula(s,'u ∧ t');
-  removeFreeFormula(s,'f1');
-  addFreeFormula(s,'u ∨ t');
-  assert.deepEqual(s.formulas.map(f=>f.id),['f2','f3']);
-  s.answers['0|f:f3']='V';
-  s.hidden=['f:f2'];
-  s.rowMode='custom';
-  s.customRows=[{u:true,t:false}];
-  const restored=readFreeTable(JSON.stringify(s),{strict:true});
-  assert.deepEqual(restored.formulas.map(f=>f.id),['f2','f3']);
-  assert.equal(restored.answers['0|f:f3'],'V');
-  assert.deepEqual(restored.hidden,['f:f2']);
-  assert.equal(freeRows(restored).length,1);
-  assert.equal(readFreeTable('{').formulas.length,1);
-  assert.throws(()=>readFreeTable('{',{strict:true}),/Projeto inválido/);
-});
-test('limite de variáveis protege contra tabela exponencial',()=>{
-  const s=blankFreeTable();
-  for(const name of ['a','b','c','d'])addFreeVariable(s,name);
+  assert.throws(()=>addFreeVariable(s,'t'),/próxima variável é r/);
+  assert.throws(()=>removeFreeVariable(s,'p'),/permanentes/);
+  for(const name of ['r','s','t','u'])addFreeVariable(s,name);
+  assert.deepEqual(s.variables.map(v=>v.name),VARIABLE_SEQUENCE);
   assert.equal(s.variables.length,MAX_VARS);
   assert.equal(freeRows(s).length,64);
-  assert.throws(()=>addFreeVariable(s,'f'),/seis variáveis/);
+  assert.equal(nextFreeVariableName(s),null);
+  assert.throws(()=>addFreeVariable(s,'v'),/limite/);
+  assert.throws(()=>removeFreeVariable(s,'r'),/última variável/);
+  removeFreeVariable(s,'u');
+  assert.equal(nextFreeVariableName(s),'u');
+  addFreeVariable(s,'u','viajei');
+  assert.equal(s.variables.at(-1).meaning,'viajei');
+});
+
+test('traduz fórmulas a partir das proposições cadastradas e identifica implicação negada',()=>{
+  const s=blankFreeTable();
+  editFreeVariable(s,'p','p','comprei ingresso');
+  editFreeVariable(s,'q','q','viajei');
+  addFreeFormula(s,'¬(p → q)');
+  const d=describeFreeFormula(parseFreeFormula(s,s.formulas[0].source),s);
+  assert.match(d.literal,/É falso que se comprei ingresso, então viajei\./);
+  assert.equal(d.equivalent,'p ∧ ¬q');
+  assert.match(d.truth,/é V.*é F/);
+  assert.equal(evalAst(parseFreeFormula(s,'¬(p → q)'),{p:true,q:false}),true);
+  assert.deepEqual(freeColumns(s).map(c=>c.label),['p','q','p → q','¬((p → q))']);
+  assert.throws(()=>editFreeVariable(s,'p','r',''),/sequência/);
+});
+
+test('cadastro de fórmulas é livre, valida sintaxe e preserva leitura composicional',()=>{
+  const s=blankFreeTable();
+  addFreeFormula(s,'p ∧ q');
+  addFreeFormula(s,'p ↔ q');
+  addFreeFormula(s,'p ⊕ q');
+  const translations=s.formulas.map(f=>describeFreeFormula(parseFreeFormula(s,f.source),s).literal);
+  assert.match(translations[0],/ e /);
+  assert.match(translations[1],/se, e somente se/);
+  assert.match(translations[2],/mas não ambos/);
+  assert.throws(()=>addFreeFormula(s,'p & inexistente'),/variáveis/);
+  assert.throws(()=>addFreeFormula(s,'p →'),/incompleta/);
+  assert.throws(()=>addFreeFormula(s,'p ∧ q'),/cadastrada/);
+  const id=s.formulas[0].id;
+  editFreeFormula(s,id,'¬p ∨ q');
+  assert.equal(s.formulas[0].source,'¬p ∨ q');
+  removeFreeFormula(s,id);
+  assert.equal(s.formulas.length,2);
+});
+
+test('grade avalia todas as subexpressões, mesmo quando as colunas estão ocultas',()=>{
+  const s=blankFreeTable();
+  addFreeFormula(s,'¬(p → q)');
+  const cols=freeColumns(s).filter(c=>c.kind!=='var');
+  s.hidden=cols.map(c=>c.key);
+  freeRows(s).forEach((row,r)=>cols.forEach(col=>{
+    s.answers[r+'|'+col.key]=evalAst(col.node,row)?'V':'F';
+  }));
+  assert.deepEqual(gradeFreeTable(s),{correct:8,total:8,missing:0});
+  s.answers['0|'+cols[0].key]='F'===s.answers['0|'+cols[0].key]?'V':'F';
+  assert.deepEqual(gradeFreeTable(s),{correct:7,total:8,missing:0});
+});
+
+test('retomada no novo formato mantém rascunho, fórmulas e ordem automática',()=>{
+  const s=blankFreeTable();
+  addFreeVariable(s,'r');
+  addFreeFormula(s,'p ∧ r');
+  const col=freeColumns(s).find(c=>c.kind==='formula').key;
+  s.answers['0|'+col]='V';
+  s.hidden=[col];
+  const data=readFreeTable(JSON.stringify(s),{strict:true});
+  assert.deepEqual(data.variables.map(v=>v.name),['p','q','r']);
+  assert.equal(data.answers['0|'+col],'V');
+  assert.deepEqual(data.hidden,[col]);
+  assert.equal(data.formulas[0].source,'p ∧ r');
+  assert.equal(readFreeTable('{').formulas.length,0);
+  assert.throws(()=>readFreeTable('{',{strict:true}),/Projeto inválido/);
+});
+
+test('migra tabela antiga preservando fórmulas autorais e removendo apenas o exemplo inicial',()=>{
+  const initial={version:1,variables:[{name:'u',meaning:'comprei ingresso'},{name:'t',meaning:'viajei'}],
+    formulas:[{id:'f1',source:'¬(u → t)'}],nextId:2,rowMode:'all',viewMode:'explore',
+    hidden:[],answers:{},graded:false};
+  const defaults=readFreeTable(JSON.stringify(initial),{strict:true});
+  assert.deepEqual(defaults.variables.map(v=>v.name),['p','q']);
+  assert.deepEqual(defaults.formulas,[]);
+  assert.deepEqual(defaults.variables.map(v=>v.meaning),['','']);
+  const authored={...initial,variables:[{name:'u',meaning:'fui ao cinema'},{name:'t',meaning:'comprei ingresso'}],
+    answers:{'0|f:f1':'V'},hidden:['v:u']};
+  const restored=readFreeTable(JSON.stringify(authored),{strict:true});
+  assert.deepEqual(restored.variables.map(v=>v.name),['p','q']);
+  assert.equal(restored.formulas[0].source,'¬(p → q)');
+  assert.equal(restored.answers['0|f:f1'],'V');
+  assert.deepEqual(restored.hidden,['v:p']);
+  assert.equal(restored.variables[0].meaning,'fui ao cinema');
+  assert.equal(nextFreeVariableName(restored),'r');
 });

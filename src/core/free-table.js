@@ -3,8 +3,8 @@ import {parseFormula} from './parser.js';
 import {truthRows,evalAst,pretty,stepNodes,sig,v,A,not} from './logic.js';
 
 export const FREE_TABLE_KEY='logiclab_tabela_livre_v1';
-export const MAX_VARS=6;
-export const MAX_ROWS=64;
+export const VARIABLE_SEQUENCE=Object.freeze(['p','q','r','s','t','u']);
+export const MAX_VARS=VARIABLE_SEQUENCE.length;
 export const MAX_FORMULAS=16;
 const RESERVED=new Set(['e','ou','xor','nao','não','se','sse']);
 const validName=name=>/^[a-z][a-z0-9_]*$/.test(name)&&!RESERVED.has(name);
@@ -12,51 +12,38 @@ const normalName=name=>String(name||'').trim().toLowerCase();
 const clean=s=>String(s||'').trim();
 
 export function blankFreeTable(){
-  return {version:1,variables:[{name:'u',meaning:'comprei ingresso'},{name:'t',meaning:'viajei'}],
-    formulas:[{id:'f1',source:'¬(u → t)'}],nextId:2,rowMode:'all',
-    customRows:[{u:true,t:false}],viewMode:'explore',hidden:[],answers:{},graded:false};
+  return {version:2,variables:[{name:'p',meaning:''},{name:'q',meaning:''}],
+    formulas:[],nextId:1,hidden:[],answers:{},graded:false};
 }
+export const nextFreeVariableName=state=>VARIABLE_SEQUENCE[state.variables.length]||null;
 export function parseFreeFormula(state,source){
   const text=clean(source);
   if(!text||text.length>240)throw Error('A fórmula precisa ter entre 1 e 240 caracteres.');
   return parseFormula(text,state.variables.map(item=>item.name));
 }
 export function addFreeVariable(state,name,meaning=''){
-  const id=normalName(name);
-  if(!validName(id))throw Error('Use um nome de variável como p, q ou compra_1, sem conectivos reservados.');
-  if(state.variables.some(x=>x.name===id))throw Error('Essa variável já existe.');
-  if(state.variables.length>=MAX_VARS)throw Error('O limite da tabela é de seis variáveis (64 linhas).');
-  state.variables.push({name:id,meaning:clean(meaning).slice(0,160)});
-  state.customRows.forEach(row=>row[id]=true);
+  const next=nextFreeVariableName(state);
+  if(!next)throw Error('O limite da tabela é de seis variáveis (64 linhas).');
+  if(name!==next)throw Error('A próxima variável é '+next+'.');
+  state.variables.push({name:next,meaning:clean(meaning).slice(0,160)});
   invalidate(state);return state;
 }
 export function editFreeVariable(state,oldName,newName,meaning){
-  const old=state.variables.find(x=>x.name===oldName);
-  if(!old)throw Error('Variável não encontrada.');
-  const id=normalName(newName);
-  if(!validName(id))throw Error('Nome de variável inválido ou reservado.');
-  if(id!==oldName&&state.variables.some(x=>x.name===id))throw Error('Já existe outra variável com esse nome.');
-  if(id!==oldName){
-    const regex=new RegExp('\\b'+oldName+'\\b','g');
-    state.formulas.forEach(f=>f.source=f.source.replace(regex,id));
-    state.customRows.forEach(row=>{row[id]=row[oldName];delete row[oldName]});
-    old.name=id;
-  }
-  old.meaning=clean(meaning).slice(0,160);
-  if(id!==oldName)invalidate(state);
+  const entry=state.variables.find(x=>x.name===oldName);
+  if(!entry)throw Error('Variável não encontrada.');
+  if(newName!==oldName)throw Error('Os nomes seguem a sequência p, q, r, s, t, u.');
+  entry.meaning=clean(meaning).slice(0,160);
   return state;
 }
 export function removeFreeVariable(state,name){
-  if(state.variables.length<=1)throw Error('Mantenha ao menos uma variável.');
-  if(!state.variables.some(v=>v.name===name))return state;
+  if(state.variables.length<=2)throw Error('As variáveis p e q são permanentes.');
+  if(state.variables.at(-1).name!==name)throw Error('Remova primeiro a última variável da sequência.');
   for(const formula of state.formulas){
     const ast=parseFreeFormula(state,formula.source);
     const uses=node=>node.type==='var'?node.name===name:Boolean(node.a&&uses(node.a)||node.b&&uses(node.b));
     if(uses(ast))throw Error('Remova ou edite as fórmulas que usam '+name+' antes de excluir a variável.');
   }
-  state.variables=state.variables.filter(v=>v.name!==name);
-  state.customRows.forEach(row=>delete row[name]);
-  invalidate(state);return state;
+  state.variables.pop();invalidate(state);return state;
 }
 export function addFreeFormula(state,source){
   const ast=parseFreeFormula(state,source);
@@ -84,23 +71,7 @@ export function freeColumns(state){
   return [...vars,...steps,...formulas];
 }
 export function freeRows(state){
-  return state.rowMode==='custom'?state.customRows.map(row=>Object.fromEntries(state.variables.map(x=>[x.name,row[x.name]===true]))):
-    truthRows(state.variables.map(x=>x.name));
-}
-export function setFreeRowMode(state,mode){
-  if(!['all','custom'].includes(mode))throw Error('Modo de linhas inválido.');
-  state.rowMode=mode;
-  if(mode==='custom'&&!state.customRows.length)state.customRows=[Object.fromEntries(state.variables.map(x=>[x.name,true]))];
-  state.answers={};state.graded=false;return state;
-}
-export function addFreeRow(state){
-  if(state.customRows.length>=MAX_ROWS)throw Error('Limite de 64 cenários.');
-  state.customRows.push(Object.fromEntries(state.variables.map(x=>[x.name,true])));
-  state.answers={};state.graded=false;return state;
-}
-export function removeFreeRow(state,index){
-  if(!Number.isInteger(index)||index<0||index>=state.customRows.length)return state;
-  state.customRows.splice(index,1);state.answers={};state.graded=false;return state;
+  return truthRows(state.variables.map(x=>x.name));
 }
 export function evaluateFreeRow(row,column){return Boolean(evalAst(column.node,row))}
 export function gradeFreeTable(state){
@@ -151,40 +122,64 @@ export function describeFreeFormula(node,state){
   }
   return {literal,equivalent,truth};
 }
+/** Adapta rascunhos V1 ao fluxo com p,q,r,s,t,u, sem descartar trabalhos autorais. */
 export function readFreeTable(raw,{strict=false}={}){
-  try{
+  try {
     if(!raw)return blankFreeTable();
     const input=typeof raw==='string'?JSON.parse(raw):raw;
-    if(input?.version!==1||!Array.isArray(input.variables)||input.variables.length<1||input.variables.length>MAX_VARS||
-      !Array.isArray(input.formulas)||input.formulas.length>MAX_FORMULAS)throw Error('Estrutura de tabela inválida.');
+    if(!input||![1,2].includes(input.version)||!Array.isArray(input.variables)||
+       input.variables.length<2||input.variables.length>MAX_VARS||
+       !Array.isArray(input.formulas)||input.formulas.length>MAX_FORMULAS)throw Error('Estrutura de tabela inválida.');
+    const names=input.variables.map(x=>x.name);
+    if(names.some(n=>!validName(n))||new Set(names).size!==names.length)throw Error('Variáveis inválidas.');
     const state=blankFreeTable();
-    state.variables=[];
-    for(const row of input.variables)addFreeVariable(state,row.name,row.meaning);
-    state.formulas=[];state.nextId=1;
-    const ids=new Set();
-    for(const row of input.formulas){
-      addFreeFormula(state,row.source);
-      if(typeof row.id!=='string'||!/^f[1-9][0-9]*$/.test(row.id)||ids.has(row.id))throw Error('Identificador de fórmula inválido.');
-      ids.add(row.id);
-      state.formulas[state.formulas.length-1].id=row.id;
-    }
-    state.rowMode=input.rowMode==='custom'?'custom':'all';
-    state.customRows=Array.isArray(input.customRows)?input.customRows.slice(0,MAX_ROWS)
-      .filter(x=>x&&typeof x==='object'&&!Array.isArray(x))
-      .map(row=>Object.fromEntries(state.variables.map(v=>[v.name,row[v.name]===true]))):[];
-    state.viewMode=input.viewMode==='practice'?'practice':'explore';
-    const keys=new Set(freeColumns(state).map(c=>c.key));
-    state.hidden=Array.isArray(input.hidden)?input.hidden.filter(k=>keys.has(k)):[];
+    state.variables=names.map((name,i)=>({name:VARIABLE_SEQUENCE[i],meaning:clean(input.variables[i].meaning).slice(0,160)}));
+    const originalSources=input.formulas.map(f=>{
+      if(typeof f?.source!=='string')throw Error('Fórmula inválida.');
+      parseFormula(f.source,names);
+      return f.source;
+    });
+    const renames=Object.fromEntries(names.map((name,i)=>[name,VARIABLE_SEQUENCE[i]]));
+    const pattern=new RegExp('\\b('+names.join('|')+')\\b','g');
+    const sources=originalSources.map(source=>source.replace(pattern,name=>renames[name]));
+    const isDefaultV1=input.version===1&&names.length===2&&names[0]==='u'&&names[1]==='t'&&
+      input.variables[0].meaning==='comprei ingresso'&&input.variables[1].meaning==='viajei'&&
+      originalSources.length===1&&originalSources[0]==='¬(u → t)'&&
+      !Object.keys(input.answers||{}).length&&!(input.hidden||[]).length;
+    // O exemplo de fábrica da versão anterior não vira significado nem fórmula do aluno.
+    if(isDefaultV1)state.variables=blankFreeTable().variables;
+    state.formulas=isDefaultV1?[]:sources.map((source,i)=>{
+      const id=input.formulas[i].id;
+      if(typeof id!=='string'||!/^f[1-9]\d*$/.test(id))throw Error('Identificador de fórmula inválido.');
+      return {id,source};
+    });
+    const ids=state.formulas.map(f=>f.id);
+    if(new Set(ids).size!==ids.length)throw Error('Fórmulas repetidas.');
+    const columns=freeColumns(state);
+    state.hidden=[];
     state.answers={};
-    if(input.answers&&typeof input.answers==='object'&&!Array.isArray(input.answers)){
-      const max=freeRows(state).length;
-      for(const [key,value] of Object.entries(input.answers)){
-        const match=/^(\d+)\|(.+)$/.exec(key);
-        if(match&&Number(match[1])<max&&keys.has(match[2])&&(value==='V'||value==='F'))state.answers[key]=value;
+    if(!isDefaultV1){
+      const oldState={variables:names.map(name=>({name})),
+        formulas:originalSources.map((source,i)=>({id:input.formulas[i].id,source}))};
+      const oldColumns=freeColumns(oldState);
+      const mapping=Object.fromEntries(oldColumns.map((col,i)=>[col.key,columns[i]?.key]).filter(x=>x[1]));
+      state.hidden=Array.isArray(input.hidden)?[...new Set(input.hidden.map(k=>mapping[k]).filter(Boolean))]:[];
+      const previousAnswers=input.rowMode==='custom'?{}:input.answers;
+      if(previousAnswers&&typeof previousAnswers==='object'&&!Array.isArray(previousAnswers)){
+        for(const [rawKey,value] of Object.entries(previousAnswers)){
+          const match=/^(\d+)\|(.+)$/.exec(rawKey);
+          if(match&&Number(match[1])<freeRows(state).length&&mapping[match[2]]&&(value==='V'||value==='F')){
+            state.answers[match[1]+'|'+mapping[match[2]]]=value;
+          }
+        }
       }
+      state.graded=input.graded===true&&input.rowMode!=='custom';
     }
-    state.nextId=Math.max(state.nextId,1,...state.formulas.map(f=>Number(f.id.slice(1))+1));
-    if(Number.isInteger(input.nextId)&&input.nextId>state.nextId)state.nextId=Math.min(input.nextId,99999);
-    state.graded=input.graded===true;return state;
-  }catch(error){if(strict)throw Error('Projeto inválido: '+error.message);return blankFreeTable()}
+    state.nextId=Math.max(1,...state.formulas.map(f=>Number(f.id.slice(1))+1));
+    if(Number.isInteger(input.nextId))state.nextId=Math.max(state.nextId,Math.min(input.nextId,99999));
+    return state;
+  }catch(error){
+    if(strict)throw Error('Projeto inválido: '+error.message);
+    return blankFreeTable();
+  }
 }
