@@ -47,16 +47,19 @@ function svgDiagram(id,names,regions,{solution=false,predicate=false}={}){
       ' A'+r+' '+r+' 0 1 0 '+(x-r)+' '+y+' A'+r+' '+r+' 0 1 0 '+(x+r)+' '+y+'Z"/></clipPath>';
   }).join('');
   const fills=regions.map(item=>{
-    const raw=predicate?(item.count>0?'member':'pending'):(solution?item.expected:item.answer);
-    const shade=raw==='V'?'true':raw==='F'?'false':raw==='member'?'member':'pending';
+    const raw=predicate?(item.impossible?'impossible':item.count>0?'member':'pending'):(solution?item.expected:item.answer);
+    const shade=raw==='V'?'true':raw==='F'?'false':raw==='member'?'member':
+      raw==='impossible'?'impossible':'pending';
     const opened=layout.circles.map((_,i)=>{
       const isInside=Boolean(item.mask&(1<<(names.length-i-1)));
       return '<g clip-path="url(#'+clipName(id,i,isInside)+')">';
     }).join('');
     const divergent=!predicate&&!solution&&item.expected&&item.answer!==item.expected;
     return opened+'<rect x="0" y="0" width="480" height="330" class="truth-venn-'+shade+'"><title>'+
-      esc(item.label+': '+(predicate?(item.count+' indivíduos'+(item.people?.length?': '+item.people.join(', '):'')):(raw||'pendente'))+
-      (divergent?' · revisar':''))+'</title></rect>'+
+      esc(item.label+': '+(predicate?(item.impossible?'Região impossível sob as premissas'+
+        (item.count?'; '+item.count+' cadastro(s) conflitante(s)':''):
+        item.count+' indivíduos'+(item.people?.length?': '+item.people.join(', '):'')):(raw||'pendente'))+
+        (divergent?' · revisar':''))+'</title></rect>'+
       '</g>'.repeat(names.length);
   }).join('');
   const outlines=layout.circles.map(([x,y,r],i)=>
@@ -64,7 +67,7 @@ function svgDiagram(id,names,regions,{solution=false,predicate=false}={}){
     '<text x="'+layout.labels[i][0]+'" y="'+layout.labels[i][1]+'" class="truth-venn-name" text-anchor="middle">'+esc(names[i])+'</text>').join('');
   const texts=regions.map(item=>{
     const [x,y]=layout.points[item.mask];
-    const value=predicate?(item.count?String(item.count):'0'):(solution?item.expected:item.answer)||'·';
+    const value=predicate?(item.impossible?'×':item.count?String(item.count):'0'):(solution?item.expected:item.answer)||'·';
     return '<text x="'+x+'" y="'+y+'" class="truth-venn-value" text-anchor="middle" dominant-baseline="central">'+esc(value)+'</text>';
   }).join('');
   return '<svg class="truth-venn-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+
@@ -129,11 +132,13 @@ export function renderTruthVenn({
 }
 
 /** Na tabela de predicados, V/F define pertinência dos indivíduos, não gabarito. */
-export function renderPredicateVenn({id='free',variables=[],variableMeanings={},people=[],predicateValues={},filters={}}={}){
+export function renderPredicateVenn({id='free',variables=[],variableMeanings={},people=[],predicateValues={},filters={},impossibleMasks=[]}={}){
   if(!variables.length||!people.length)return '';
   const shown=variables.slice(0,3),fixed=variables.slice(3);
   const regions=Array.from({length:2**shown.length},(_,mask)=>
     ({mask,label:labelFor(mask,shown),people:[],count:0}));
+  const impossibleSet=new Set(impossibleMasks);
+  regions.forEach(item=>{item.impossible=impossibleSet.has(item.mask)});
   let pending=0,filtered=0;
   for(const person of people){
     const values=Object.fromEntries(variables.map(name=>[name,valid(predicateValues[person.id+'|'+name])]));
@@ -154,6 +159,9 @@ export function renderPredicateVenn({id='free',variables=[],variableMeanings={},
     variableLegend(variables,variableMeanings)+
     '<p class="truth-venn-status" role="status">Os números indicam indivíduos cadastrados com predicados definidos, não V/F de fórmulas. '+
     'Um 0 indica ausência de indivíduos conhecidos nessa região, não prova que ela seja logicamente vazia. '+
+    (impossibleSet.size?'× indica uma região impossível em todos os modelos das premissas. '+
+      (regions.some(item=>item.impossible&&item.count>0)?
+        'Atenção: há indivíduos cadastrados em regiões que contradizem as premissas. ':''):'')+
     pending+' indivíduo(s) ainda com predicados indefinidos; '+
     filtered+' fora do recorte.</p></section>';
 }

@@ -3,7 +3,8 @@ import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableNam
   addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,
   removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
   parseFreeFormula,describeFreeFormula,freeTableKind,MAX_INDIVIDUALS,
-  addFreeIndividual,editFreeIndividual,removeFreeIndividual,verifyFreeInference} from './core/free-table.js';
+  addFreeIndividual,editFreeIndividual,removeFreeIndividual,verifyFreeInference,
+  analyzeFreePossibilities} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
 import {immediateOperands,propositionalRelations,categoricalForm,categoricalRelation} from './core/table-relations.js';
@@ -25,7 +26,12 @@ export function createFreeTable(root){
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
   let lastFormulaInput=null,domainOpen=state.domain.length>0;
   let truthHighlightController=null;
-  let vennSelectedKey='',vennFilters={};
+  let vennSelectedKey='',vennFilters={},possibilities=null;
+  const possibilityKey=()=>JSON.stringify({
+    kind:freeTableKind(state),variables:state.variables.map(v=>[v.name,v.kind]),
+    formulas:state.formulas.map(f=>f.source),conclusion:state.inferenceConclusion
+  });
+  const activePossibilities=()=>possibilities?.key===possibilityKey()?possibilities.report:null;
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
   function save(){
     if(recovery){notice('O rascunho original está protegido. Exporte os dados antes de reiniciar.',true);return}
@@ -151,6 +157,57 @@ export function createFreeTable(root){
       </div>`:''}
     </section>`;
   }
+  function renderPossibilities(){
+    const pred=freeTableKind(state)==='predicates',report=activePossibilities();
+    const labels=report?.labels||[],sources=report?.expressions||[];
+    const headline=report?.status==='complete'?
+      report.possibleCount+' combinação(ões) possível(is); '+report.impossibleCount+' impossível(is).':'';
+    const verdict=report?.hasConclusion&&report.status==='complete'?
+      '<div class="free-possibility-verdict"><p><strong>Abstração proposicional:</strong> '+
+        (report.propositionalValid?'tautologia.':'não é tautologia.')+
+      '</p><p><strong>Considerando os modelos da lógica de predicados:</strong> '+
+        (report.semanticValid?
+          report.premisesSatisfiable?'inferência válida.':'premissas incompatíveis (validade vacuosa).':
+          'inferência inválida; existe um contraexemplo realizável.')+'</p></div>':'';
+    const reportHtml=!report?'':
+      report.status!=='complete'?'<p class="free-possibility-unknown" role="status"><strong>Não determinado.</strong> '+
+        esc(report.reason)+'</p>':
+      '<div class="free-possibility-results"><p class="free-possibility-count" role="status">'+headline+
+        ' Foram examinados '+report.checked+' modelos ou atribuições.</p>'+
+      '<dl class="free-possibility-keys">'+labels.map((label,i)=>
+        '<div><dt><code>'+esc(label)+'</code></dt><dd>'+esc(sources[i])+
+          (report.hasConclusion&&i===labels.length-1?' · conclusão':' · premissa')+
+        '</dd></div>').join('')+'</dl>'+
+      '<div class="table-scroll free-possibility-scroll" role="region" tabindex="0" aria-label="Combinações semânticas de fórmulas">'+
+        '<table class="free-possibility-table"><thead><tr><th scope="col">Linha</th>'+
+        labels.map(l=>'<th scope="col">'+esc(l)+'</th>').join('')+
+        (report.hasConclusion?'<th scope="col">Premissas → conclusão</th>':'')+
+        '<th scope="col">Possibilidade</th><th scope="col">Justificativa</th></tr></thead><tbody>'+
+        report.rows.map((row,i)=>
+          '<tr class="'+(row.possible?'free-possible':'free-impossible')+
+          (row.counterexample?' free-candidate-counterexample':'')+'"><th scope="row">'+(i+1)+'</th>'+
+          row.values.map(v=>'<td>'+v+'</td>').join('')+
+          (report.hasConclusion?'<td>'+ (row.counterexample?'F':'V')+'</td>':'')+
+          '<td><span class="free-possibility-state">'+
+          (row.possible?'Possível':'Impossível')+'</span></td>'+
+          '<td><details><summary>Por quê?</summary><p>'+esc(row.explanation)+'</p></details></td></tr>').join('')+
+      '</tbody></table></div>'+verdict+
+      (report.region?.status==='inconsistent'?
+        '<p class="free-possibility-unknown">'+esc(report.region.reason)+'</p>':'')+
+      '</div>';
+    return '<section class="free-card free-possibilities" aria-labelledby="freePossibilitiesTitle">'+
+      '<div class="free-section-heading"><h2 id="freePossibilitiesTitle">'+
+      'Análise complementar · possibilidades lógicas</h2><span class="free-hint">Opcional</span></div>'+
+      '<p>As letras A, B, C e D representam fórmulas completas, não proposições independentes. '+
+      'A tabela mantém todas as combinações V/F e identifica se existe algum modelo compatível. '+
+      (pred?'Se você informou uma conclusão acima, ela entra como última coluna. ':'')+
+      'Um valor F na implicação não prova, por si só, que a linha é impossível.</p>'+
+      '<button type="button" class="button primary" data-action="analyze-possibilities">'+
+        'Analisar possibilidades lógicas</button>'+
+      '<small class="free-possibility-limit">Até quatro fórmulas (incluindo a conclusão); '+
+      'predicados unários, até três propriedades e duas constantes. Sem modelo demonstrável no fragmento: impossível; '+
+      'fora do fragmento: não determinado.</small>'+reportHtml+'</section>';
+  }
   function renderTable(){
     const pred=freeTableKind(state)==='predicates',columns=freeColumns(state),rows=freeRows(state);
     if(pred&&!rows.length)return `<section class="free-card" aria-labelledby="freeTableTitle">
@@ -164,9 +221,12 @@ export function createFreeTable(root){
       try{grade=gradeFreeTable(state)}catch{state.graded=false}
     }
     const variableMeanings=Object.fromEntries(state.variables.map(item=>[item.name,item.meaning||'']));
+    const region=activePossibilities()?.region;
+    const impossibleMasks=region?.status==='complete'?region.impossibleMasks:[];
     const diagram=pred?
       renderPredicateVenn({id:'free',variables:columns.filter(col=>col.kind==='var').map(col=>col.name),
-        variableMeanings,people:rows,predicateValues:state.predicateValues,filters:vennFilters}):
+        variableMeanings,people:rows,predicateValues:state.predicateValues,
+        filters:vennFilters,impossibleMasks}):
       renderTruthVenn({id:'free',variables:state.variables.map(item=>item.name),variableMeanings,rows,
         columns:columns.map(col=>({...col,derived:col.kind!=='var'})),
         selectedKey:vennSelectedKey,filters:vennFilters,
@@ -252,7 +312,8 @@ export function createFreeTable(root){
         '<button type="button" class="button" data-action="reset-recovery">Reiniciar Tabela Livre</button></div></section>';
       return;
     }
-    board.innerHTML=renderVariables()+renderFormulas()+renderInference()+renderTable();
+    board.innerHTML=renderVariables()+renderFormulas()+renderInference()+
+      renderPossibilities()+renderTable();
     for(const control of board.querySelectorAll(editableSelector)){
       const key=draftKey(control);
       if(drafts.has(key)){control.value=drafts.get(key);control.dataset.unsaved='true'}
@@ -358,6 +419,20 @@ export function createFreeTable(root){
       refresh(report.valid?'Inferência examinada.':'Contraexemplo encontrado.');
       return;
     }
+    if(action==='analyze-possibilities'){
+      // A conclusão em edição é considerada explicitamente ao solicitar a análise.
+      const input=root.querySelector('#freeConclusion');
+      const conclusion=input?.value.trim()||'';
+      const report=analyzeFreePossibilities(state,{conclusionSource:conclusion,filters:vennFilters});
+      if(input){
+        if(conclusion!==state.inferenceConclusion)state.inferenceReport=null;
+        state.inferenceConclusion=conclusion;
+        delete input.dataset.unsaved;
+      }
+      possibilities={key:possibilityKey(),report};
+      refresh(report.status==='complete'?'Possibilidades analisadas.':'Análise não determinada.');
+      return;
+    }
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
   root.addEventListener('input',e=>{
@@ -372,8 +447,12 @@ export function createFreeTable(root){
       notice('Tipo em edição: clique em Salvar para aplicar a mudança.');return;
     }
     if(e.target.matches('[data-venn-column]'))vennSelectedKey=e.target.value;
-    else if(e.target.matches('[data-venn-filter]'))
+    else if(e.target.matches('[data-venn-filter]')){
       vennFilters={...vennFilters,[e.target.dataset.vennFilter]:e.target.value};
+      if(activePossibilities())
+        possibilities={key:possibilityKey(),
+          report:analyzeFreePossibilities(state,{filters:vennFilters})};
+    }
     else return;
     render();
   });
