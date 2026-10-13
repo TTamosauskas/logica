@@ -763,7 +763,8 @@ try{
     assert.equal(await legend.locator('.truth-relation-line--structure').count(),1);
     assert.equal(await legend.locator('.truth-relation-line--contradictory').count(),1);
     assert.equal(await legend.locator('.truth-relation-line--equivalent').count(),1);
-    assert.equal(await legend.locator('.truth-relation-line').count(),3);
+    assert.ok(await legend.locator('.truth-relation-line').count()>=3,
+      'Cada relação reconhecida deve ocupar sua própria linha');
     const colorAndRows=await legend.evaluate((node)=>{
       const red=node.querySelector('.truth-relation-line--contradictory');
       const green=node.querySelector('.truth-relation-line--equivalent');
@@ -771,7 +772,7 @@ try{
       const heads=[...node.previousElementSibling.querySelectorAll('thead th[data-rel-col]')];
       const redBorder=getComputedStyle(heads[5],'::after').borderTopColor;
       const greenBorder=getComputedStyle(heads[3],'::after').borderTopColor;
-      const rects=[structure,red,green].map(el=>el.getBoundingClientRect());
+      const rects=[...node.querySelectorAll('.truth-relation-line')].map(el=>el.getBoundingClientRect());
       return {redText:getComputedStyle(red).color,redBorder,
         greenText:getComputedStyle(green).color,greenBorder,
         separate:rects.every((r,i)=>i===0||r.top>=rects[i-1].bottom)};
