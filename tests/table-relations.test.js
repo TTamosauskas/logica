@@ -25,6 +25,16 @@ test('contradição requer inversão de valores em todas as linhas',()=>{
   assert.equal(relationOf(...vectors([A(p,q),not(A(p,q))])).kind,'contradictory');
   assert.equal(relationOf(...vectors([p,not(p)])).kind,'contradictory');
 });
+test('p→q e p∧¬q são contraditórias, mesmo quando ¬p∨q é equivalente',()=>{
+  const implication=I(p,q),negatedImplication=A(p,not(q)),sameAsImplication=O(not(p),q);
+  assert.equal(relationOf(...vectors([implication,negatedImplication])).kind,'contradictory');
+  assert.equal(relationOf(...vectors([implication,sameAsImplication])).kind,'equivalent');
+  const cols=[implication,sameAsImplication,negatedImplication].map(node=>({node}));
+  const pairs=propositionalRelations(cols,['p','q'],()=>true);
+  assert.ok(pairs.some(r=>r.a===0&&r.b===1&&r.kind==='equivalent'));
+  assert.ok(pairs.some(r=>r.a===0&&r.b===2&&r.kind==='contradictory'));
+  assert.ok(pairs.some(r=>r.a===1&&r.b===2&&r.kind==='contradictory'));
+});
 test('não confunde implicação proposicional com subalternação categórica',()=>{
   assert.equal(relationOf(...vectors([A(p,q),p])),null);
   assert.equal(relationOf(...vectors([p,A(p,q)])),null);
