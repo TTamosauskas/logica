@@ -64,6 +64,8 @@ export function addFreeVariable(state,name,meaning=''){
   if(name!==next)throw Error('A próxima variável é '+next+'.');
   const usedAsIndividual=state.domain.some(d=>d.id===next)||
     state.formulas.some(f=>predicateTerms(parseFreeFormula(state,f.source)).has(next));
+  if(usedAsIndividual&&state.formulas.length&&freeTableKind(state)==='propositional')
+    throw Error('Remova as fórmulas proposicionais antes de adicionar um símbolo individual.');
   state.variables.push({name:next,meaning:clean(meaning).slice(0,160),
     kind:usedAsIndividual?'individual':'predicate'});
   invalidate(state);return state;
@@ -117,6 +119,8 @@ export function addFreeIndividual(state,id,label){
     throw Error('Já existe um indivíduo com esse símbolo.');
   const variable=state.variables.find(v=>v.name===name);
   if(variable?.kind!=='individual'&&variable){
+    if(state.formulas.length&&freeTableKind(state)==='propositional')
+      throw Error('Remova as fórmulas proposicionais antes de transformar uma variável em indivíduo.');
     if(state.formulas.some(f=>predicateAtomicNames([parseFreeFormula(state,f.source)]).has(name)))
       throw Error('O símbolo '+name+' já representa uma propriedade em fórmula cadastrada.');
     variable.kind='individual';
