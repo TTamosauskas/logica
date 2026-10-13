@@ -631,6 +631,8 @@ try{
     assert.equal(await app14.locator('#courseLesson nav[aria-label="Etapas da aula"]').count(),1);
     assert.equal(await app14.locator('#courseLesson .course-lesson-flow button[data-caction="stage"]').count(),1);
     assert.equal(await app14.locator('#courseLesson .course-lesson-flow .locked').count(),4);
+    assert.equal(await app14.locator('#courseLesson .course-lesson-flow .locked svg.course-stage-lock[aria-hidden="true"]').count(),4);
+    assert.equal(await app14.locator('#courseLesson .course-lesson-flow .locked svg.course-stage-lock').first().evaluate(svg=>Math.round(svg.getBoundingClientRect().width)),12);
     assert.equal(await app14.locator('#course-stage-2').count(),0);
     const lessonRoute=app14.url();
     await app14.locator('#courseLesson .course-lesson-flow button[data-stage="1"]').focus();
@@ -640,6 +642,7 @@ try{
     await app14.locator('[data-caction="read"]').click();
     assert.equal(await app14.locator('#courseLesson .course-lesson-flow button[data-caction="stage"]').count(),2);
     assert.equal(await app14.locator('#courseLesson .course-lesson-flow button.done').count(),1);
+    assert.equal(await app14.locator('#courseLesson .course-lesson-flow .locked svg.course-stage-lock').count(),3);
     await app14.locator('#courseLesson .course-lesson-flow button[data-stage="2"]').click();
     assert.match(await app14.evaluate(()=>document.activeElement?.textContent),/2. Observar um exemplo resolvido/);
     await app14.waitForFunction(()=>{const p=document.querySelector('#course-stage-2');const y=p?.getBoundingClientRect().top;return Number.isFinite(y)&&y>=0&&y<160});
