@@ -621,159 +621,63 @@ try{
     await freeContext.close();
   }
 
-  // A mesma Tabela Livre oferece predicados por indivíduo e resultados globais dos quantificadores.
+  // Tabela Livre unificada: fórmulas predicativas fechadas geram combinações V/F
+  // na mesma tabela proposicional, sem domínio, caixas extras ou linhas editáveis impossíveis.
   for(const width of [375,1280]){
-    const predContext=await browser.newContext({viewport:{width,height:812}});
-    const pred=await predContext.newPage(),predErrors=[];
-    pred.on('pageerror',err=>predErrors.push(err.message));
-    await pred.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
-    await pred.locator('.free-domain summary').click();
-    await pred.locator('#freeNewIndividualId').fill('s');
-    await pred.locator('#freeNewIndividualLabel').fill('Sócrates');
-    await pred.locator('[data-action="add-ind"]').click();
-    assert.equal(await pred.locator('[data-ind-label="s"]').inputValue(),'Sócrates');
-    // O domínio colapsado deve continuar colapsado após atualizações da página.
-    await pred.locator('.free-domain summary').click();
-    assert.equal(await pred.locator('.free-domain').evaluate(el=>el.open),false);
-    await pred.locator('[data-action="add-var"]').click();
-    assert.equal(await pred.locator('.free-domain').evaluate(el=>el.open),false);
-    await pred.locator('.free-domain summary').click();
-    assert.equal(await pred.locator('.free-domain').evaluate(el=>el.open),true);
-    assert.equal(await pred.locator('.free-variable-symbol').count(),3);
-    await pred.locator('[data-var-meaning="0"]').fill('x é Sócrates');
-    await pred.locator('[data-action="save-var"][data-index="0"]').click();
-    await pred.locator('[data-var-meaning="1"]').fill('x é mortal');
-    await pred.locator('[data-action="save-var"][data-index="1"]').click();
-    await pred.locator('#freeNewFormula').focus();
-    await pred.locator('.free-keypad [data-symbol="∀"]').click();
-    await pred.locator('.free-keypad [data-symbol="p"]').click();
-    assert.equal(await pred.locator('#freeNewFormula').inputValue(),'∀x(p(x)');
-    await pred.locator('#freeNewFormula').fill('∀x(P(x) → Q(x))');
-    await pred.locator('[data-action="add-formula"]').click();
-    assert.equal(await pred.locator('.free-formula-card').count(),1);
-    assert.match(await pred.locator('.free-translation').first().innerText(),/Para todo indivíduo x, se/);
-    assert.match(await pred.locator('.free-inference .free-hint').innerText(),/Independente do domínio/);
-    assert.match(await pred.locator('#freeTableTitle').innerText(),/^4\./);
-    assert.match(await pred.locator('.truth-venn-status').innerText(),/não prova que ela seja logicamente vazia/);
-    assert.equal(await pred.locator('.free-truth-table tbody tr').count(),2);
-    assert.equal(await pred.locator('.free-truth-table .free-person-cell').count(),1);
-    assert.equal(await pred.locator('.free-truth-table .free-input-pred').count(),2);
-    assert.equal(await pred.locator('.free-truth-table [data-row="global"]').count(),1);
-    await pred.locator('[data-action="grade"]').click();
-    assert.equal(await pred.locator('#freeFeedback').getAttribute('data-result'),'error');
-    assert.match(await pred.locator('#freeFeedback').innerText(),/Preencha V\/F/);
-    await pred.locator('.free-input-pred[data-name="p"]').click();
-    await pred.locator('.free-input-pred[data-name="q"]').click();
-    await pred.locator('.free-input-pred[data-name="q"]').click();
-    assert.equal(await pred.locator('.free-input-pred[data-name="q"]').innerText(),'F');
-    const local=pred.locator('.free-truth-table [data-action="answer"]:not([data-row="global"])').first();
-    await local.click();await local.click();
-    const global=pred.locator('.free-truth-table [data-row="global"]').first();
-    await global.click();await global.click();
-    await pred.locator('[data-action="grade"]').click();
-    assert.match(await pred.locator('.free-grade').innerText(),/2 de 2 respostas corretas/);
-    assert.match(await pred.locator('.free-interpretation').first().innerText(),/Contraexemplo: Sócrates/);
-    await pred.reload({waitUntil:'networkidle'});
-    assert.equal(await pred.locator('.free-input-pred[data-name="q"]').innerText(),'F');
-    assert.equal(await pred.locator('.free-truth-table [data-row="global"]').first().innerText(),'F');
-    assert.match(await pred.locator('.free-grade').innerText(),/2 de 2/);
-    await pred.locator('#freeNewFormula').fill('∃x(P(x) ∧ Q(x))');
-    await pred.locator('[data-action="add-formula"]').click();
-    await pred.locator('#freeNewFormula').fill('¬∃x(P(x) ∧ Q(x))');
-    await pred.locator('[data-action="add-formula"]').click();
-    await pred.locator('#freeNewFormula').fill('Q(s)');
-    await pred.locator('[data-action="add-formula"]').click();
-    assert.match(await pred.locator('.free-translation').last().innerText(),/Sócrates é mortal/);
-    assert.equal(await pred.locator('.free-truth-table [data-row="global"]').count(),4);
-    await pred.locator('#freeNewFormula').fill('p ∨ q');
-    await pred.locator('[data-action="add-formula"]').click();
-    assert.equal(await pred.locator('#freeFeedback').getAttribute('data-result'),'error');
-    assert.equal(await pred.locator('.free-formula-card').count(),4);
-    await pred.locator('#freeNewIndividualId').fill('a');
-    await pred.locator('#freeNewIndividualLabel').fill('Platão');
-    await pred.locator('[data-action="add-ind"]').click();
-    assert.equal(await pred.locator('.free-truth-table .free-person-cell').count(),2);
-    assert.equal(await pred.locator('.free-truth-table [data-row="global"]').count(),4);
-    const stored=await pred.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
-    assert.equal(stored.version,4);
-    assert.deepEqual(stored.domain.map(x=>x.label),['Sócrates','Platão']);
-    assert.equal(stored.formulas.length,4);
-    assert.deepEqual(predErrors,[]);
-    const over=await pred.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
-    assert.ok(over<=2,'Tabela de quantificadores excedeu '+width+'px em '+over);
-    await predContext.close();
-  }
-
-  // Validade simbólica sem cadastrar domínio: Sócrates é homem, todo homem é mortal.
-  for(const width of [375,1280]){
-    const inferenceContext=await browser.newContext({viewport:{width,height:812}});
-    const inference=await inferenceContext.newPage(),errors=[];
-    inference.on('pageerror',err=>errors.push(err.message));
-    await inference.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
-    await inference.locator('[data-var-meaning="0"]').fill('Sócrates');
-    await inference.locator('[data-var-kind="0"]').selectOption('individual');
-    await inference.locator('[data-action="save-var"][data-index="0"]').click();
-    await inference.locator('[data-var-meaning="1"]').fill('homem');
-    await inference.locator('[data-action="save-var"][data-index="1"]').click();
-    await inference.locator('[data-action="add-var"]').click();
-    await inference.locator('[data-var-meaning="2"]').fill('mortal');
-    await inference.locator('[data-action="save-var"][data-index="2"]').click();
-    await inference.locator('#freeNewFormula').fill('q(p)');
-    await inference.locator('[data-action="add-formula"]').click();
-    assert.match(await inference.locator('.free-translation').first().innerText(),/Sócrates é homem/i);
-    await inference.locator('#freeNewFormula').fill('∀x(q(x) → r(x))');
-    await inference.locator('[data-action="add-formula"]').click();
-    assert.equal(await inference.locator('.free-inference').count(),1);
-    assert.equal(await inference.locator('.free-person-cell').count(),0);
-    assert.equal(await inference.locator('[data-action="grade"]').count(),0);
-    assert.match(await inference.locator('#freeTableTitle').innerText(),/modelos/i);
-    await inference.locator('#freeConclusion').fill('r(p)');
-    await inference.locator('[data-action="verify-inference"]').click();
-    assert.match(await inference.locator('.free-inference-result').innerText(),/Conclusão válida/i);
-    assert.match(await inference.locator('.free-inference-result').innerText(),/não há interpretação/i);
-    // A linha A=V, B=V, C=F é impossível em todos os modelos, embora a implicação seja F.
-    await inference.locator('[data-action="analyze-possibilities"]').click();
-    assert.equal(await inference.locator('.free-possibility-table tbody tr').count(),8);
-    assert.equal(await inference.locator('.free-possibility-keys dt').count(),3);
-    const ghost=inference.locator('.free-possibility-table tbody tr').nth(1);
-    assert.equal(await ghost.locator('td').nth(0).innerText(),'V');
-    assert.equal(await ghost.locator('td').nth(1).innerText(),'V');
-    assert.equal(await ghost.locator('td').nth(2).innerText(),'F');
-    assert.equal(await ghost.locator('.free-possibility-state').innerText(),'Impossível');
-    assert.equal(await ghost.locator('td').nth(3).innerText(),'F');
-    await ghost.locator('summary').click();
-    assert.match(await ghost.locator('details p').innerText(),/Instanciação universal/);
-    assert.match(await inference.locator('.free-possibility-verdict').innerText(),/não é tautologia/);
-    assert.match(await inference.locator('.free-possibility-verdict').innerText(),/inferência válida/);
-    const saved=await inference.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
-    assert.equal(saved.version,4);
-    assert.equal(saved.variables[0].kind,'individual');
-    assert.equal(saved.inferenceConclusion,'r(p)');
-    assert.equal(saved.inferenceReport.valid,true);
-    assert.deepEqual(saved.domain,[]);
-    await inference.reload({waitUntil:'networkidle'});
-    assert.equal(await inference.locator('#freeConclusion').inputValue(),'r(p)');
-    assert.match(await inference.locator('.free-inference-result').innerText(),/Conclusão válida/i);
-    await inference.locator('#freeConclusion').fill('∀x(r(x) → q(x))');
-    await inference.locator('[data-action="verify-inference"]').click();
-    assert.match(await inference.locator('.free-inference-result').innerText(),/não decorre/i);
-    assert.match(await inference.locator('.free-inference-result').innerText(),/Contraexemplo/i);
-    assert.equal(await inference.locator('.free-domain-entry').count(),0);
-    // Vincular a constante p ao domínio torna visível no Venn uma região impossível.
-    await inference.locator('.free-domain summary').click();
-    await inference.locator('#freeNewIndividualId').fill('p');
-    await inference.locator('#freeNewIndividualLabel').fill('Sócrates');
-    await inference.locator('[data-action="add-ind"]').click();
-    await inference.locator('.free-input-pred[data-name="q"]').click();
-    await inference.locator('.free-input-pred[data-name="r"]').click();
-    await inference.locator('.free-input-pred[data-name="r"]').click();
-    await inference.locator('[data-action="analyze-possibilities"]').click();
-    assert.ok(await inference.locator('.truth-venn-impossible').count()>0);
-    assert.match(await inference.locator('.truth-venn-status').innerText(),/contradizem as premissas/);
-    const over=await inference.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
-    assert.ok(over<=2,'Inferência simbólica excedeu a tela de '+width+'px em '+over);
+    const context=await browser.newContext({viewport:{width,height:812}});
+    const page=await context.newPage(),errors=[];
+    page.on('pageerror',err=>errors.push(err.message));
+    await page.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    assert.match(await page.locator('#freeTableTitle').innerText(),/^3\. Preencher a tabela-verdade/);
+    assert.equal(await page.locator('.free-inference,.free-possibilities').count(),0);
+    assert.equal(await page.locator('.free-truth-table tbody tr').count(),4);
+    await page.locator('[data-var-kind="0"]').selectOption('individual');
+    await page.locator('[data-var-meaning="0"]').fill('Sócrates');
+    await page.locator('[data-action="save-var"][data-index="0"]').click();
+    await page.locator('[data-var-meaning="1"]').fill('homem');
+    await page.locator('[data-action="save-var"][data-index="1"]').click();
+    await page.locator('[data-action="add-var"]').click();
+    await page.locator('[data-var-meaning="2"]').fill('mortal');
+    await page.locator('[data-action="save-var"][data-index="2"]').click();
+    for(const source of ['q(p)','∀x(q(x) → r(x))','r(p)']){
+      await page.locator('#freeNewFormula').fill(source);
+      await page.locator('[data-action="add-formula"]').click();
+    }
+    assert.match(await page.locator('#freeTableTitle').innerText(),/^3\. Preencher a tabela-verdade/);
+    assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
+    const heads=await page.locator('.free-truth-table th[data-rel-col] .free-column-label').allTextContents();
+    assert.equal(heads.length,4);
+    assert.match(heads[0],/A · q\(p\)/);
+    assert.match(heads[1],/B · ∀x/);
+    assert.match(heads[2],/C · r\(p\)/);
+    assert.match(heads[3],/→ C/);
+    assert.equal(await page.locator('.free-impossible-row').count(),1);
+    const ghost=page.locator('.free-truth-table tbody tr').nth(1);
+    assert.match(await ghost.innerText(),/🚫/);
+    assert.equal(await ghost.locator('[data-action="answer"]').count(),0);
+    assert.equal(await ghost.locator('.free-impossible-cell').count(),1);
+    assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 2:/);
+    assert.match(await page.locator('.free-impossibility-footer').innerText(),/Instanciação universal/);
+    assert.ok(await page.locator('.truth-venn-impossible').count()>0);
+    const active=page.locator('.free-truth-table [data-action="answer"]');
+    assert.equal(await active.count(),7);
+    await active.first().click();
+    await page.locator('[data-action="grade"]').click();
+    assert.match(await page.locator('.free-grade').innerText(),/de 7 respostas corretas/);
+    // Acrescentar o símbolo do indivíduo não altera as combinações da tabela.
+    await page.locator('.free-domain summary').click();
+    await page.locator('#freeNewIndividualId').fill('p');
+    await page.locator('#freeNewIndividualLabel').fill('Sócrates');
+    await page.locator('[data-action="add-ind"]').click();
+    assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
+    await page.reload({waitUntil:'networkidle'});
+    assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
+    assert.equal(await page.locator('.free-impossible-row').count(),1);
+    assert.equal(await page.locator('.free-inference,.free-possibilities').count(),0);
     assert.deepEqual(errors,[]);
-    await inferenceContext.close();
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(overflow<=2,'Tabela de predicados excedeu o viewport de '+width+'px em '+overflow);
+    await context.close();
   }
 
   // Destaques compartilhados: composição imediata antes da correção, relações depois.
@@ -1012,37 +916,6 @@ try{
       'Relações roxas múltiplas devem ficar em linhas separadas');
     await ctx.close();
   }
-  // Subalternação A→I só é apresentada quando há um indivíduo na classe-sujeito.
-  {
-    const ctx=await browser.newContext({viewport:{width:1280,height:800}});
-    const page=await ctx.newPage();
-    await page.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
-    await page.locator('.free-domain summary').click();
-    await page.locator('#freeNewIndividualId').fill('s');
-    await page.locator('#freeNewIndividualLabel').fill('Sócrates');
-    await page.locator('[data-action="add-ind"]').click();
-    for(const source of ['∀x(p(x) → q(x))','∃x(p(x) ∧ q(x))']){
-      await page.locator('#freeNewFormula').fill(source);
-      await page.locator('[data-action="add-formula"]').click();
-    }
-    for(const predicate of ['p','q'])await page.locator('.free-input-pred[data-name="'+predicate+'"]').click();
-    const active=page.locator('.free-truth-table [data-action="answer"]');
-    assert.equal(await active.count(),4);
-    for(let index=0;index<4;index++)await active.nth(index).click();
-    await page.locator('[data-action="grade"]').click();
-    assert.match(await page.locator('.free-grade').innerText(),/4 de 4/);
-    const heads=page.locator('.free-truth-table thead th[data-rel-col]');
-    await heads.last().hover();
-    assert.equal(await page.locator('thead .truth-rel-subaltern').count(),2);
-    assert.match(await page.locator('.truth-relation-status').innerText(),/Subalternação/);
-    assert.match(await page.locator('.truth-relation-status').innerText(),/→/);
-    const greenLegend=page.locator('.truth-relation-line--subaltern');
-    assert.equal(await greenLegend.count(),1);
-    assert.equal(await greenLegend.evaluate(el=>getComputedStyle(el).color),
-      await heads.last().evaluate(el=>getComputedStyle(el,'::after').borderTopColor));
-    await ctx.close();
-  }
-
   // Ciclos 10–13: todas as 23 aulas devem ensinar antes de avaliar.
   // A pergunta formativa permite errar, compreender e tentar novamente sem alterar a nota.
   for(const width of [375,1280]){
