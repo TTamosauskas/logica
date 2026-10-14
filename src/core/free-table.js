@@ -282,6 +282,70 @@ export function freeRowImpossible(state,index){
 export function evaluateFreeRow(row,column,state){
   return Boolean(evalAst(column.node,row));
 }
+/** Descreve o argumento formado pelas fórmulas cadastradas, sem alterar colunas,
+ * notas, respostas ou a semântica de cada modo da Tabela Livre.
+ * A última fórmula é a conclusão somente quando há pelo menos duas fórmulas.
+ */
+function freeArgumentRule(roots,mode){
+  const premises=roots.slice(0,-1),conclusion=roots.at(-1);
+  if(mode==='predicates'){
+    // Exemplo típico: P(a), ∀x(P(x) → Q(x)) ∴ Q(a).
+    for(const universal of premises){
+      if(universal.type!=='forall'||universal.a?.type!=='implies')continue;
+      const antecedent=universal.a.a,consequent=universal.a.b;
+      if(antecedent?.type!=='pred'||consequent?.type!=='pred'||
+         antecedent.term!=='x'||consequent.term!=='x')continue;
+      const instance=premises.find(node=>node.type==='pred'&&
+        node.name===antecedent.name&&node.term!=='x'&&
+        conclusion.type==='pred'&&conclusion.name===consequent.name&&
+        conclusion.term===node.term);
+      if(instance)return 'Instanciação universal e modus ponens: da premissa universal obtemos '+
+        antecedent.name+'('+instance.term+') → '+consequent.name+'('+instance.term+
+        '); com '+predicatePretty(instance)+', concluímos '+predicatePretty(conclusion)+'.';
+    }
+  }else{
+    // Exemplo típico: p → q, p ∴ q.
+    for(const conditional of premises){
+      if(conditional.type!=='implies')continue;
+      if(sig(conditional.b)!==sig(conclusion))continue;
+      if(premises.some(node=>sig(node)===sig(conditional.a)))
+        return 'Modus ponens: da condicional e de seu antecedente, concluímos o consequente.';
+    }
+  }
+  return '';
+}
+export function freeArgumentAnalysis(state){
+  if(state.formulas.length<2)return null;
+  const mode=freeTableKind(state);
+  const roots=state.formulas.map(f=>parseFreeFormula(state,f.source));
+  if(mode==='predicates'){
+    const report=predicateTruthAnalysis(state);
+    if(report.status!=='complete')return {status:'undetermined',
+      reason:'Não foi possível verificar todas as combinações: '+(report.reason||'análise indisponível')+'.'};
+    const premisesTrue=report.rows.filter(row=>row.possible&&
+      row.values.slice(0,-1).every(value=>value==='V'));
+    const counter=premisesTrue.find(row=>row.values.at(-1)==='F');
+    if(counter)return {status:'invalid',
+      reason:'A linha '+(report.rows.indexOf(counter)+1)+' é possível: todas as premissas são V e a conclusão é F. Há um contraexemplo; o argumento é inválido.'};
+    if(!premisesTrue.length)return {status:'vacuous',
+      reason:'Não há modelo em que todas as premissas sejam V. A inferência é válida por vacuidade (premissas conjuntamente inconsistentes), não por uma demonstração informativa da conclusão.'};
+    const rule=freeArgumentRule(roots,mode);
+    return {status:'valid',reason:(rule?rule+' ':'')+
+      'Nenhuma combinação semanticamente possível tem todas as premissas V e a conclusão F. O argumento é válido.'};
+  }
+  const variables=state.variables.map(item=>item.name);
+  const rows=truthRows(variables);
+  const premiseValues=rows.map(row=>roots.slice(0,-1).every(node=>evalAst(node,row)));
+  const counterIndex=rows.findIndex((row,i)=>premiseValues[i]&&!evalAst(roots.at(-1),row));
+  if(counterIndex>=0)return {status:'invalid',
+    reason:'Na atribuição '+variables.map(name=>name+'='+(rows[counterIndex][name]?'V':'F')).join(', ')+
+      ', todas as premissas são V e a conclusão é F. Esse contraexemplo torna o argumento inválido.'};
+  if(!premiseValues.some(Boolean))return {status:'vacuous',
+    reason:'Nenhuma atribuição torna todas as premissas V. A inferência é válida por vacuidade, porque as premissas são conjuntamente inconsistentes.'};
+  const rule=freeArgumentRule(roots,mode);
+  return {status:'valid',reason:(rule?rule+' ':'')+
+    'Em todas as atribuições em que as premissas são V, a conclusão também é V. O argumento é válido.'};
+}
 export function gradeFreeTable(state){
   const rows=freeRows(state),cols=freeColumns(state),derived=cols.filter(c=>c.kind!=='var');
   let correct=0,total=0,missing=0;
