@@ -9,6 +9,7 @@ test('tabela de quantificadores segue a mesma grade V/F de uma tabela proposicio
   const state=blankFreeTable();
   addFreeIndividual(state,'s','Sócrates');
   for(const formula of ['p(s)','∀x(p(x) → q(x))','q(s)'])addFreeFormula(state,formula);
+  state.inferenceMode=true;
   const rows=freeRows(state),columns=freeColumns(state),report=predicateTruthAnalysis(state);
   assert.equal(rows.length,8);
   assert.deepEqual(columns.map(c=>c.kind),['var','var','var','formula']);
