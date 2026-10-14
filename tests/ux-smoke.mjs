@@ -398,7 +398,7 @@ try{
     assert.equal(await journey.locator('#courseLesson [data-caction="read"]').isVisible(),true);
 
     await journey.locator('#courseLesson [data-caction="read"]').click();
-    await journey.locator('#courseLesson [data-caction="example"]').click();
+    await finishWorkedExample(journey);
     await journey.locator('#courseLesson [data-caction="guided"]').click();
     assert.match(await journey.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
     assert.match(await journey.locator('#workDescription').innerText(),/Corrigir/);
@@ -1165,6 +1165,47 @@ try{
     }
     assert.deepEqual(errors,[]);
     await context.close();
+  }
+
+  // Exemplos resolvidos: passos, tradução concreta, checagem formativa e revisão.
+  for(const width of [375,1280]){
+    const ctx=await browser.newContext({viewport:{width,height:812},isMobile:width===375,hasTouch:width===375});
+    const screen=await ctx.newPage(),errors=[];
+    screen.on('pageerror',error=>errors.push(error.message));
+    await screen.goto(root+'#aula-equivalencias',{waitUntil:'networkidle'});
+    await screen.locator('[data-caction="read"]').click();
+    const example=screen.locator('[data-worked-example]');
+    assert.equal(await example.locator('[data-worked-step]:visible').count(),1);
+    assert.match(await example.innerText(),/Comi o prato/);
+    assert.match(await example.innerText(),/Em palavras/);
+    assert.equal(await example.locator('[data-caction="example"]').isVisible(),false);
+    await example.locator('[data-caction="worked-next"]').click();
+    assert.equal(await example.locator('[data-worked-step]:visible').count(),2);
+    assert.match(await screen.evaluate(()=>document.activeElement?.textContent),/Elimine a condicional/);
+    await screen.reload({waitUntil:'networkidle'});
+    assert.equal(await screen.locator('[data-worked-step]:visible').count(),2);
+    await screen.locator('[data-caction="worked-show-all"]').click();
+    assert.equal(await screen.locator('[data-worked-step]:visible').count(),3);
+    assert.equal(await screen.locator('[data-worked-finish]').isVisible(),true);
+    await screen.locator('[data-caction="worked-check"]').click();
+    assert.match(await screen.locator('[data-worked-feedback]').innerText(),/Escolha uma alternativa/);
+    await screen.locator('input[name^="worked-check-"][value="1"]').check();
+    await screen.locator('[data-caction="worked-check"]').click();
+    assert.equal(await screen.locator('[data-worked-feedback]').getAttribute('data-result'),'retry');
+    await screen.locator('input[name^="worked-check-"][value="0"]').check();
+    await screen.locator('[data-caction="worked-check"]').click();
+    assert.equal(await screen.locator('[data-worked-feedback]').getAttribute('data-result'),'correct');
+    assert.equal(await screen.locator('[data-caction="guided"]').count(),0);
+    await screen.locator('[data-caction="example"]').click();
+    assert.equal(await screen.locator('[data-caction="guided"]').count(),1);
+    await screen.locator('[data-caction="worked-restart"]').click();
+    assert.equal(await screen.locator('[data-worked-step]:visible').count(),1);
+    assert.equal(await screen.locator('[data-caction="guided"]').count(),1);
+    await screen.locator('[data-caction="worked-show-all"]').click();
+    assert.equal(await screen.locator('[data-worked-step]:visible').count(),3);
+    assert.ok(await screen.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2,'O exemplo causa rolagem horizontal no viewport '+width);
+    assert.deepEqual(errors,[]);
+    await ctx.close();
   }
 
   // Ciclo 14: verificação das competências refinadas nas seis etapas existentes.
