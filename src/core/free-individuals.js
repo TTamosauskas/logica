@@ -42,7 +42,11 @@ export function freeIndividualModel(state){
     if(!people.has(id)||!predicates.includes(name))return false;
     const k=key(id,name),current=assignments.get(k)||new Map();
     const existing=current.get(value);
-    if(existing)return false;
+    if(existing){
+      // Valores confirmados por premissas não devem aparecer como editáveis.
+      if(existing==='informado'&&origin!=='informado')current.set(value,origin);
+      return false;
+    }
     current.set(value,origin);assignments.set(k,current);
     return true;
   };
