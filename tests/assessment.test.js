@@ -17,13 +17,15 @@ import {UNIT5_TO_7_ASSESSMENTS} from '../src/content/assessment-unit5to7.js';
 import {ERROR_ASSESSMENTS} from '../src/content/errors-assessments.js';
 import {OTHER_LOGIC_READINGS} from '../src/content/other-logics-course.js';
 import {OTHER_LOGIC_ASSESSMENTS} from '../src/content/other-logics-assessments.js';
+import {FOUNDATIONS_READINGS} from '../src/content/foundations-a.js';
+import {FOUNDATIONS_ASSESSMENTS} from '../src/content/foundations-assessments.js';
 import {prepareBank,validateBank,composeAssessment,gradeAssessment} from '../src/core/assessment.js';
-const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS};
+const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS};
 const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
-const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS};
+const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS};
 const bank=id=>prepareBank(id,LESSONS[id],readings[id],supplements[id]||[]);
-test('todos os 36 temas possuem banco com competências distintas',()=>{
- assert.equal(ids.length,36);
+test('todos os 39 temas possuem banco com competências distintas',()=>{
+ assert.equal(ids.length,39);
  for(const id of ids){
    const items=validateBank(bank(id));
    assert.ok(items.length>=12,id+': menos de 12 questões editoriais');
