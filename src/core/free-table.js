@@ -460,17 +460,29 @@ export function readFreeTable(raw,{strict=false}={}){
     if(!raw)return blankFreeTable();
     const input=typeof raw==='string'?JSON.parse(raw):raw;
     if(!input||![1,2,3,4].includes(input.version)||!Array.isArray(input.variables)||
-       input.variables.length<2||input.variables.length>MAX_VARS||
+       input.variables.length<2||
+       input.variables.length>(input.extendedTable===true?MAX_EXTENDED_VARS:MAX_VARS)||
        !Array.isArray(input.formulas)||input.formulas.length>MAX_FORMULAS)throw Error('Estrutura de tabela inválida.');
     const names=input.variables.map(x=>x.name);
     if(names.some(n=>!validName(n))||new Set(names).size!==names.length)throw Error('Variáveis inválidas.');
     const state=blankFreeTable();
+    state.extendedTable=input.extendedTable===true;
     state.variables=names.map((name,i)=>({name:VARIABLE_SEQUENCE[i],meaning:clean(input.variables[i].meaning).slice(0,160),
       kind:input.version===4&&input.variables[i].kind==='individual'?'individual':'predicate'}));
+    if(input.diagramSets!==undefined){
+      if(!Array.isArray(input.diagramSets)||input.diagramSets.length>MAX_DIAGRAM_SETS)
+        throw Error('Conjuntos adicionais inválidos.');
+      for(const item of input.diagramSets){
+        if(!item||typeof item.name!=='string'||typeof item.meaning!=='string')
+          throw Error('Conjunto adicional inválido.');
+        addDiagramSet(state,item.name,item.meaning);
+      }
+    }
     const originalSources=input.formulas.map(f=>{
       if(typeof f?.source!=='string')throw Error('Fórmula inválida.');
       if(isPredicateSource(f.source))parsePredicateFormula(f.source,
-        names.filter((n,i)=>input.variables[i].kind!=='individual'),
+        [...names.filter((n,i)=>input.variables[i].kind!=='individual'),
+          ...state.diagramSets.map(set=>set.name)],
         [...(input.domain||[]).map(d=>d.id),...names.filter((n,i)=>input.variables[i].kind==='individual')],
         {allowImplicitIndividuals:true});
       else parseFormula(f.source,names);
@@ -505,7 +517,9 @@ export function readFreeTable(raw,{strict=false}={}){
           const knownIndividual=state.domain.some(d=>d.id===id)||
             state.variables.some(x=>x.name===id&&x.kind==='individual')||
             state.formulas.some(f=>predicateTerms(parseFreeFormula(state,f.source)).has(id));
-          if(knownIndividual&&state.variables.some(x=>x.name===name&&x.kind!=='individual')&&
+          if(knownIndividual&&
+             (state.variables.some(x=>x.name===name&&x.kind!=='individual')||
+              state.diagramSets.some(x=>x.name===name))&&
              (v==='V'||v==='F'))state.predicateValues[k]=v;
         }
       }
@@ -519,7 +533,8 @@ export function readFreeTable(raw,{strict=false}={}){
     if(!isDefaultV1){
       const oldState={variables:names.map((name,i)=>({name,kind:state.variables[i].kind})),
         formulas:originalSources.map((source,i)=>({id:input.formulas[i].id,source})),
-        inferenceMode:state.inferenceMode};
+        inferenceMode:state.inferenceMode,extendedTable:state.extendedTable,
+        diagramSets:state.diagramSets};
       if(input.version>=3){oldState.domain=state.domain;oldState.predicateValues=state.predicateValues}
       const oldColumns=freeColumns(oldState);
       const mapping=Object.fromEntries(oldColumns.map((col,i)=>[col.key,columns[i]?.key]).filter(x=>x[1]));
