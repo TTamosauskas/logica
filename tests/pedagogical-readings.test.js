@@ -22,7 +22,7 @@ test('todas as 39 aulas recebem leitura progressiva, sem duplicação ou omissã
   assert.equal(expected.length,39);
   assert.equal(Object.keys(LESSONS).length,39);
   assert.equal(ids.length,39);
-  assert.equal(new Set(ids).size,36);
+  assert.equal(new Set(ids).size,39);
   assert.deepEqual(new Set(ids),new Set(expected));
   assert.deepEqual(Object.keys(UNIT1_READINGS),COURSE_UNITS[0].ids.filter(id=>id!=='pressupostos'));
   assert.deepEqual(Object.keys(UNIT12_READINGS),['pressupostos','categoricos2']);
