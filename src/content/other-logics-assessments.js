@@ -1,4 +1,4 @@
-/** Oito questões suplementares por aula da Unidade VIII, separadas das formativas. */
+/** Questões de avaliação da Unidade VIII, distintas da leitura e dos laboratórios. */
 export const OTHER_LOGIC_ASSESSMENTS={
   "modais": [
     {
@@ -46,8 +46,8 @@ export const OTHER_LOGIC_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "As modalidades examinam os destinos; o valor local não substitui os valores acessíveis.",
-      "dimension": "application",
-      "objective": "Aplicação semântica em modelo concreto"
+      "dimension": "concept",
+      "objective": "Interpretação conceitual em um caso semântico"
     },
     {
       "question": "Em w0 sem sucessores, avalie □¬p e ◇p.",
@@ -144,8 +144,8 @@ export const OTHER_LOGIC_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "A eventualidade é satisfeita por pelo menos um instante a partir de t0.",
-      "dimension": "application",
-      "objective": "Aplicação semântica em modelo concreto"
+      "dimension": "concept",
+      "objective": "Interpretação conceitual em um caso semântico"
     },
     {
       "question": "Traço t0:p V, t1:p V, t2:p F. Qual valor de Gp em t0?",
@@ -242,8 +242,8 @@ export const OTHER_LOGIC_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "A alternativa ¬p impede que Ana tenha conhecimento de p.",
-      "dimension": "application",
-      "objective": "Aplicação semântica em modelo concreto"
+      "dimension": "concept",
+      "objective": "Interpretação conceitual em um caso semântico"
     },
     {
       "question": "Bruno sabe p, Ana admite cenários em que Bruno sabe e não sabe p. KₐKᵦp:",
@@ -340,8 +340,8 @@ export const OTHER_LOGIC_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "Normas não se reduzem à descrição factual de cumprimento.",
-      "dimension": "application",
-      "objective": "Aplicação semântica em modelo concreto"
+      "dimension": "concept",
+      "objective": "Interpretação conceitual em um caso semântico"
     },
     {
       "question": "Em um mundo ideal há música e noutro não; há pelo menos um mundo ideal com música. Então:",
@@ -438,8 +438,8 @@ export const OTHER_LOGIC_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "A disjunção max seleciona o maior grau.",
-      "dimension": "application",
-      "objective": "Aplicação semântica em modelo concreto"
+      "dimension": "concept",
+      "objective": "Interpretação conceitual em um caso semântico"
     },
     {
       "question": "Se p=0,3 e q=0,8, quanto vale p∧q usando min?",
@@ -536,8 +536,8 @@ export const OTHER_LOGIC_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "Trocar dois suportes presentes mantém ambos presentes.",
-      "dimension": "application",
-      "objective": "Aplicação semântica em modelo concreto"
+      "dimension": "concept",
+      "objective": "Interpretação conceitual em um caso semântico"
     },
     {
       "question": "Qual é a negação de T em FDE?",
@@ -634,8 +634,8 @@ export const OTHER_LOGIC_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "A extensão que força p impede a negação em w0.",
-      "dimension": "application",
-      "objective": "Aplicação semântica em modelo concreto"
+      "dimension": "concept",
+      "objective": "Interpretação conceitual em um caso semântico"
     },
     {
       "question": "Um mundo não força p e nem ¬p. O que isso mostra sobre p∨¬p?",
