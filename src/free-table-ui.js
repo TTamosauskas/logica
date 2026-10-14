@@ -55,7 +55,7 @@ export function createFreeTable(root){
   }
   const has=col=>state.hidden.includes(col.key);
   const header=(col,index)=>{
-    const hidden=has(col),conclusion=state.formulas.length>=2&&
+    const hidden=has(col),conclusion=state.inferenceMode&&state.formulas.length>=2&&
       (col.key==='v:'+state.formulas.at(-1).id||col.key==='f:'+state.formulas.at(-1).id);
     const label=esc((conclusion?'∴ ':'')+col.label),name=hidden?'Mostrar':'Ocultar';
     return `<th scope="col" data-rel-col="${index}" tabindex="0" class="free-column-head ${hidden?'truth-col-collapsed':''} ${col.kind==='var'?'free-var-head':'derived'} ${conclusion?'free-conclusion-head':''}">
@@ -192,6 +192,8 @@ export function createFreeTable(root){
       '</footer>':'';
     return `<section class="free-card" aria-labelledby="freeTableTitle">
       <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2></div>
+      ${pred&&state.formulas.length>=2?'<label class="free-inference-toggle"><input type="checkbox" data-inference-mode '+
+        (state.inferenceMode?'checked':'')+'> Usar última fórmula como conclusão de um argumento</label>':''}
       <div class="table-scroll free-table-scroll" role="region" tabindex="0" aria-label="Tabela Livre de ${pred?'predicados e quantificadores':'proposições'}">
         <table class="truth-table free-truth-table">
           <thead><tr>${columns.map(header).join('')}</tr></thead>
@@ -349,6 +351,12 @@ export function createFreeTable(root){
     }
   });
   root.addEventListener('change',e=>{
+    if(e.target.matches('[data-inference-mode]')){
+      state.inferenceMode=e.target.checked;
+      state.answers={};state.graded=false;
+      refresh(state.inferenceMode?'Modo de inferência ativado.':'Modo de conjuntos: todas as fórmulas são afirmações.');
+      return;
+    }
     if(e.target.matches('[data-var-kind]')){
       e.target.dataset.unsaved='true';
       notice('Tipo em edição: clique em Salvar para aplicar a mudança.');return;
