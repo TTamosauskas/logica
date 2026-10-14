@@ -1,5 +1,5 @@
-/** Unidade VIII, bloco inicial: linguagem, semântica e correção. */
-export const THEORY_LESSONS_A={
+/** Unidade VIII: quatro aulas de fundamentos conceituais. `metateoria` preserva o ID legado. */
+export const FOUNDATIONS_LESSONS={
   "sistemas_formais": {
     "lead": "O que significa estudar as próprias regras de um sistema lógico?",
     "theory": "Ao escrever p→q dentro da lógica proposicional, usamos uma fórmula da linguagem-objeto. Ao dizer em português “p→q é uma fórmula bem formada”, fazemos uma afirmação sobre aquela linguagem. Essa segunda frase pertence à metalinguagem, que permite estudar as expressões e regras do sistema. Misturar os níveis causa equívocos. O símbolo ⊢ pode fazer parte da notação metateórica para “é demonstrável”, enquanto → pertence à linguagem-objeto clássica estudada. Uma expressão sobre derivabilidade não é simplesmente outra condicional dentro da mesma linguagem.\n\nUm sistema formal especifica um alfabeto, regras de formação das expressões e mecanismos para desenvolver provas. Um cálculo dedutivo costuma indicar axiomas ou esquemas e regras que autorizam novas linhas. O caráter formal exige que seja possível verificar a estrutura de cada aplicação de regra. A semântica é uma camada adicional: determina como expressões são interpretadas e quando são satisfeitas. Podemos estudar sintaxe sem escolher semântica, e podemos comparar vários cálculos sobre a mesma linguagem. O significado de “válido” deve sempre informar o sistema e a interpretação pretendidos.\n\nA pergunta “de p e p→q podemos derivar q?” é interna à prática de demonstrar. A pergunta “essa regra preserva verdade em todos os modelos?” é metateórica, pois quantifica sobre interpretações e discute uma propriedade da regra. A metateoria não dispensa exemplos concretos: eles oferecem intuições e contraexemplos. Mas verificar três exemplos favoráveis nunca basta, por si só, para provar uma propriedade sobre todas as fórmulas ou todos os modelos possíveis.",
@@ -156,9 +156,9 @@ export const THEORY_LESSONS_A={
       }
     ]
   },
-  "consequencia_prova": {
+  "metateoria": {
     "lead": "Qual a diferença entre decorrer de premissas e ser demonstrável por um cálculo?",
-    "theory": "Escrevemos Γ⊨φ quando toda interpretação que satisfaz todas as premissas de Γ também satisfaz φ. Essa definição não depende da habilidade de um estudante em encontrar uma prova; ela diz respeito às interpretações permitidas pela lógica. Para invalidar Γ⊨φ basta construir um modelo em que todas as premissas valem e a conclusão não. Se as premissas não possuem modelo clássico, toda conclusão é consequência semântica por vacuidade, o que exige cuidado quando discutimos fatos reais.\n\nEscrevemos Γ⊢φ quando existe uma derivação finita de φ a partir de Γ no cálculo escolhido. A expressão informa que alguma sequência de linhas usa apenas premissas, axiomas e regras autorizadas. Uma conclusão pode ser derivável num cálculo e não em outro. Da premissa p e da condicional p→q, um cálculo com modus ponens pode derivar q. Para saber se esse passo também é semanticamente correto, precisamos analisar a verdade da condicional nas interpretações do sistema.\n\nUma demonstração sintática correta não é automaticamente prova de preservação semântica em qualquer cálculo imaginável. A correção de um sistema, quando demonstrada, garante a passagem Γ⊢φ ⇒ Γ⊨φ. A completude, quando demonstrada, oferece a direção inversa. Essas propriedades dizem respeito ao cálculo e à semântica fixados. Na unidade seguinte da sequência, investigaremos separadamente como se provam correção e completude, sem assumir que toda lógica usa os mesmos axiomas.",
+    "theory": "Escrevemos Γ⊨φ quando toda interpretação que satisfaz todas as premissas de Γ também satisfaz φ. Essa definição não depende da habilidade de um estudante em encontrar uma prova; ela diz respeito às interpretações permitidas pela lógica. Para invalidar Γ⊨φ basta construir um modelo em que todas as premissas valem e a conclusão não. Se as premissas não possuem modelo clássico, toda conclusão é consequência semântica por vacuidade, o que exige cuidado quando discutimos fatos reais.\n\nEscrevemos Γ⊢φ quando existe uma derivação finita de φ a partir de Γ no cálculo escolhido. A expressão informa que alguma sequência de linhas usa apenas premissas, axiomas e regras autorizadas. Uma conclusão pode ser derivável num cálculo e não em outro. Da premissa p e da condicional p→q, um cálculo com modus ponens pode derivar q. Para saber se esse passo também é semanticamente correto, precisamos analisar a verdade da condicional nas interpretações do sistema.\n\nUma demonstração sintática correta não é automaticamente prova de preservação semântica em qualquer cálculo imaginável. A correção de um sistema, quando demonstrada, garante a passagem Γ⊢φ ⇒ Γ⊨φ. A completude, quando demonstrada, oferece a direção inversa. Essas propriedades dizem respeito ao cálculo e à semântica fixados. Num aprofundamento posterior, podemos investigar separadamente como se provam correção e completude, sem assumir que toda lógica usa os mesmos axiomas.",
     "example": "Examine as premissas p e p→q e a conclusão q, distinguindo prova e interpretação.",
     "steps": [
       "1. p (premissa). 2. p→q (premissa). 3. q (modus ponens).",
@@ -207,61 +207,9 @@ export const THEORY_LESSONS_A={
         "why": "A correção conecta provas formais à preservação semântica."
       }
     ]
-  },
-  "correcao_sistemas": {
-    "lead": "Como verificar se um cálculo nunca demonstra uma conclusão semanticamente indevida?",
-    "theory": "Um sistema dedutivo é correto relativamente a uma semântica quando tudo que ele demonstra a partir de premissas é consequência semântica dessas premissas. Não significa que todas as premissas usadas sejam fatos do mundo; significa apenas que as regras não criam contraexemplos à preservação da verdade. Um cálculo pode ser correto e ainda muito fraco: imagine um sistema que permite apenas repetir uma premissa. Ele nunca conclui algo semanticamente injustificado, mas perde inúmeras consequências que poderiam ser demonstradas por regras mais expressivas.\n\nPara verificar o modus ponens na lógica clássica, suponha p e p→q verdadeiras numa mesma interpretação. Se q fosse falsa, a condicional teria antecedente verdadeiro e consequente falso, contrariando a segunda premissa. Portanto q também precisa ser verdadeira. A mesma estratégia pode testar regras adicionais. Se houver uma regra que autorize q apenas porque p foi afirmada, uma interpretação p=V e q=F fornece contraexemplo direto à correção dessa regra. A inspeção local de regras é o passo central.\n\nSe axiomas forem válidos e cada regra preservar verdade, uma indução sobre o número de linhas da prova estabelece correção global. Na primeira linha, premissas são satisfeitas pelos modelos de Γ e axiomas são válidos. Em cada nova linha, a regra correta mantém satisfação. Isso não demonstra completude. Um cálculo pode produzir apenas consequências corretas, mas deixar de provar muitas outras. Também não prova que algum algoritmo decida toda validade; o procedimento de procurar provas pode nunca terminar para conclusões não demonstráveis.",
-    "example": "Avalie a regra modus ponens e compare com a regra inválida “de p inferir q”.",
-    "steps": [
-      "Com p=V e p→q=V, o valor q deve ser V na implicação material.",
-      "Na valoração p=V, q=F, a premissa p é verdadeira e a conclusão q é falsa.",
-      "Num cálculo inteiro, repetimos o argumento para cada regra e aplicamos indução sobre as linhas."
-    ],
-    "quiz": [
-      {
-        "question": "Correção significa:",
-        "options": [
-          "Tudo que é derivável é consequência semântica.",
-          "Tudo que é verdadeiro é sempre demonstrável.",
-          "Todo problema é decidível."
-        ],
-        "correct": 0,
-        "why": "É a direção sintaxe → semântica."
-      },
-      {
-        "question": "Um contraexemplo a uma regra possui:",
-        "options": [
-          "Entradas verdadeiras e saída falsa.",
-          "Todas as entradas falsas.",
-          "Somente premissas sem modelo."
-        ],
-        "correct": 0,
-        "why": "A regra falha em preservar verdade."
-      },
-      {
-        "question": "Um cálculo que só repete premissas pode ser:",
-        "options": [
-          "Correto, embora incompleto.",
-          "Necessariamente incorreto.",
-          "Automaticamente completo."
-        ],
-        "correct": 0,
-        "why": "Não inventar conclusões não implica provar todas as consequências."
-      },
-      {
-        "question": "O instrumento de prova da correção global é frequentemente:",
-        "options": [
-          "Indução sobre linhas da derivação.",
-          "Escolha de uma amostra de mundos.",
-          "Uma previsão sobre o futuro."
-        ],
-        "correct": 0,
-        "why": "A indução trata cada possível passo do cálculo."
-      }
-    ]
   }
 };
-export const THEORY_READINGS_A={
+export const FOUNDATIONS_READINGS={
   "sistemas_formais": {
     "objective": "Distinguir linguagem-objeto, metalinguagem, símbolos, regras, axiomas e cálculos, identificando em que nível uma afirmação está sendo formulada.",
     "sections": [
@@ -376,7 +324,7 @@ export const THEORY_READINGS_A={
       "why": "A existência de um modelo basta para satisfatibilidade, mas não prova universalidade."
     }
   },
-  "consequencia_prova": {
+  "metateoria": {
     "objective": "Distinguir Γ⊨φ de Γ⊢φ, reconhecer contraexemplos semânticos e derivação sintática, e compreender por que a relação entre ambos exige teoremas específicos.",
     "sections": [
       {
@@ -413,47 +361,9 @@ export const THEORY_READINGS_A={
       "correct": 0,
       "why": "Consequência semântica falha somente quando há um modelo das premissas que refuta a conclusão."
     }
-  },
-  "correcao_sistemas": {
-    "objective": "Interpretar correção como Γ⊢φ ⇒ Γ⊨φ e justificar preservação de verdade por axiomas, regras e indução sobre uma derivação finita.",
-    "sections": [
-      {
-        "heading": "Correção é uma propriedade do cálculo",
-        "paragraphs": [
-          "Um sistema dedutivo é correto relativamente a uma semântica quando tudo que ele demonstra a partir de premissas é consequência semântica dessas premissas. Não significa que todas as premissas usadas sejam fatos do mundo; significa apenas que as regras não criam contraexemplos à preservação da verdade.",
-          "Um cálculo pode ser correto e ainda muito fraco: imagine um sistema que permite apenas repetir uma premissa. Ele nunca conclui algo semanticamente injustificado, mas perde inúmeras consequências que poderiam ser demonstradas por regras mais expressivas."
-        ]
-      },
-      {
-        "heading": "Examine cada regra localmente",
-        "paragraphs": [
-          "Para verificar o modus ponens na lógica clássica, suponha p e p→q verdadeiras numa mesma interpretação. Se q fosse falsa, a condicional teria antecedente verdadeiro e consequente falso, contrariando a segunda premissa. Portanto q também precisa ser verdadeira.",
-          "A mesma estratégia pode testar regras adicionais. Se houver uma regra que autorize q apenas porque p foi afirmada, uma interpretação p=V e q=F fornece contraexemplo direto à correção dessa regra. A inspeção local de regras é o passo central."
-        ]
-      },
-      {
-        "heading": "Da regra para uma demonstração inteira",
-        "paragraphs": [
-          "Se axiomas forem válidos e cada regra preservar verdade, uma indução sobre o número de linhas da prova estabelece correção global. Na primeira linha, premissas são satisfeitas pelos modelos de Γ e axiomas são válidos. Em cada nova linha, a regra correta mantém satisfação.",
-          "Isso não demonstra completude. Um cálculo pode produzir apenas consequências corretas, mas deixar de provar muitas outras. Também não prova que algum algoritmo decida toda validade; o procedimento de procurar provas pode nunca terminar para conclusões não demonstráveis."
-        ]
-      }
-    ],
-    "misconception": "Correção não diz que uma prova existe para toda verdade lógica nem que suas premissas correspondem a fatos. Diz que demonstrações autorizadas não perdem a validade da consequência.",
-    "summary": "Correção relaciona derivação e semântica: Γ⊢φ implica Γ⊨φ. Para demonstrá-la, justificam-se axiomas e regras e usa-se indução sobre as etapas de toda prova.",
-    "check": {
-      "question": "Uma regra autoriza q a partir de p. Com p=V e q=F, o que identificamos?",
-      "options": [
-        "Um contraexemplo à correção dessa regra.",
-        "Uma prova da completude.",
-        "Um caso em que q deve valer."
-      ],
-      "correct": 0,
-      "why": "O modelo satisfaz a entrada da regra e refuta sua saída, violando a preservação de verdade."
-    }
   }
 };
-export const THEORY_WORKED_A={
+export const FOUNDATIONS_WORKED={
   "sistemas_formais": {
     "context": "Um estudante escreve p→q e, ao lado, afirma: “a partir de p e p→q podemos obter q pelo modus ponens”.",
     "steps": [
@@ -544,7 +454,7 @@ export const THEORY_WORKED_A={
       "why": "O modelo garante existência de satisfação; o contraexemplo impede a validade."
     }
   },
-  "consequencia_prova": {
+  "metateoria": {
     "context": "Examine as premissas p e p→q e a conclusão q, distinguindo prova e interpretação.",
     "steps": [
       {
@@ -572,36 +482,6 @@ export const THEORY_WORKED_A={
       ],
       "correct": 0,
       "why": "⊢ fala de regras e linhas de prova; ⊨ fala da preservação em modelos."
-    }
-  },
-  "correcao_sistemas": {
-    "context": "Avalie a regra modus ponens e compare com a regra inválida “de p inferir q”.",
-    "steps": [
-      {
-        "formal": "Assuma premissas verdadeiras no mesmo modelo.",
-        "concrete": "Com p=V e p→q=V, o valor q deve ser V na implicação material.",
-        "reason": "Isso demonstra a preservação local da verdade pelo modus ponens."
-      },
-      {
-        "formal": "Construa contraexemplo para a regra rival.",
-        "concrete": "Na valoração p=V, q=F, a premissa p é verdadeira e a conclusão q é falsa.",
-        "reason": "Uma única interpretação desse tipo refuta a correção da regra semântica."
-      },
-      {
-        "formal": "Explique a extensão global.",
-        "concrete": "Num cálculo inteiro, repetimos o argumento para cada regra e aplicamos indução sobre as linhas.",
-        "reason": "Corretude local de axiomas e regras sustenta correção de todas as provas do cálculo."
-      }
-    ],
-    "check": {
-      "question": "Qual resultado sustenta a correção global de um cálculo?",
-      "options": [
-        "Axiomas válidos e cada regra preservando verdade, com indução nas linhas.",
-        "Três demonstrações escolhidas ao acaso.",
-        "Uma regra que permita qualquer conclusão."
-      ],
-      "correct": 0,
-      "why": "O esquema metateórico precisa abranger toda linha de toda prova finita."
     }
   }
 };
