@@ -328,3 +328,37 @@
 .truth-relation-line--contradictory{color:var(--truth-relation-red)}
 .truth-relation-line--contrary,.truth-relation-line--subcontrary{color:var(--truth-relation-purple)}
 @media(hover:none){.truth-table [data-rel-col]{-webkit-tap-highlight-color:transparent}}
+
+
+/* Exemplo resolvido: tradução concreta, justificativa e liberação progressiva. */
+.worked-example{display:grid;gap:12px}
+.worked-example [hidden]{display:none!important}
+.worked-example-head{display:flex;flex-wrap:wrap;align-items:start;justify-content:space-between;gap:10px}
+.worked-context{margin:0!important;font-size:14px!important;line-height:1.65!important;flex:1;min-width:0;color:var(--text)!important}
+.worked-counter{font-size:12px;font-weight:750;color:var(--muted);white-space:nowrap}
+.worked-steps{list-style:none;counter-reset:worked-step;margin:0;padding:0!important;display:grid;gap:13px}
+.worked-steps>li{counter-increment:worked-step;position:relative;border-top:1px solid var(--border);padding:14px 0 0 35px!important;font-size:14px!important;line-height:1.65}
+.worked-steps>li:before{content:counter(worked-step);position:absolute;left:0;top:14px;width:25px;height:25px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--text)}
+.worked-formal{display:block;font-size:15px;line-height:1.6;overflow-wrap:anywhere}
+.worked-formal:focus{outline:none}
+.worked-formal:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+.worked-concrete,.worked-reason{font-size:14px!important;line-height:1.65!important;margin:8px 0!important;color:var(--text)!important}
+.worked-concrete em{font-style:italic}
+.worked-example-label{font-weight:750;font-style:normal;color:var(--muted);margin-right:4px}
+.worked-reason{color:var(--muted)!important}
+.worked-reason strong{color:var(--text)}
+.worked-next{margin-top:5px}
+.worked-finish{border-top:1px solid var(--border);padding-top:17px}
+.worked-check{border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:0}
+.worked-check legend{font-size:14px;font-weight:800;padding:0 5px}
+.worked-check>p{font-size:13px!important;line-height:1.6!important;margin:3px 0 12px!important;color:var(--muted)!important}
+.worked-check-question{display:block;font-size:14px;line-height:1.65;margin:0 0 10px}
+.worked-check-options{display:grid;gap:7px;margin-bottom:12px}
+.worked-check-option{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;font-size:14px;line-height:1.5;cursor:pointer}
+.worked-check-option:has(input:checked){border-color:var(--accent);background:var(--accent-bg)}
+.worked-check-option input{accent-color:var(--accent);flex:none;margin-top:4px}
+.worked-check-feedback{margin:10px 0 0!important;font-size:13px!important;line-height:1.6!important}
+.worked-check-feedback[data-result="correct"]{color:var(--teal)!important}
+.worked-check-feedback[data-result="retry"]{color:var(--text)!important}
+.worked-utility-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+@media(max-width:480px){.worked-example{padding:13px}.worked-steps>li{padding-left:31px!important}.worked-example-head{flex-direction:column;gap:4px}}
