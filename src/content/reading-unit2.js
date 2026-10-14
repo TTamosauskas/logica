@@ -41,24 +41,24 @@ export const UNIT2_READINGS={
     check:{question:'Como negar corretamente “O laboratório está aberto ou há atendimento”?',options:['O laboratório está fechado e não há atendimento.','O laboratório está fechado ou não há atendimento.','O laboratório está aberto e não há atendimento.'],correct:0,why:'Para negar uma disjunção inclusiva, as duas partes precisam ser falsas. Por isso usamos “não p e não q”.'}
   },
   classificacao:{
-    objective:'Distinguir tautologia, contradição e contingência observando o conjunto completo de valores de uma tabela-verdade.',
+    objective:'Reconhecer e diferenciar identidade, bivalência, terceiro excluído e não contradição na lógica clássica; usar tabelas-verdade para distinguir tautologia, contradição e contingência sem confundir leis lógicas com fatos.',
     sections:[
-      {heading:'Uma fórmula pode ser sempre verdadeira?',paragraphs:[
-        'Considere a frase “A porta está aberta ou não está aberta”. Ela não informa qual é a situação real da porta. Mesmo assim, na lógica clássica, a frase composta é verdadeira qualquer que seja a situação. Se p = V, a primeira parte é verdadeira; se p = F, ¬p é verdadeira.',
-        'Representamos a estrutura por p ∨ ¬p. Uma fórmula que vale V em todas as interpretações é uma tautologia. Note que “verdadeira em todas as interpretações” não é o mesmo que “descreve um fato que observamos”; estamos analisando a estrutura.'
+      {heading:'Princípios fundamentais da lógica clássica: identidade e bivalência',paragraphs:[
+        'Comece com uma afirmação p, como “A porta está aberta”. O princípio clássico da identidade recorda que a afirmação considerada é ela mesma, sem trocar seu significado durante o argumento. A reflexividade da equivalência, p ↔ p, é verdadeira em todas as interpretações: quando p é V, os lados coincidem; quando p é F, também coincidem. Isso não diz que a porta está aberta, mas que a proposição mantém seu valor ao ser comparada consigo mesma.',
+        'A bivalência é uma característica da semântica proposicional clássica: cada proposição recebe exatamente um valor, V ou F, na interpretação considerada. Não saber se a porta está aberta não cria um terceiro valor lógico. O princípio da identidade para objetos, a = a, é outra formulação, na lógica com igualdade; não deve ser confundido com p ↔ p. A bivalência, por sua vez, não é o mesmo enunciado que o terceiro excluído.'
       ]},
-      {heading:'E uma fórmula pode ser sempre falsa?',paragraphs:[
-        'Pense agora em “A porta está aberta e não está aberta”, no mesmo momento e no mesmo sentido. A fórmula p ∧ ¬p é falsa se p for V, pois ¬p será F; e também será falsa se p for F, pois a primeira parte já será F.',
-        'Uma fórmula falsa em todas as interpretações é uma contradição. Já p ∧ q pode ser verdadeira quando p e q forem V, mas será falsa em outras combinações. Essa terceira classe recebe o nome de contingência.'
+      {heading:'Terceiro excluído e não contradição: duas leis diferentes',paragraphs:[
+        'O princípio do terceiro excluído é expresso por p ∨ ¬p: “a porta está aberta ou não está aberta”. Se p = V, o primeiro membro torna a disjunção V; se p = F, ¬p é V e a disjunção continua V. Por isso p ∨ ¬p é uma tautologia. Ele não revela qual alternativa é verdadeira numa situação concreta: apenas assegura que a disjunção não falha na lógica clássica.',
+        'O princípio da não contradição é ¬(p ∧ ¬p): não podem valer simultaneamente p e sua negação, no mesmo sentido e na mesma interpretação. A fórmula p ∧ ¬p é sempre F; ao negá-la, obtemos uma tautologia. Se p = V, ¬p = F; se p = F, a própria p é F. As duas leis não são sinônimas: o terceiro excluído garante p ∨ ¬p; a não contradição exclui p ∧ ¬p. Outras lógicas podem tratar essas leis e a bivalência de formas distintas.'
       ]},
-      {heading:'Use a última coluna como critério',paragraphs:[
-        'Para classificar uma fórmula, avalie primeiro todas as combinações de valores de suas letras. Depois olhe somente a coluna do resultado final. Se todas as linhas forem V, há tautologia; se todas forem F, há contradição; se houver V e F, há contingência.',
-        'Por exemplo, a expressão p → q é contingente: é falsa quando p = V e q = F, mas verdadeira nas outras três possibilidades. Não basta encontrar uma linha V para chamá-la de tautologia, nem uma linha F para chamá-la de contradição.'
+      {heading:'Da lei lógica à classificação por tabelas-verdade',paragraphs:[
+        'Uma fórmula que produz V em todas as interpretações é uma tautologia, como p ↔ p, p ∨ ¬p e ¬(p ∧ ¬p). Já p ∧ ¬p é uma contradição: não existe valoração clássica que torne ambas as partes verdadeiras. Compare as colunas para p = V e para p = F; não é preciso supor fatos sobre a porta para descobrir esses resultados.',
+        'Uma contingência pode assumir V ou F conforme a interpretação. Por exemplo, p → q é F quando p = V e q = F, mas é V nas outras três combinações. Para decidir, examine a coluna final inteira: somente V indica tautologia; somente F indica contradição; uma mistura indica contingência. Uma linha impossível como p e ¬p simultaneamente verdadeiras não é um contraexemplo real a uma lei lógica.'
       ]}
     ],
-    misconception:'Tautologia não significa “frase repetitiva” neste contexto. O termo nomeia uma propriedade lógica: verdade em todas as interpretações possíveis da fórmula.',
-    summary:'Classifique pela coluna final inteira: só V indica tautologia; só F indica contradição; uma mistura de V e F indica contingência.',
-    check:{question:'A tabela de uma fórmula apresenta V, V, F, V na coluna final. Qual é sua classificação?',options:['Tautologia.','Contradição.','Contingência.'],correct:2,why:'Há pelo menos uma linha verdadeira e uma falsa. Portanto, a fórmula não é sempre verdadeira nem sempre falsa: é contingente.'}
+    misconception:'Não confunda bivalência com saber a verdade factual, nem identidade proposicional p ↔ p com igualdade entre indivíduos a = a. Terceiro excluído (p ∨ ¬p) e não contradição (¬(p ∧ ¬p)) têm papéis distintos; uma contradição p ∧ ¬p nunca é verdadeira na lógica clássica.',
+    summary:'Na semântica clássica bivalente, cada proposição recebe V ou F. A reflexividade p ↔ p, o terceiro excluído p ∨ ¬p e a não contradição ¬(p ∧ ¬p) são tautologias, enquanto p ∧ ¬p é uma contradição. A coluna final permite diferenciar essas leis de fórmulas contingentes.',
+    check:{question:'Qual fórmula expressa o princípio da não contradição na lógica proposicional clássica?',options:['¬(p ∧ ¬p), sempre V.','p ∧ ¬p, sempre V.','p ∨ ¬p, sempre F.'],correct:0,why:'O princípio nega a possibilidade de p e ¬p serem simultaneamente verdadeiras. Assim, p ∧ ¬p é sempre F, enquanto ¬(p ∧ ¬p) é sempre V. O terceiro excluído é uma lei distinta: p ∨ ¬p.'}
   },
   equivalencias:{
     objective:'Transformar expressões por uma sequência de equivalências justificadas, simplificar fórmulas e construir um contraexemplo quando um passo não preserva seu valor.',
