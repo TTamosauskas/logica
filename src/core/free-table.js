@@ -457,7 +457,7 @@ export function readFreeTable(raw,{strict=false}={}){
           // Também persistem valores de indivíduos implícitos em q(p), sem cadastro no domínio.
           const knownIndividual=state.domain.some(d=>d.id===id)||
             state.variables.some(x=>x.name===id&&x.kind==='individual')||
-            state.formulas.some(f=>f.source.toLowerCase().includes('('+id+')'));
+            state.formulas.some(f=>predicateTerms(parseFreeFormula(state,f.source)).has(id));
           if(knownIndividual&&state.variables.some(x=>x.name===name&&x.kind!=='individual')&&
              (v==='V'||v==='F'))state.predicateValues[k]=v;
         }
