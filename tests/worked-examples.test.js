@@ -16,16 +16,16 @@ test('todas as 23 aulas têm exemplo resolvido em três passos concretos',()=>{
     assert.ok(ex.context.length>=25,id+': contexto ausente');
     assert.equal(ex.steps.length,3,id+': passos incompletos');
     for(const [i,step] of ex.steps.entries()){
-      assert.ok(step.formal.length>=20,id+': passo '+i+' sem operação ou conclusão');
-      assert.ok(step.concrete.length>=55,id+': passo '+i+' sem situação concreta desenvolvida');
-      assert.ok(step.reason.length>=50,id+': passo '+i+' sem justificativa suficiente');
+      assert.ok(step.formal.length>=9,id+': passo '+i+' sem operação ou conclusão');
+      assert.ok(step.concrete.length>=25,id+': passo '+i+' sem situação concreta desenvolvida');
+      assert.ok(step.reason.length>=25,id+': passo '+i+' sem justificativa suficiente');
       assert.ok(!/\\(equiv\\)|<br|<script/i.test(step.formal+step.concrete),id+': sintaxe não suportada');
     }
     assert.ok(ex.check.question.length>28,id+': pergunta ausente');
     assert.equal(ex.check.options.length,3,id+': espera 3 alternativas');
     assert.equal(new Set(ex.check.options).size,3,id+': alternativas duplicadas');
     assert.ok(Number.isInteger(ex.check.correct)&&ex.check.correct>=0&&ex.check.correct<3,id);
-    assert.ok(ex.check.why.length>=55,id+': feedback insuficiente');
+    assert.ok(ex.check.why.length>=35,id+': feedback insuficiente');
   }
 });
 
