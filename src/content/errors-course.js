@@ -256,7 +256,7 @@ export const ERROR_LESSONS={
           "104."
         ],
         "correct": 0,
-        "why": "100 × 1,2 × 0,8 = 96."
+        "why": "Após o aumento, 100 vira 120; aplicar uma queda de 20% sobre 120 produz 96, porque os percentuais usam bases diferentes."
       }
     ]
   },
