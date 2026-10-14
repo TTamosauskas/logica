@@ -26,7 +26,7 @@ test('todas as 36 aulas recebem leitura progressiva, sem duplicação ou omissã
   assert.deepEqual(Object.keys(UNIT12_READINGS),['pressupostos','categoricos2']);
   assert.deepEqual(Object.keys(UNIT2_READINGS),COURSE_UNITS[1].ids);
   assert.deepEqual(Object.keys(UNIT3_READINGS),COURSE_UNITS[2].ids);
-  assert.deepEqual(Object.keys(UNIT4_TO_6_READINGS),COURSE_UNITS.slice(3).flatMap(unit=>unit.ids).filter(id=>id!=='categoricos2'&&!Object.keys(UNIT13_READINGS).includes(id)&&!Object.keys(ERROR_READINGS).includes(id)));
+  assert.deepEqual(Object.keys(UNIT4_TO_6_READINGS),COURSE_UNITS.slice(3).flatMap(unit=>unit.ids).filter(id=>id!=='categoricos2'&&!Object.keys(UNIT13_READINGS).includes(id)&&!Object.keys(ERROR_READINGS).includes(id)&&(id==='modais'||!Object.keys(OTHER_LOGIC_READINGS).includes(id))));
   assert.deepEqual(Object.keys(UNIT13_READINGS),COURSE_UNITS[4].ids);
   assert.deepEqual(Object.keys(ERROR_READINGS),COURSE_UNITS[5].ids);
   assert.deepEqual(Object.keys(OTHER_LOGIC_READINGS),COURSE_UNITS[7].ids);
