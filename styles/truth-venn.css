@@ -58,4 +58,13 @@
 .truth-individual-set-label{fill:var(--text);font:700 16px ui-sans-serif,system-ui,sans-serif}
 .truth-individual-person .truth-individual-dot{fill:var(--teal);stroke:var(--panel);stroke-width:2}
 .truth-individual-person text,.truth-individual-more{fill:var(--text);font:600 12px ui-sans-serif,system-ui,sans-serif}
+.truth-individual-person .truth-individual-symbol{font-size:11px;font-weight:800}
+.truth-individual-panel .truth-venn-legend{margin-top:15px;padding:0;border:0;background:transparent}
+.truth-individual-legend-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px 24px}
+.truth-individual-legend-group h5{margin:0 0 4px;color:var(--muted);font-size:12px;font-weight:700}
+.truth-individual-legend-group .truth-venn-variables{display:block}
+.truth-individual-legend-group .truth-venn-variable{gap:9px;padding:4px 0;border:0}
+.truth-individual-legend-group .truth-venn-variable dt{min-width:28px}
+.truth-individual-legend-group .truth-venn-variable dd{font-size:13px;color:var(--text)}
+.truth-individual-legend-note{font-size:11px;color:var(--muted);font-weight:400}
 .truth-individual-panel .truth-venn-status{margin:9px 0 0}
