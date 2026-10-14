@@ -21,24 +21,24 @@ export const UNIT3_READINGS={
     check:{question:'De p → q e q → r, qual conclusão é garantida?',options:['r → p.','p → r.','p ∧ r.'],correct:1,why:'Se p for verdadeira, a primeira premissa obriga q; a segunda obriga r. Portanto, a condicional p → r é válida.'}
   },
   provas:{
-    objective:'Ler uma demonstração linha por linha, identificar premissas e indicar qual regra justifica uma conclusão derivada.',
+    objective:'Justificar uma demonstração por regras de inferência, distinguir prova direta e redução ao absurdo, explicar a explosão a partir de premissas inconsistentes sem confundir validade com verdade factual.',
     sections:[
       {heading:'Da verificação de casos à demonstração',paragraphs:[
-        'Nas tabelas-verdade, mostramos que uma inferência funciona em todas as interpretações. Agora vamos construir um caminho de raciocínio em que cada passo seja autorizado por uma regra. Esse é o objetivo de uma prova formal.',
-        'Imagine que você sabe duas coisas: “Se o alarme dispara, uma mensagem é enviada” e “O alarme disparou”. A partir delas, você pode concluir “Uma mensagem foi enviada”. Uma prova explicita quais informações usamos e por que o passo é permitido.'
+        'Nas tabelas-verdade, mostramos que uma inferência funciona em todas as interpretações. Agora vamos construir um caminho de raciocínio em que cada passo seja autorizado por uma regra. Esse é o objetivo de uma prova formal. Um contraexemplo basta para invalidar uma inferência; uma prova correta precisa justificar todos os passos necessários.',
+        'Imagine que você sabe duas coisas: “Se o alarme dispara, uma mensagem é enviada” e “O alarme disparou”. A partir delas, você pode concluir “Uma mensagem foi enviada”. Uma prova explicita quais informações usamos e por que o passo é permitido, independentemente de o alarme realmente ter disparado hoje.'
       ]},
       {heading:'Uma prova curta com três linhas',paragraphs:[
-        'Use p para “O alarme disparou” e q para “Uma mensagem foi enviada”. Linha 1: p → q (premissa). Linha 2: p (premissa). Linha 3: q (obtida das linhas 1 e 2). As duas primeiras linhas são dadas; a terceira precisa de justificativa.',
-        'A regra se chama modus ponens, ou eliminação da condicional: quando sabemos p → q e sabemos p, podemos derivar q. Uma prova não é uma coleção de frases plausíveis. Cada linha derivada deve apontar a regra utilizada e, quando necessário, as linhas anteriores das quais depende.'
+        'Use p para “O alarme disparou” e q para “Uma mensagem foi enviada”. Linha 1: p → q (premissa). Linha 2: p (premissa). Linha 3: q (obtida das linhas 1 e 2). As duas primeiras linhas são dadas; a terceira precisa de justificativa. Essa regra se chama modus ponens, ou eliminação da condicional.',
+        'De p ∧ q, podemos obter p pela eliminação da conjunção; de p e q, podemos formar p ∧ q pela introdução da conjunção. Ao conferir uma prova, pergunte de onde veio cada fórmula. Uma conclusão plausível não basta: a regra precisa autorizar a passagem a partir das premissas efetivamente disponíveis.'
       ]},
-      {heading:'Conheça outras regras e seus limites',paragraphs:[
-        'Se você tem p ∧ q, pode extrair p ou q pela eliminação da conjunção. Se tem p e tem q separadamente, pode formar p ∧ q pela introdução da conjunção. As regras mudam a forma da expressão mantendo aquilo que é justificável pelas premissas.',
-        'Não invente uma nova linha só porque ela parece verdadeira em algum caso. De p sozinho não se pode concluir q sem outra premissa ou regra adequada. Ao conferir uma prova, leia cada linha e pergunte: de onde veio esta fórmula? Qual regra autoriza obtê-la?'
+      {heading:'Explosão e redução ao absurdo: o que a contradição permite concluir?',paragraphs:[
+        'Na lógica clássica, de p e ¬p pode-se deduzir qualquer q: é o princípio da explosão (p, ¬p ⊢ q). Uma demonstração usa p para obter p ∨ q por introdução da disjunção; com ¬p e p ∨ q, o silogismo disjuntivo permite concluir q. Isso NÃO afirma que q seja um fato verdadeiro: significa que premissas contraditórias não têm modelo e, portanto, não fornecem uma base informativa para testar conclusões por contraexemplos.',
+        'A redução ao absurdo usa uma contradição de outro modo: assumimos provisoriamente a negação da tese e procuramos deduzir uma impossibilidade. Na lógica clássica, para demonstrar p a partir de ¬¬p, suponha ¬p; junto de ¬¬p, a hipótese leva a contradição, de modo que podemos concluir p e descarregar a hipótese ¬p. Aqui a contradição é obtida sob uma hipótese temporária, não assumida como premissa verdadeira. Em sistemas não clássicos, a explosão e a redução ao absurdo clássica podem não valer na mesma forma.'
       ]}
     ],
-    misconception:'Uma conclusão verdadeira não valida qualquer justificativa. Em dedução natural, o que torna um passo correto é a aplicação de uma regra autorizada às linhas apropriadas.',
-    summary:'Uma prova parte de premissas e chega à conclusão por passos justificados. Cada linha derivada deve indicar uma regra válida e suas dependências.',
-    check:{question:'De p → q na linha 1 e p na linha 2, o que pode aparecer na linha 3?',options:['q, por modus ponens.','¬q, por negação.','¬p, por modus tollens.'],correct:0,why:'A eliminação da condicional usa p → q e p para derivar q. A conclusão deve indicar a regra e as linhas utilizadas.'}
+    misconception:'Explosão não diz que uma frase arbitrária é verdadeira no mundo: diz que, na lógica clássica, premissas inconsistentes permitem qualquer conclusão formal. Na redução ao absurdo, uma hipótese provisória leva à contradição para ser rejeitada; não é uma permissão para manter premissas contraditórias como verdadeiras.',
+    summary:'Uma prova exige regras e dependências justificadas. Modus ponens, conjunção e silogismo disjuntivo permitem derivar conclusões. A explosão parte de premissas inconsistentes (p, ¬p ⊢ q), enquanto a redução ao absurdo refuta uma hipótese temporária ao chegar a uma contradição, sem confundir derivabilidade com fatos.',
+    check:{question:'Ao provar p por redução ao absurdo clássica, que papel tem a hipótese ¬p que leva a contradição?',options:['É provisória e deve ser descarregada para concluir p.','Fica como premissa verdadeira junto da contradição.','Mostra que qualquer enunciado empírico se tornou verdadeiro.'],correct:0,why:'Na redução ao absurdo, a negação da tese é assumida temporariamente; obter uma contradição mostra que a hipótese não pode se manter, autorizando a tese na lógica clássica. Isso é diferente de tratar p e ¬p como premissas permanentes.'}
   },
   deducao:{
     objective:'Traduzir pistas em restrições, organizar cenários possíveis e verificar se um problema de atribuição tem solução única.',
