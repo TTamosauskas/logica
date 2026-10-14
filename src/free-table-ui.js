@@ -264,6 +264,11 @@ export function createFreeTable(root){
     const columns=freeColumns(state);
     truthHighlightController=attachTruthHighlights(table,{columns,operands:index=>immediateOperands(columns,index),
       relations:freeHighlightRelations(columns)});
+    // A legenda dinâmica dos destaques fica depois de "Conferir respostas",
+    // preservando o botão imediatamente abaixo da tabela.
+    const relationLegend=board.querySelector('.truth-relation-status');
+    const gradeActions=board.querySelector('.free-table-actions');
+    if(relationLegend&&gradeActions)gradeActions.after(relationLegend);
   }
   function refresh(msg,options={}){
     save();render(options);
