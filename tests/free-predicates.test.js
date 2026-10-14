@@ -44,7 +44,7 @@ test('quantificadores avaliam todos, alguns e nenhum no mesmo domínio',()=>{
  assert.equal(evaluatePredicate(all,s.domain,truth),true);
  assert.equal(evaluatePredicate(some,s.domain,truth),true);
  assert.equal(evaluatePredicate(none,s.domain,truth),false);
- assert.match(describeFreeFormula(none,s).literal,/Nenhum indivíduo do domínio satisfaz/);
+ assert.match(describeFreeFormula(none,s).literal,/Não existe x para o qual/);
  assert.match(predicateEvidence(some,s.domain,truth),/Sócrates/);
  truth['s|q']='F';
  assert.equal(evaluatePredicate(all,s.domain,truth),false);
@@ -52,6 +52,24 @@ test('quantificadores avaliam todos, alguns e nenhum no mesmo domínio',()=>{
  assert.equal(evaluatePredicate(none,s.domain,truth),true);
  assert.match(predicateEvidence(all,s.domain,truth),/Sócrates/);
 });
+test('leituras naturais explicam quantificadores sem exibir fórmulas na tradução',()=>{
+ const meaning={q:'x é homem',r:'x é mortal'};
+ const read=source=>predicateReading(
+   parsePredicateFormula(source,['q','r'],['p']),meaning,{p:'Sócrates'});
+ assert.equal(read('∀x(q(x) → r(x))'),'todo x que é homem é mortal');
+ assert.equal(read('¬∀x(q(x) → r(x))'),'nem todo x que é homem é mortal');
+ assert.equal(read('∃x(q(x) ∧ ¬r(x))'),'existe pelo menos um x que é homem e não é mortal');
+ assert.equal(read('∃!x(r(x))'),'existe exatamente um x que é mortal');
+ assert.equal(read('q(p)'),'Sócrates é homem');
+ assert.equal(read('∀x(q(x) → (r(x) ∨ ¬r(x)))'),
+   'para todo x, se (x é homem), então (x é mortal ou x não é mortal (inclusive ambos))');
+});
+test('leituras continuam explicativas sem significado de predicado cadastrado',()=>{
+ const node=parsePredicateFormula('∀x(q(x) → r(x))',['q','r'],[]);
+ assert.equal(predicateReading(node,{}),
+   'todo x que satisfaz a propriedade q satisfaz a propriedade r');
+});
+
 test('P(s) refere-se a Sócrates e cada fórmula vira coluna-base da mesma tabela-verdade',()=>{
  const s=setup();
  addFreeFormula(s,'Q(s)');
