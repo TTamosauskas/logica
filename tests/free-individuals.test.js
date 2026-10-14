@@ -204,6 +204,32 @@ test('indivíduos extras não consomem símbolos de predicados',()=>{
  const restored=readFreeTable(JSON.stringify(state),{strict:true});
  assert.deepEqual(restored.domain.map(d=>d.label),['Maria','João']);
 });
+
+test('atribuições manuais preservam Maria em conjuntos ao salvar e reabrir',()=>{
+ const state=setup();
+ addFreeIndividual(state,'a','Maria');
+ addFreeFormula(state,'q(p)');
+ state.predicateValues['a|q']='V';
+ state.predicateValues['a|r']='F';
+ const restored=readFreeTable(JSON.stringify(state),{strict:true});
+ assert.equal(restored.predicateValues['a|q'],'V');
+ assert.equal(restored.predicateValues['a|r'],'F');
+ const model=freeIndividualModel(restored);
+ assert.equal(model.people.find(p=>p.id==='a').values.q,'V');
+ assert.equal(model.people.find(p=>p.id==='a').values.r,'F');
+ assert.match(renderIndividualSets(model),/>a<\/text>/);
+});
+test('quatro conjuntos mostram fato conhecido e sinalizam propriedades ainda desconhecidas',()=>{
+ const html=renderIndividualSets({
+  predicates:['q','r','s','t'],meanings:{q:'Homem',r:'Mortal',s:'Lindo',t:'Filósofo'},
+  people:[{id:'p',label:'Sócrates',values:{q:'V',r:'',s:'',t:''}}]
+ });
+ assert.equal((html.match(/class="truth-individual-set-circle/g)||[]).length,4);
+ assert.match(html,/>p<\/text>/);
+ assert.match(html,/class="truth-individual-question"/);
+ assert.match(html,/posição parcial; falta definir r, s, t/);
+ assert.doesNotMatch(html,/POSIÇÃO NÃO DETERMINADA/);
+});
 test('escapa rótulos fornecidos pelo usuário no SVG e na descrição',()=>{
   const html=renderIndividualSets({predicates:['q'],people:[{
     id:'p',label:'<script>alert(1)</script>',values:{q:'V'},origins:{q:'informado'}
