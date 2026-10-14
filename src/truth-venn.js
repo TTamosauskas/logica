@@ -214,7 +214,7 @@ function inclusionEuler(predicates,people,meanings,relations){
     esc(regions.unknown.map(p=>p.label).join(', '))+'.</p>':'';
   return '<div class="truth-individual-inclusion"><h4>Inclusão entre conjuntos determinada pela premissa universal</h4>'+
     '<svg viewBox="0 0 500 350" class="truth-venn-svg truth-individual-svg" role="img" aria-label="'+
-    esc('O conjunto '+innerName+' está totalmente dentro de '+outerName)+
+    esc('O conjunto '+innerName+' está totalmente dentro de '+outerName+
     '. Indivíduos no conjunto interno: '+regions.both.map(p=>p.label).join(', '))+'">'+
     '<circle cx="211" cy="167" r="138" class="truth-individual-set-circle"/>'+
     '<text x="211" y="55" text-anchor="middle" class="truth-individual-set-label">'+esc(outerName)+'</text>'+
