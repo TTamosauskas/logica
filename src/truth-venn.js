@@ -246,7 +246,8 @@ function individualSetLegend(shown,people,meanings,statuses){
     '<div class="truth-individual-legend-group"><h5>Predicados · conjuntos</h5>'+
     '<dl class="truth-venn-variables">'+sets+'</dl></div>'+
     '<div class="truth-individual-legend-group"><h5>Indivíduos · pontos</h5>'+
-    '<dl class="truth-venn-variables">'+(individuals||'<p>Nenhum indivíduo identificado.</p>')+
+    '<dl class="truth-venn-variables">'+(individuals||
+      '<div class="truth-venn-variable"><dt>—</dt><dd>Nenhum indivíduo identificado.</dd></div>')+
     '</dl></div></div></section>';
 }
 export function renderIndividualSets({predicates=[],people=[],meanings={},conflicts=[],relations=[]}={}){
@@ -294,12 +295,10 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
   const partialMarkers=partialPeople.map(({person,point})=>
     individualMarker(person,point[0],point[1],0)).join('');
   const info=[];
-  if(partialPeople.length)info.push('Pontos sobre a borda têm pertinência parcialmente conhecida.');
-  if(pending.length)info.push('Há '+pending.length+' indivíduo(s) sem posição definida.');
-  if(inconsistent.length)info.push('Há '+inconsistent.length+' indivíduo(s) com pertinência contraditória.');
+  if(inconsistent.length)info.push('Há valores incompatíveis com a inclusão entre conjuntos.');
   if(shown.length<predicates.length)
     info.push('Exibindo '+shown.length+' de '+predicates.length+' propriedades.');
-  if(conflicts.length)info.push('Conflito de premissas: '+conflicts.join(' '));
+  if(conflicts.length)info.push('Há conflito entre premissas e valores informados.');
   // Uma mesma área pode conter vários indivíduos. A distribuição visual nunca
   // decide se uma propriedade é verdadeira ou falsa.
   const description='Conjuntos '+names.join(', ')+'. '+
