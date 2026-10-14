@@ -27,7 +27,7 @@ test('ciclo 14 preserva IDs anteriores e progride para 39 aulas em 8 unidades',(
 test('metateoria preserva identificador e diferencia consequência de derivação',()=>{
   const first=LESSONS.metateoria.quiz[0];
   assert.match(first.question,/Γ⊨φ/);
-  assert.match(first.options[first.correct],/interpretação/);
+  assert.match(first.options[first.correct],/modelos/);
   assert.ok(!first.options.some(o=>/probabilidade como prova/.test(o)));
   const body=FOUNDATIONS_READINGS.metateoria.sections.flatMap(s=>s.paragraphs).join(' ');
   for(const term of ['derivação','correção','completude','semântica'])assert.ok(body.includes(term),term);
