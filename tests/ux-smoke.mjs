@@ -40,7 +40,7 @@ try{
   assert.equal(await page.locator('#continueLearning').isVisible(),false);
   assert.equal(await page.locator('#courseNext').count(),0);
   await page.locator('[data-caction="read"]').click();
-  assert.equal(await page.locator('#courseLesson [data-caction="worked-next"]').isVisible(),true);
+  assert.equal(await page.locator('#courseLesson [data-caction="worked-next"]:visible').isVisible(),true);
   assert.equal(await page.locator('#courseNext').count(),0);
   await page.locator('#courseHomeBack').click();
   assert.match(await page.locator('#continueDescription').innerText(),/Etapa 2\/5/);
@@ -987,7 +987,7 @@ try{
       const before=await pedagogy.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2'))?.lessons?.[id]?.read||false,id);
       assert.equal(before,false,'a checagem sem nota não registra conclusão da leitura');
       await pedagogy.locator('[data-caction="read"]').click();
-      assert.equal(await pedagogy.locator('[data-caction="worked-next"]').isVisible(),true);
+      assert.equal(await pedagogy.locator('[data-caction="worked-next"]:visible').isVisible(),true);
       const order=await pedagogy.locator('#courseLesson > section').evaluateAll(els=>els.map(x=>x.querySelector('h3')?.textContent||''));
       const exampleIndex=order.findIndex(x=>x.includes('2. Observar'));
       const advancedIndex=order.findIndex(x=>x.includes('Para ir além:'));
@@ -1179,7 +1179,7 @@ try{
     assert.match(await example.innerText(),/Comi o prato/);
     assert.match(await example.innerText(),/Em palavras/);
     assert.equal(await example.locator('[data-caction="example"]').isVisible(),false);
-    await example.locator('[data-caction="worked-next"]').click();
+    await example.locator('[data-caction="worked-next"]:visible').click();
     assert.equal(await example.locator('[data-worked-step]:visible').count(),2);
     assert.match(await screen.evaluate(()=>document.activeElement?.textContent),/Elimine a condicional/);
     await screen.reload({waitUntil:'networkidle'});
