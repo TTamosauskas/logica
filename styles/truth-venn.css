@@ -81,3 +81,10 @@
 .truth-individual-add{display:flex;align-items:end;flex-wrap:wrap;gap:9px;margin-top:14px}
 .truth-individual-add label{display:grid;gap:5px;color:var(--muted);font-size:12px}
 .truth-individual-add input{width:100%;min-width:130px;padding:9px;border:1px solid var(--border-hi);background:var(--input);color:var(--text);border-radius:8px}
+
+
+.truth-individual-inclusion{margin:15px 0;padding:14px;border:1px solid var(--border);border-radius:11px;background:var(--panel)}
+.truth-individual-inclusion h4{font-size:14px;line-height:1.5;margin:0 0 8px}
+.truth-individual-inclusion .truth-venn-svg{max-width:500px}
+.truth-individual-inclusion .truth-venn-note{margin:10px 0 0}
+.truth-individual-subset-circle{fill:var(--success-bg);stroke:var(--success);stroke-width:2.4}
