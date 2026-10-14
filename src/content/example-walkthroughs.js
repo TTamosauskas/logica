@@ -64,7 +64,7 @@ export const WORKED_EXAMPLES={
     "context": "p = “O laboratório abre”; q = “Há autorização”.",
     "steps": [
       {
-        "formal": "Identifique as afirmações p e q.",
+        "formal": "Identifique p e q; ∵ pode introduzir uma justificativa, mas não é conectivo.",
         "concrete": "A frase “O laboratório abre somente se houver autorização” fala da abertura e da autorização.",
         "reason": "Separar as proposições evita confundir suas funções."
       },
@@ -96,7 +96,7 @@ export const WORKED_EXAMPLES={
       {
         "formal": "Traduza: p → q; q; conclusão proposta: p.",
         "concrete": "“Se choveu, a rua molhou; a rua está molhada; logo, choveu.”",
-        "reason": "A conclusão afirma o antecedente a partir da observação do consequente."
+        "reason": "A conclusão introduzida por ∴ (“portanto”) afirma o antecedente a partir da observação do consequente. ∴ e ∵ são marcadores do texto, não operadores das fórmulas."
       },
       {
         "formal": "Teste p=F e q=V.",
@@ -214,19 +214,19 @@ export const WORKED_EXAMPLES={
     "context": "p = “A porta está aberta”.",
     "steps": [
       {
-        "formal": "Identidade proposicional e bivalência: p ↔ p = V.",
+        "formal": "Identidade proposicional: p ↔ p ≡ ⊤ (sempre verdadeira).",
         "concrete": "Se a porta está aberta, p coincide consigo mesma; se está fechada, também coincide. Em ambos os casos, p recebe V ou F.",
         "reason": "p↔p é tautologia; a identidade entre indivíduos (a=a) é outra construção lógica."
       },
       {
-        "formal": "Terceiro excluído: p ∨ ¬p = V.",
+        "formal": "Terceiro excluído: p ∨ ¬p ≡ ⊤.",
         "concrete": "“A porta está aberta ou não está aberta” é verdadeira nas duas situações possíveis.",
         "reason": "A disjunção não determina qual das alternativas descreve a realidade."
       },
       {
-        "formal": "Não contradição: ¬(p ∧ ¬p) = V.",
+        "formal": "Não contradição: ¬(p ∧ ¬p) ≡ ⊤; p ∧ ¬p ≡ ⊥.",
         "concrete": "“Não é o caso que a porta esteja aberta e não esteja aberta ao mesmo tempo e no mesmo sentido”.",
-        "reason": "p∧¬p é sempre F; sua negação é sempre V na lógica clássica."
+        "reason": "⊤ é a constante verdadeira e ⊥, a falsa; as fórmulas equivalentes a elas recebem o mesmo valor em toda interpretação clássica."
       }
     ],
     "check": {
@@ -369,12 +369,12 @@ export const WORKED_EXAMPLES={
         "reason": "A regra modus ponens usa as duas premissas, sem exigir saber se o alarme disparou na realidade."
       },
       {
-        "formal": "Explosão clássica: p, ¬p ⊢ q.",
+        "formal": "Contradição e explosão clássica: p, ¬p ⊢ ⊥; de ⊥ segue q.",
         "concrete": "“O alarme disparou” e “O alarme não disparou” são premissas incompatíveis; formalmente delas podemos deduzir “O aviso foi enviado”.",
         "reason": "De p derive p∨q; com ¬p use o silogismo disjuntivo. Isso não comprova que a mensagem foi realmente enviada."
       },
       {
-        "formal": "Redução ao absurdo: ¬¬p ⊢ p (clássica).",
+        "formal": "Redução ao absurdo: suponha ¬p, obtenha ⊥ e conclua p (clássica).",
         "concrete": "Para provar que o alarme disparou a partir de “não é verdade que não disparou”, suponha temporariamente que não disparou; essa hipótese contradiz a premissa.",
         "reason": "A hipótese ¬p é descartada ao produzir contradição. Não é uma premissa mantida como fato."
       }
@@ -489,9 +489,9 @@ export const WORKED_EXAMPLES={
         "reason": "A existência de vencedores não determina quantos existem."
       },
       {
-        "formal": "Unicidade: ∃!x Venceu(x) é falsa.",
+        "formal": "Unicidade: ∃!x Venceu(x) é falsa (não há exatamente um vencedor).",
         "concrete": "Como duas pessoas diferentes venceram, não há um único vencedor.",
-        "reason": "O artigo definido “o vencedor” normalmente exige unicidade na análise russelliana."
+        "reason": "∃!x Venceu(x) conta testemunhas distintas; com Ana e Beto vencedores o valor é F. Em lógica com igualdade, equivale a ∃x(Venceu(x)∧∀y(Venceu(y)→y=x))."
       },
       {
         "formal": "A descrição definida falha na análise estudada.",
