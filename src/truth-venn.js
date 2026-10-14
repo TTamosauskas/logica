@@ -209,6 +209,16 @@ function individualGeometry(shown,nested){
   }
   return shapes[shown.length]||null;
 }
+/** Ponto sobre a borda do conjunto indefinido: indica a propriedade
+ * conhecida sem decidir arbitrariamente a pertença ao outro conjunto. */
+function partialPoint(values,nested){
+  if(values.length!==2||values.filter(v=>v==='').length!==1)return null;
+  const signature=values.map(v=>v||'?').join('');
+  if(nested){
+    return ({'?V':[240,106],'F?':[378,160],'?F':[378,160],'V?':[240,106]})[signature]||null;
+  }
+  return ({'V?':[189,163],'?V':[291,163],'F?':[393,163],'?F':[87,163]})[signature]||null;
+}
 function individualMarker(person,x,y,index){
   const dx=index?((index%2)?24:-24)*Math.ceil(index/2):0;
   const dy=index?Math.floor((index-1)/2)*-24:0;
@@ -225,11 +235,14 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
   if(!geometry)return '<section class="truth-venn-panel truth-individual-panel">'+heading+
     '<p class="truth-venn-note">Adicione uma fórmula com predicados para visualizar seus conjuntos.</p></section>';
   const names=shown.map(name=>propertyTitle(name,meanings[name]));
-  const regionPeople=new Map(),pending=[],inconsistent=[];
+  const regionPeople=new Map(),partialPeople=[],pending=[],inconsistent=[];
   for(const person of people){
     const values=shown.map(name=>person.values?.[name]||'');
     if(values.some(value=>!['V','F'].includes(value))){
-      pending.push(String(person.label||person.id));continue;
+      const point=partialPoint(values,nested);
+      if(point)partialPeople.push({person,point,missing:shown.filter((_,i)=>values[i]==='')});
+      else pending.push(String(person.label||person.id));
+      continue;
     }
     const mask=values.reduce((bits,value)=>bits*2+(value==='V'?1:0),0);
     if(nested&&mask===2){inconsistent.push(String(person.label||person.id));continue}
@@ -247,7 +260,12 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
       (persons.length>2?'<text class="truth-individual-more" x="'+point[0]+'" y="'+(point[1]+37)+
       '" text-anchor="middle">+'+(persons.length-2)+'</text>':'');
   }).join('');
+  const partialMarkers=partialPeople.map(({person,point})=>
+    individualMarker(person,point[0],point[1],0)).join('');
   const info=[];
+  if(partialPeople.length)info.push('Sobre a borda: pertinência ainda indefinida de '+
+    partialPeople.map(({person,missing})=>String(person.label||person.id)+' em '+
+      missing.map(name=>propertyTitle(name,meanings[name])).join(', ')).join('; ')+'.');
   if(pending.length)info.push('Posição ainda indeterminada: '+pending.join(', ')+'.');
   if(inconsistent.length)info.push('Pertinência incompatível com a inclusão: '+inconsistent.join(', ')+'.');
   if(shown.length<predicates.length)
@@ -260,7 +278,7 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
       names[i]+' '+(p.values?.[name]==='V'?'sim':p.values?.[name]==='F'?'não':'indefinido')).join(', ')).join('. ');
   return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de Venn–Euler de indivíduos">'+
     heading+'<svg class="truth-venn-svg truth-individual-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+
-    esc(description)+'">'+circles+markers+'</svg>'+
+    esc(description)+'">'+circles+markers+partialMarkers+'</svg>'+
     (info.length?'<p class="truth-venn-status"'+(inconsistent.length||conflicts.length?' role="alert"':'')+'>'+
       esc(info.join(' '))+'</p>':'')+'</section>';
 }
