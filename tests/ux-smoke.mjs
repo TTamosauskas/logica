@@ -757,6 +757,39 @@ try{
     await ctx.close();
   }
 
+  // Registros de impossibilidade consecutivos mesmo quando as linhas originais não o são;
+  // o teclado mostra ajuda ao toque e insere ∃! como quantificador completo.
+  for(const width of [375,1280]){
+    const ctx=await browser.newContext({viewport:{width,height:812},hasTouch:width===375,isMobile:width===375});
+    const page=await ctx.newPage(),errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    await page.locator('.free-keypad [data-symbol="∃!"]').click();
+    assert.equal(await page.locator('#freeNewFormula').inputValue(),'∃!x(');
+    assert.match(await page.locator('#freeSymbolHelp').innerText(),/exatamente um indivíduo/);
+    await page.locator('#freeNewFormula').fill('');
+    for(const formula of ['q(p)','¬q(p)']){
+      await page.locator('#freeNewFormula').fill(formula);
+      await page.locator('[data-action="add-formula"]').click();
+    }
+    assert.equal(await page.locator('.free-truth-table thead th').count(),3);
+    assert.equal(await page.locator('.free-impossible-row').count(),2);
+    const markers=page.locator('.free-impossible-row .free-impossible-marker');
+    assert.equal(await markers.count(),2);
+    assert.deepEqual(await markers.locator('sup').allTextContents(),['1','2']);
+    assert.deepEqual(await markers.evaluateAll(items=>items.map(x=>x.getAttribute('href'))),
+      ['#free-impossible-note-1','#free-impossible-note-2']);
+    assert.equal(await page.locator('.free-impossibility-footer li').count(),2);
+    assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫1 é impossível porque/);
+    assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫2 é impossível porque/);
+    // A marca continua visível na primeira coluna disponível quando A é recolhida.
+    await page.locator('.free-truth-table [data-action="toggle-col"]').first().click();
+    assert.equal(await page.locator('.free-impossible-row .free-impossible-marker').count(),2);
+    assert.deepEqual(errors,[]);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2);
+    await ctx.close();
+  }
+
   // Destaques compartilhados: composição imediata antes da correção, relações depois.
   for(const width of [375,1280]){
     const relationContext=await browser.newContext({viewport:{width,height:812},hasTouch:width===375,isMobile:width===375});
