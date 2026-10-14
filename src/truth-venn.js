@@ -220,13 +220,34 @@ function partialPoint(values,nested){
   return ({'V?':[189,163],'?V':[291,163],'F?':[393,163],'?F':[87,163]})[signature]||null;
 }
 function individualMarker(person,x,y,index){
-  const dx=index?((index%2)?24:-24)*Math.ceil(index/2):0;
-  const dy=index?Math.floor((index-1)/2)*-24:0;
-  const name=String(person.label||person.id);
-  return '<g class="truth-individual-person"><title>'+esc(name)+'</title>'+
-    '<circle class="truth-individual-dot" cx="'+(x+dx)+'" cy="'+(y+dy)+'" r="7"/>'+
-    '<text x="'+(x+dx)+'" y="'+(y+dy+20)+'" text-anchor="middle">'+
-    esc(name.length>17?name.slice(0,16)+'…':name)+'</text></g>';
+  const dx=index?((index%2)?28:-28)*Math.ceil(index/2):0;
+  const dy=index?Math.floor((index-1)/2)*-28:0;
+  const symbol=String(person.id||'').trim();
+  return '<g class="truth-individual-person"><title>Indivíduo '+esc(symbol)+'</title>'+
+    '<circle class="truth-individual-dot" cx="'+(x+dx)+'" cy="'+(y+dy)+'" r="11"/>'+
+    '<text class="truth-individual-symbol" x="'+(x+dx)+'" y="'+(y+dy)+
+    '" text-anchor="middle" dominant-baseline="central">'+esc(symbol.slice(0,4))+'</text></g>';
+}
+/** O desenho identifica indivíduos apenas por símbolos; seus nomes aparecem na legenda. */
+function individualSetLegend(shown,people,meanings,statuses){
+  const sets=shown.map(name=>'<div class="truth-venn-variable"><dt><code>'+
+    esc(name)+'</code></dt><dd>'+esc(String(meanings?.[name]||'').trim()||
+      'Significado não informado')+'</dd></div>').join('');
+  const individuals=people.map(person=>{
+    const id=String(person.id||'');
+    const name=String(person.label||person.id);
+    const note=statuses.get(id);
+    return '<div class="truth-venn-variable"><dt><code>'+esc(id)+'</code></dt>'+
+      '<dd>'+esc(name)+(note?'<small class="truth-individual-legend-note"> — '+
+      esc(note)+'</small>':'')+'</dd></div>';
+  }).join('');
+  return '<section class="truth-venn-legend" aria-label="Legenda do diagrama de Venn–Euler">'+
+    '<h4>Legenda</h4><div class="truth-individual-legend-groups">'+
+    '<div class="truth-individual-legend-group"><h5>Predicados · conjuntos</h5>'+
+    '<dl class="truth-venn-variables">'+sets+'</dl></div>'+
+    '<div class="truth-individual-legend-group"><h5>Indivíduos · pontos</h5>'+
+    '<dl class="truth-venn-variables">'+(individuals||'<p>Nenhum indivíduo identificado.</p>')+
+    '</dl></div></div></section>';
 }
 export function renderIndividualSets({predicates=[],people=[],meanings={},conflicts=[],relations=[]}={}){
   const {shown,nested}=selectIndividualSets(predicates,relations);
@@ -236,16 +257,26 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
     '<p class="truth-venn-note">Adicione uma fórmula com predicados para visualizar seus conjuntos.</p></section>';
   const names=shown.map(name=>propertyTitle(name,meanings[name]));
   const regionPeople=new Map(),partialPeople=[],pending=[],inconsistent=[];
+  const legendStatuses=new Map();
   for(const person of people){
     const values=shown.map(name=>person.values?.[name]||'');
     if(values.some(value=>!['V','F'].includes(value))){
       const point=partialPoint(values,nested);
-      if(point)partialPeople.push({person,point,missing:shown.filter((_,i)=>values[i]==='')});
-      else pending.push(String(person.label||person.id));
+      if(point){
+        partialPeople.push({person,point,missing:shown.filter((_,i)=>values[i]==='')});
+        legendStatuses.set(String(person.id),'posição parcial (sobre a borda)');
+      }else{
+        pending.push(person);
+        legendStatuses.set(String(person.id),'posição indefinida');
+      }
       continue;
     }
     const mask=values.reduce((bits,value)=>bits*2+(value==='V'?1:0),0);
-    if(nested&&mask===2){inconsistent.push(String(person.label||person.id));continue}
+    if(nested&&mask===2){
+      inconsistent.push(person);
+      legendStatuses.set(String(person.id),'pertinência contraditória');
+      continue;
+    }
     regionPeople.set(mask,[...(regionPeople.get(mask)||[]),person]);
   }
   const circles=geometry.circles.map(([cx,cy,r],i)=>
@@ -263,11 +294,9 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
   const partialMarkers=partialPeople.map(({person,point})=>
     individualMarker(person,point[0],point[1],0)).join('');
   const info=[];
-  if(partialPeople.length)info.push('Sobre a borda: pertinência ainda indefinida de '+
-    partialPeople.map(({person,missing})=>String(person.label||person.id)+' em '+
-      missing.map(name=>propertyTitle(name,meanings[name])).join(', ')).join('; ')+'.');
-  if(pending.length)info.push('Posição ainda indeterminada: '+pending.join(', ')+'.');
-  if(inconsistent.length)info.push('Pertinência incompatível com a inclusão: '+inconsistent.join(', ')+'.');
+  if(partialPeople.length)info.push('Pontos sobre a borda têm pertinência parcialmente conhecida.');
+  if(pending.length)info.push('Há '+pending.length+' indivíduo(s) sem posição definida.');
+  if(inconsistent.length)info.push('Há '+inconsistent.length+' indivíduo(s) com pertinência contraditória.');
   if(shown.length<predicates.length)
     info.push('Exibindo '+shown.length+' de '+predicates.length+' propriedades.');
   if(conflicts.length)info.push('Conflito de premissas: '+conflicts.join(' '));
@@ -279,6 +308,7 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
   return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de Venn–Euler de indivíduos">'+
     heading+'<svg class="truth-venn-svg truth-individual-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+
     esc(description)+'">'+circles+markers+partialMarkers+'</svg>'+
+    individualSetLegend(shown,people,meanings,legendStatuses)+
     (info.length?'<p class="truth-venn-status"'+(inconsistent.length||conflicts.length?' role="alert"':'')+'>'+
       esc(info.join(' '))+'</p>':'')+'</section>';
 }
