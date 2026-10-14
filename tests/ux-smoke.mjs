@@ -40,7 +40,7 @@ try{
   assert.equal(await page.locator('#continueLearning').isVisible(),false);
   assert.equal(await page.locator('#courseNext').count(),0);
   await page.locator('[data-caction="read"]').click();
-  assert.equal(await page.locator('#courseLesson [data-caction="example"]').isVisible(),true);
+  assert.equal(await page.locator('#courseLesson [data-caction="worked-next"]').isVisible(),true);
   assert.equal(await page.locator('#courseNext').count(),0);
   await page.locator('#courseHomeBack').click();
   assert.match(await page.locator('#continueDescription').innerText(),/Etapa 2\/5/);
@@ -208,8 +208,8 @@ try{
   // Na aula, o foco acompanha a próxima etapa disponível.
   await access.goto(root+'#aula-fundamentos',{waitUntil:'networkidle'});
   await access.locator('[data-caction="read"]').click();
-  assert.equal(await access.evaluate(()=>document.activeElement?.dataset.caction),'example');
-  await access.locator('[data-caction="example"]').click();
+  assert.equal(await access.evaluate(()=>document.activeElement?.dataset.caction),'worked-next');
+  await finishWorkedExample(access);
   assert.equal(await access.evaluate(()=>document.activeElement?.dataset.caction),'guided');
 
   // A alternativa de Venn fica operável pelo teclado e sincronizada ao desenho.
@@ -987,7 +987,7 @@ try{
       const before=await pedagogy.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2'))?.lessons?.[id]?.read||false,id);
       assert.equal(before,false,'a checagem sem nota não registra conclusão da leitura');
       await pedagogy.locator('[data-caction="read"]').click();
-      assert.equal(await pedagogy.locator('[data-caction="example"]').isVisible(),true);
+      assert.equal(await pedagogy.locator('[data-caction="worked-next"]').isVisible(),true);
       const order=await pedagogy.locator('#courseLesson > section').evaluateAll(els=>els.map(x=>x.querySelector('h3')?.textContent||''));
       const exampleIndex=order.findIndex(x=>x.includes('2. Observar'));
       const advancedIndex=order.findIndex(x=>x.includes('Para ir além:'));
@@ -995,6 +995,13 @@ try{
     }
     assert.deepEqual(errors,[]);
     await pedagogyContext.close();
+  }
+
+  // Concluir um exemplo agora exige observar os passos, sem obrigar a responder à checagem.
+  async function finishWorkedExample(page){
+    const show=page.locator('#courseLesson [data-caction="worked-show-all"]');
+    if(await show.isVisible())await show.click();
+    await page.locator('#courseLesson [data-caction="example"]').click();
   }
 
   // Ciclo 12: duas novas competências com prática e avaliação integradas.
@@ -1049,7 +1056,7 @@ try{
         assert.match(await lab.locator('[data-square-relations]').innerText(),/apenas A–O e E–I/);
       }
       await applied.locator('[data-caction="read"]').click();
-      await applied.locator('[data-caction="example"]').click();
+      await finishWorkedExample(applied);
       await applied.locator('[data-caction="guided"]').click();
       assert.match(await applied.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
       assert.equal(await applied.locator('#specialArea').isVisible(),true);
@@ -1093,7 +1100,7 @@ try{
       assert.match(await applied13.locator('#courseLocation').innerText(),/AULA/);
       await applied13.locator('[data-caction="read"]').click();
       assert.equal(await applied13.locator('#courseLesson [data-caction="example"]').count(),1);
-      await applied13.locator('[data-caction="example"]').click();
+      await finishWorkedExample(applied13);
       await applied13.locator('[data-caction="guided"]').click();
       assert.match(await applied13.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
       assert.equal(await applied13.locator('#specialArea [data-special-field]').count(),4);
@@ -1153,7 +1160,7 @@ try{
       assert.match(await page.locator('#courseLesson').innerText(),new RegExp(heading));
       assert.match(await page.locator('#courseLesson').innerText(),new RegExp(topic,'i'));
       await page.locator('[data-caction="read"]').click();
-      await page.locator('[data-caction="example"]').click();
+      await finishWorkedExample(page);
       assert.match(await page.locator('#courseLesson .advanced-theorem').allTextContents().then(x=>x.join(' ')),new RegExp(card));
     }
     assert.deepEqual(errors,[]);
@@ -1204,7 +1211,7 @@ try{
       await app14.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await app14.locator('#courseLesson .reading-section').count(),3);
       await app14.locator('[data-caction="read"]').click();
-      await app14.locator('[data-caction="example"]').click();
+      await finishWorkedExample(app14);
       await app14.locator('[data-caction="guided"]').click();
       assert.equal(await app14.locator('#specialArea [data-special-field]').count(),5);
       if(id==='predicados2')assert.match(await app14.locator('#specialArea').innerText(),/unicidade|exatamente uma/);
