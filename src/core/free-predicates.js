@@ -21,7 +21,7 @@ export function predicateTokens(input){
   }
   return out;
 }
-export const isPredicateSource=source=>/[∀∃]|\b[a-z]\s*\(/i.test(String(source||''));
+export const isPredicateSource=source=>/[∀∃]|\b[a-z][a-z0-9_]*\s*\(/i.test(String(source||''));
 
 export function parsePredicateFormula(source,variables,individuals,{allowImplicitIndividuals=false}={}){
   const list=predicateTokens(source),names=new Set(variables),constants=new Set(individuals);
@@ -46,7 +46,7 @@ export function parsePredicateFormula(source,variables,individuals,{allowImplici
       const inner=expression(0);expect(')','Feche o parêntese da expressão.');return inner;
     }
     const name=list[pos++];
-    if(name?.type!=='name'||!names.has(name.value))throw Error('Use um predicado cadastrado (p, q, r, s, t ou u).');
+    if(name?.type!=='name'||!names.has(name.value))throw Error('Use um predicado cadastrado entre as variáveis ou os conjuntos do diagrama.');
     expect('(','Predicados precisam de argumento, como p(x) ou p(s).');
     const arg=list[pos++];
     // Na Tabela Livre, q(p) identifica p como constante pelo lugar que ocupa.
