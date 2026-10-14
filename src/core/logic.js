@@ -14,13 +14,13 @@ export const A=(a,b)=>bin('and',a,b), O=(a,b)=>bin('or',a,b), X=(a,b)=>bin('xor'
 
 export const t=x=>x?'V':'F';
 
-export function evalAst(node,env){switch(node.type){case 'var':return env[node.name];case 'not':return !evalAst(node.a,env);case 'and':return evalAst(node.a,env)&&evalAst(node.b,env);case 'or':return evalAst(node.a,env)||evalAst(node.b,env);case 'xor':return evalAst(node.a,env)!==evalAst(node.b,env);case 'implies':return !evalAst(node.a,env)||evalAst(node.b,env);case 'iff':return evalAst(node.a,env)===evalAst(node.b,env);default:throw Error('Operador desconhecido')}}
+export function evalAst(node,env){switch(node.type){case 'var':return env[node.name];case 'truth':return true;case 'falsity':return false;case 'not':return !evalAst(node.a,env);case 'and':return evalAst(node.a,env)&&evalAst(node.b,env);case 'or':return evalAst(node.a,env)||evalAst(node.b,env);case 'xor':return evalAst(node.a,env)!==evalAst(node.b,env);case 'implies':return !evalAst(node.a,env)||evalAst(node.b,env);case 'iff':return evalAst(node.a,env)===evalAst(node.b,env);default:throw Error('Operador desconhecido')}}
 
-export function fmt(node){if(node.type==='var')return node.name;if(node.type==='not')return '¬'+(node.a.type==='var'||node.a.type==='not'?fmt(node.a):'('+fmt(node.a)+')');return '('+fmt(node.a)+' '+SYMBOLS[node.type]+' '+fmt(node.b)+')'}
+export function fmt(node){if(node.type==='var')return node.name;if(node.type==='truth')return '⊤';if(node.type==='falsity')return '⊥';if(node.type==='not')return '¬'+(node.a.type==='var'||node.a.type==='truth'||node.a.type==='falsity'||node.a.type==='not'?fmt(node.a):'('+fmt(node.a)+')');return '('+fmt(node.a)+' '+SYMBOLS[node.type]+' '+fmt(node.b)+')'}
 
-export const pretty=node=>{const s=fmt(node);return node.type!=='not'&&node.type!=='var'?s.slice(1,-1):s};
+export const pretty=node=>{const s=fmt(node);return node.type!=='not'&&node.type!=='var'&&node.type!=='truth'&&node.type!=='falsity'?s.slice(1,-1):s};
 
-export const sig=node=>node.type==='var'?node.name:node.type==='not'?'!'+sig(node.a):node.type+'('+sig(node.a)+','+sig(node.b)+')';
+export const sig=node=>node.type==='var'?node.name:node.type==='truth'?'T':node.type==='falsity'?'F':node.type==='not'?'!'+sig(node.a):node.type+'('+sig(node.a)+','+sig(node.b)+')';
 
 export function varsOf(n){const source=['p','q','r','s','t','u','a','b'];for(let i=source.length-1;i>0;i--){const j=rng(i+1);[source[i],source[j]]=[source[j],source[i]]}return source.slice(0,n)}
 
@@ -30,7 +30,7 @@ export function truthRows(vars){return Array.from({length:2**vars.length},(_,i)=
 
 export function varColumns(vars,editable=false){return vars.map((name,i)=>({key:'var'+i,label:name,sub:'variável',node:v(name),editable}))}
 
-export function stepNodes(roots){const found=[],seen=new Set(),rootSigs=new Set(roots.map(sig));const walk=n=>{if(n.type==='var')return;if(n.a)walk(n.a);if(n.b)walk(n.b);const s=sig(n);if(!seen.has(s)&&!rootSigs.has(s)){found.push(n);seen.add(s)}};roots.forEach(walk);return found}
+export function stepNodes(roots){const found=[],seen=new Set(),rootSigs=new Set(roots.map(sig));const walk=n=>{if(n.type==='var'||n.type==='truth'||n.type==='falsity')return;if(n.a)walk(n.a);if(n.b)walk(n.b);const s=sig(n);if(!seen.has(s)&&!rootSigs.has(s)){found.push(n);seen.add(s)}};roots.forEach(walk);return found}
 
 export function formulaColumns(roots,steps=true,labels=[]){const preliminary=steps?stepNodes(roots):[];const cols=preliminary.map((node,i)=>({key:'step'+i,label:pretty(node),sub:'etapa',node,editable:true}));roots.forEach((node,i)=>cols.push({key:'out'+i,label:pretty(node),sub:labels[i]||'resultado',node,editable:true}));return cols}
 
