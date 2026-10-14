@@ -326,7 +326,7 @@ export function freeArgumentAnalysis(state){
       row.values.slice(0,-1).every(value=>value==='V'));
     const counter=premisesTrue.find(row=>row.values.at(-1)==='F');
     if(counter)return {status:'invalid',
-      reason:'A linha '+(report.rows.indexOf(counter)+1)+' é possível: todas as premissas são V e a conclusão é F. Há um contraexemplo; o argumento é inválido.'};
+      reason:'Uma combinação semanticamente possível tem todas as premissas V e a conclusão F. Há um contraexemplo; o argumento é inválido.'};
     if(!premisesTrue.length)return {status:'vacuous',
       reason:'Não há modelo em que todas as premissas sejam V. A inferência é válida por vacuidade (premissas conjuntamente inconsistentes), não por uma demonstração informativa da conclusão.'};
     const rule=freeArgumentRule(roots,mode);

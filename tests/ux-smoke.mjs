@@ -536,6 +536,15 @@ try{
     assert.equal(await free.locator('input[name="freeRows"],input[name="freeMode"]').count(),0);
     assert.equal(await free.locator('[data-action="export-csv"],[data-action="export-json"],[data-action="import-json"]').count(),0);
     assert.deepEqual(await free.locator('.free-keypad .free-key-variable').allTextContents(),['p','q']);
+    assert.equal(await free.locator('.free-domain summary').innerText().then(text=>text.includes('Configurar domínio concreto (avançado)')),true);
+    assert.equal(await free.locator('.free-domain').getAttribute('open'),null);
+    assert.equal(await free.locator('.free-domain').evaluate(node=>node.closest('.free-card')?.querySelector('h2')?.id),'freeTableTitle');
+    await free.locator('.free-keypad [data-symbol="¬"]').hover();
+    assert.match(await free.locator('#freeSymbolHelp').innerText(),/Negação: não p/);
+    assert.match(await free.locator('.free-keypad [data-symbol="¬"]').getAttribute('title'),/Negação/);
+    await free.locator('.free-keypad [data-symbol="∃!"]').focus();
+    assert.match(await free.locator('#freeSymbolHelp').innerText(),/exatamente um indivíduo/);
+    assert.match(await free.locator('.free-keypad [data-symbol="∃!"]').getAttribute('aria-label'),/Quantificador de unicidade/);
     await free.locator('.free-keypad [data-symbol="p"]').click();
     await free.locator('.free-keypad [data-symbol="→"]').click();
     await free.locator('.free-keypad [data-symbol="q"]').click();
@@ -548,6 +557,9 @@ try{
     await free.locator('[data-action="save-var"][data-index="0"]').click();
     await free.locator('[data-var-meaning="1"]').fill('viajei');
     await free.locator('[data-action="save-var"][data-index="1"]').click();
+    assert.match(await free.locator('.free-keypad [data-symbol="p"]').getAttribute('title'),/comprei ingresso/);
+    await free.locator('.free-keypad [data-symbol="p"]').focus();
+    assert.match(await free.locator('#freeSymbolHelp').innerText(),/comprei ingresso/);
     assert.match(await free.locator('.free-translation').first().innerText(),/Se comprei ingresso, então viajei/);
     await free.locator('#freeNewFormula').fill('¬(p → q)');
     await free.locator('[data-action="add-formula"]').click();
@@ -661,13 +673,24 @@ try{
     assert.match(heads[2],/^∴ C · r\(p\)/);
     assert.match(heads[3],/→ C/);
     assert.equal(await page.locator('.free-truth-table th.free-conclusion-head').count(),1);
+    assert.equal(await page.locator('.free-truth-table th.free-status-head').count(),0);
+    assert.equal(await page.locator('.free-truth-table thead th').count(),4);
     assert.equal(await page.locator('.free-argument-explanation').count(),0);
     assert.equal(await page.locator('.free-impossible-row').count(),1);
     const ghost=page.locator('.free-truth-table tbody tr').nth(1);
     assert.match(await ghost.innerText(),/🚫/);
     assert.equal(await ghost.locator('[data-action="answer"]').count(),0);
+    assert.equal(await ghost.locator('.free-impossible-marker').count(),1);
+    assert.equal(await ghost.locator('.free-impossible-marker sup').innerText(),'1');
+    assert.equal(await ghost.locator('.free-impossible-marker').getAttribute('aria-controls'),'free-impossible-note-1');
     assert.equal(await ghost.locator('.free-impossible-cell').count(),1);
-    assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 2:/);
+    assert.equal(await page.locator('.free-impossibility-footer li#free-impossible-note-1 sup').innerText(),'1');
+    assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫1 é impossível porque/);
+    assert.match(await page.locator('.free-impossibility-footer').innerText(),/verdadeiras, mas.*falsa/);
+    assert.equal(await page.locator('#free-impossible-note-1').count(),1);
+    await ghost.locator('.free-impossible-marker').click();
+    assert.equal(await page.evaluate(()=>location.hash),'#tabela-livre');
+    assert.equal(await page.evaluate(()=>document.activeElement?.id),'free-impossible-note-1');
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Instanciação universal/);
     assert.ok(await page.locator('.truth-venn-impossible').count()>0);
     const active=page.locator('.free-truth-table [data-action="answer"]');
@@ -681,9 +704,16 @@ try{
     assert.match(justification,/Nenhuma combinação semanticamente possível/);
     // Acrescentar o símbolo do indivíduo não altera as combinações da tabela.
     await page.locator('.free-domain summary').click();
+    assert.match(await page.locator('.free-domain-known').innerText(),/p.*Sócrates/);
     await page.locator('#freeNewIndividualId').fill('p');
     await page.locator('#freeNewIndividualLabel').fill('Sócrates');
     await page.locator('[data-action="add-ind"]').click();
+    assert.match(await page.locator('#freeFeedback').innerText(),/sem duplicar o registro/);
+    assert.equal(await page.locator('.free-domain-entry').count(),0);
+    await page.locator('#freeNewIndividualId').fill('s');
+    await page.locator('#freeNewIndividualLabel').fill('Sofia');
+    await page.locator('[data-action="add-ind"]').click();
+    assert.equal(await page.locator('.free-domain-entry').count(),1);
     assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
     await page.reload({waitUntil:'networkidle'});
     assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
@@ -727,6 +757,39 @@ try{
     assert.equal(await page.locator('[data-var-kind="0"]').inputValue(),'individual');
     assert.equal(await page.locator('.free-impossible-row').count(),1);
     assert.deepEqual(errors,[]);
+    await ctx.close();
+  }
+
+  // Registros de impossibilidade consecutivos mesmo quando as linhas originais não o são;
+  // o teclado mostra ajuda ao toque e insere ∃! como quantificador completo.
+  for(const width of [375,1280]){
+    const ctx=await browser.newContext({viewport:{width,height:812},hasTouch:width===375,isMobile:width===375});
+    const page=await ctx.newPage(),errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.goto(root+'#tabela-livre',{waitUntil:'networkidle'});
+    await page.locator('.free-keypad [data-symbol="∃!"]').click();
+    assert.equal(await page.locator('#freeNewFormula').inputValue(),'∃!x(');
+    assert.match(await page.locator('#freeSymbolHelp').innerText(),/exatamente um indivíduo/);
+    await page.locator('#freeNewFormula').fill('');
+    for(const formula of ['q(p)','¬q(p)']){
+      await page.locator('#freeNewFormula').fill(formula);
+      await page.locator('[data-action="add-formula"]').click();
+    }
+    assert.equal(await page.locator('.free-truth-table thead th').count(),3);
+    assert.equal(await page.locator('.free-impossible-row').count(),2);
+    const markers=page.locator('.free-impossible-row .free-impossible-marker');
+    assert.equal(await markers.count(),2);
+    assert.deepEqual(await markers.locator('sup').allTextContents(),['1','2']);
+    assert.deepEqual(await markers.evaluateAll(items=>items.map(x=>x.getAttribute('aria-controls'))),
+      ['free-impossible-note-1','free-impossible-note-2']);
+    assert.equal(await page.locator('.free-impossibility-footer li').count(),2);
+    assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫1 é impossível porque/);
+    assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫2 é impossível porque/);
+    // A marca continua visível na primeira coluna disponível quando A é recolhida.
+    await page.locator('.free-truth-table [data-action="toggle-col"]').first().click();
+    assert.equal(await page.locator('.free-impossible-row .free-impossible-marker').count(),2);
+    assert.deepEqual(errors,[]);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2);
     await ctx.close();
   }
 
