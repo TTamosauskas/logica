@@ -385,6 +385,23 @@ export function createFreeTable(root){
       state.hidden=state.hidden.includes(id)?state.hidden.filter(k=>k!==id):[...state.hidden,id];
       refresh();root.querySelector('[data-action="toggle-col"][data-key="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});return;
     }
+    if(action==='add-set'){
+      addDiagramSet(state,root.querySelector('#freeSetSymbol').value,
+        root.querySelector('#freeSetMeaning').value);
+      diagramSetManagerOpen=true;
+      refresh('Conjunto adicionado ao diagrama.');return;
+    }
+    if(action==='save-set'){
+      editDiagramSet(state,button.dataset.set,
+        root.querySelector('[data-set-meaning="'+CSS.escape(button.dataset.set)+'"]').value);
+      diagramSetManagerOpen=true;
+      refresh('Significado do conjunto atualizado.');return;
+    }
+    if(action==='remove-set'){
+      removeDiagramSet(state,button.dataset.set);
+      diagramSetManagerOpen=true;
+      refresh('Conjunto removido.');return;
+    }
     if(action==='add-person'){
       const id=root.querySelector('#freePersonSymbol').value;
       const label=root.querySelector('#freePersonLabel').value;
@@ -420,7 +437,11 @@ export function createFreeTable(root){
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
   root.addEventListener('toggle',e=>{
-    if(e.target.matches?.('.free-person-manager'))individualManagerOpen=e.target.open;
+    if(e.target.matches?.('.free-person-manager')){
+      if(e.target.querySelector('[data-set-meaning]')||e.target.querySelector('#freeSetSymbol'))
+        diagramSetManagerOpen=e.target.open;
+      else individualManagerOpen=e.target.open;
+    }
   },true);
   root.addEventListener('input',e=>{
     if(e.target.matches(editableSelector)){
@@ -429,6 +450,16 @@ export function createFreeTable(root){
     }
   });
   root.addEventListener('change',e=>{
+    if(e.target.matches('[data-extended-table]')){
+      if(!e.target.checked&&state.variables.length>MAX_VARS){
+        e.target.checked=true;
+        notice('Remova primeiro as variáveis v e w para desativar a ampliação.',true);return;
+      }
+      state.extendedTable=e.target.checked;
+      state.graded=false;
+      refresh(state.extendedTable?'Tabela ampliada: até oito variáveis e 256 linhas.':
+        'Limite padrão: seis variáveis e 64 linhas.');return;
+    }
     if(e.target.matches('[data-inference-mode]')){
       state.inferenceMode=e.target.checked;
       state.answers={};state.graded=false;
