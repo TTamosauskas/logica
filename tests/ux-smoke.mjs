@@ -536,9 +536,8 @@ try{
     assert.equal(await free.locator('input[name="freeRows"],input[name="freeMode"]').count(),0);
     assert.equal(await free.locator('[data-action="export-csv"],[data-action="export-json"],[data-action="import-json"]').count(),0);
     assert.deepEqual(await free.locator('.free-keypad .free-key-variable').allTextContents(),['p','q']);
-    assert.equal(await free.locator('.free-domain summary').innerText().then(text=>text.includes('Configurar domínio concreto (avançado)')),true);
-    assert.equal(await free.locator('.free-domain').getAttribute('open'),null);
-    assert.equal(await free.locator('.free-domain').evaluate(node=>node.closest('.free-card')?.querySelector('h2')?.id),'freeTableTitle');
+    assert.equal(await free.locator('.free-domain,.free-domain-advanced,#freeNewIndividualId').count(),0);
+    assert.equal(await free.locator('#freeVarTitle + p,#freeFormulaTitle + p').count(),0);
     await free.locator('.free-keypad [data-symbol="¬"]').hover();
     assert.match(await free.locator('#freeSymbolHelp').innerText(),/Negação: não p/);
     assert.match(await free.locator('.free-keypad [data-symbol="¬"]').getAttribute('title'),/Negação/);
@@ -683,6 +682,9 @@ try{
     assert.equal(await ghost.locator('.free-impossible-marker').count(),1);
     assert.equal(await ghost.locator('.free-impossible-marker sup').innerText(),'1');
     assert.equal(await ghost.locator('.free-impossible-marker').getAttribute('aria-controls'),'free-impossible-note-1');
+    assert.equal(await ghost.locator('td:last-child .free-impossible-marker').count(),1);
+    assert.equal(await ghost.locator('td:first-child .free-impossible-marker').count(),0);
+    assert.equal(await ghost.locator('td:last-child').innerText().then(text=>text.trim()),'🚫1');
     assert.equal(await ghost.locator('.free-impossible-cell').count(),1);
     assert.equal(await page.locator('.free-impossibility-footer li#free-impossible-note-1 sup').innerText(),'1');
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫1 é impossível porque/);
@@ -692,6 +694,18 @@ try{
     assert.equal(await page.evaluate(()=>location.hash),'#tabela-livre');
     assert.equal(await page.evaluate(()=>document.activeElement?.id),'free-impossible-note-1');
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Instanciação universal/);
+    assert.equal(await page.locator('.free-impossibility-note').count(),0);
+    assert.equal(await page.locator('#freeTableTitle').locator('xpath=following-sibling::p').count(),0);
+    const tableChildren=await page.locator('#freeTableTitle').evaluate(title=>{
+      const card=title.closest('.free-card'),table=card.querySelector('.free-table-scroll'),
+        grade=card.querySelector('.free-table-actions');
+      return {next:card.querySelector('.free-section-heading')?.nextElementSibling===table,
+        gradeNext:table.nextElementSibling===grade,
+        text:card.querySelector('.free-table-tip')?.textContent||''};
+    });
+    assert.equal(tableChildren.next,true,'Tabela deve vir imediatamente após o título');
+    assert.equal(tableChildren.gradeNext,true,'Conferir respostas deve vir imediatamente após a tabela');
+    assert.equal(tableChildren.text,'');
     assert.ok(await page.locator('.truth-venn-impossible').count()>0);
     const active=page.locator('.free-truth-table [data-action="answer"]');
     assert.equal(await active.count(),7);
@@ -702,29 +716,13 @@ try{
     assert.match(justification,/∵ Justificativa da inferência/);
     assert.match(justification,/Instanciação universal e modus ponens/);
     assert.match(justification,/Nenhuma combinação semanticamente possível/);
-    // Acrescentar o símbolo do indivíduo não altera as combinações da tabela.
-    await page.locator('.free-domain summary').click();
-    assert.match(await page.locator('.free-domain-known').innerText(),/p.*Sócrates/);
-    await page.locator('#freeNewIndividualId').fill('p');
-    await page.locator('#freeNewIndividualLabel').fill('Sócrates');
-    await page.locator('[data-action="add-ind"]').click();
-    assert.match(await page.locator('#freeFeedback').innerText(),/sem duplicar o registro/);
-    assert.equal(await page.locator('.free-domain-entry').count(),0);
-    await page.locator('#freeNewIndividualId').fill('s');
-    await page.locator('#freeNewIndividualLabel').fill('Sofia');
-    await page.locator('[data-action="add-ind"]').click();
-    assert.equal(await page.locator('.free-domain-entry').count(),1);
-    assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
+    // O layout novo preserva respostas e correção após recarregar.
     await page.reload({waitUntil:'networkidle'});
     assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
     assert.equal(await page.locator('.free-impossible-row').count(),1);
     assert.match(await page.locator('.free-truth-table th.free-conclusion-head').innerText(),/∴ C · r\(p\)/);
-    // Alterar o domínio reinicia a correção: a justificativa volta após nova conferência.
-    assert.equal(await page.locator('.free-argument-explanation').count(),0);
-    await page.locator('[data-action="grade"]').click();
     assert.equal(await page.locator('.free-argument-explanation').count(),1);
-    await page.reload({waitUntil:'networkidle'});
-    assert.equal(await page.locator('.free-argument-explanation').count(),1);
+    assert.equal(await page.locator('.free-domain').count(),0);
     assert.equal(await page.locator('.free-inference,.free-possibilities').count(),0);
     assert.deepEqual(errors,[]);
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
@@ -785,9 +783,12 @@ try{
     assert.equal(await page.locator('.free-impossibility-footer li').count(),2);
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫1 é impossível porque/);
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫2 é impossível porque/);
-    // A marca continua visível na primeira coluna disponível quando A é recolhida.
-    await page.locator('.free-truth-table [data-action="toggle-col"]').first().click();
+    // A marca permanece na última coluna visível quando o resultado é recolhido.
+    assert.equal(await page.locator('.free-impossible-row td:last-child .free-impossible-marker').count(),2);
+    await page.locator('.free-truth-table [data-action="toggle-col"]').last().click();
     assert.equal(await page.locator('.free-impossible-row .free-impossible-marker').count(),2);
+    assert.equal(await page.locator('.free-impossible-row td:nth-last-child(2) .free-impossible-marker').count(),2);
+    assert.equal(await page.locator('.free-impossible-row td:last-child .free-impossible-marker').count(),0);
     assert.deepEqual(errors,[]);
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2);
     await ctx.close();
