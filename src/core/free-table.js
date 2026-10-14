@@ -509,6 +509,8 @@ export function readFreeTable(raw,{strict=false}={}){
     // A conclusão do painel aposentado é integrada à tabela como a última
     // fórmula, em vez de desaparecer na migração dos projetos anteriores.
     if(state.inferenceConclusion&&freeTableKind(state)==='predicates'){
+      // O campo antigo era uma conclusão declarada explicitamente pelo usuário.
+      state.inferenceMode=true;
       const source=state.inferenceConclusion;
       if(state.formulas.length<MAX_PREDICATE_TABLE_FORMULAS){
         try{
