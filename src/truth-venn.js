@@ -204,7 +204,7 @@ function individualGeometry(predicates,relations){
     if(nested)return {
       width:480,baseHeight:330,names:[nested.subset,nested.superset],
       circles:[[240,184,78],[240,160,138]],labels:[[240,155],[240,43]],
-      nested:true
+      nested:true,subsetIndices:[0]
     };
   }
   let circles,labels,width,baseHeight;
@@ -249,7 +249,9 @@ function individualGeometry(predicates,relations){
     }
     if(!changed)break;
   }
-  return {width,baseHeight,names:predicates,circles,labels,nested:nestedNames.size>0};
+  return {width,baseHeight,names:predicates,circles,labels,
+    nested:nestedNames.size>0,
+    subsetIndices:[...nestedNames].map(name=>predicates.indexOf(name))};
 }
 function individualMarker(person,x,y,partial=false){
   const symbol=String(person.id||'').trim();
@@ -344,7 +346,7 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
     }
   }
   const circlesSvg=circles.map(([cx,cy,r],i)=>
-    '<circle class="truth-individual-set-circle'+(layout.nested&&i===0?' truth-individual-subset-circle':'')+
+    '<circle class="truth-individual-set-circle'+(layout.subsetIndices?.includes(i)?' truth-individual-subset-circle':'')+
     '" cx="'+cx+'" cy="'+cy+'" r="'+r+'"/>'+
     '<text class="truth-individual-set-label" x="'+labels[i][0]+'" y="'+labels[i][1]+
     '" text-anchor="middle">'+esc(names[i])+'</text>').join('');
