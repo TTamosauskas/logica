@@ -542,6 +542,8 @@ try{
     assert.equal(await free.locator('#freeNewFormula').inputValue(),'p→q');
     await free.locator('[data-action="add-formula"]').click();
     assert.equal(await free.locator('.free-formula-card').count(),1);
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),0);
+    assert.equal(await free.locator('.free-argument-explanation').count(),0);
     await free.locator('[data-var-meaning="0"]').fill('comprei ingresso');
     await free.locator('[data-action="save-var"][data-index="0"]').click();
     await free.locator('[data-var-meaning="1"]').fill('viajei');
@@ -561,6 +563,9 @@ try{
     assert.equal(await free.locator('#freeNewFormula').inputValue(),'r∧p');
     await free.locator('[data-action="add-formula"]').click();
     assert.equal(await free.locator('.free-formula-card').count(),3);
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),1);
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head .free-column-label').innerText(),'∴ r ∧ p');
+    assert.equal(await free.locator('.free-argument-explanation').count(),0);
     // Entradas em edição sobrevivem ao preenchimento de células sem serem aplicadas prematuramente.
     await free.locator('[data-var-meaning="1"]').fill('descrição ainda não salva');
     assert.equal(await free.locator('[data-var-meaning="1"]').getAttribute('data-unsaved'),'true');
@@ -586,6 +591,8 @@ try{
     await answer.click();
     await free.locator('[data-action="grade"]').click();
     assert.match(await free.locator('.free-grade').innerText(),/respostas corretas/);
+    assert.match(await free.locator('.free-argument-explanation').innerText(),/∵ Justificativa da inferência/);
+    assert.match(await free.locator('.free-argument-explanation').innerText(),/contraexemplo|argumento é válido|vacuidade/);
     const stored=await free.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
     assert.equal(stored.version,4);
     assert.equal('rowMode' in stored,false);
@@ -595,6 +602,8 @@ try{
     assert.equal(stored.formulas.length,3);
     await free.reload({waitUntil:'networkidle'});
     assert.equal(await free.locator('.free-grade').count(),1);
+    assert.equal(await free.locator('.free-argument-explanation').count(),1);
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),1);
     await free.locator('#freeNewFormula').fill('¬(q →)');
     await free.locator('[data-action="add-formula"]').click();
     assert.equal(await free.locator('.free-formula-card').count(),3);
@@ -649,8 +658,10 @@ try{
     assert.equal(heads.length,4);
     assert.match(heads[0],/A · q\(p\)/);
     assert.match(heads[1],/B · ∀x/);
-    assert.match(heads[2],/C · r\(p\)/);
+    assert.match(heads[2],/^∴ C · r\(p\)/);
     assert.match(heads[3],/→ C/);
+    assert.equal(await page.locator('.free-truth-table th.free-conclusion-head').count(),1);
+    assert.equal(await page.locator('.free-argument-explanation').count(),0);
     assert.equal(await page.locator('.free-impossible-row').count(),1);
     const ghost=page.locator('.free-truth-table tbody tr').nth(1);
     assert.match(await ghost.innerText(),/🚫/);
@@ -664,6 +675,10 @@ try{
     await active.first().click();
     await page.locator('[data-action="grade"]').click();
     assert.match(await page.locator('.free-grade').innerText(),/de 7 respostas corretas/);
+    const justification=await page.locator('.free-argument-explanation').innerText();
+    assert.match(justification,/∵ Justificativa da inferência/);
+    assert.match(justification,/Instanciação universal e modus ponens/);
+    assert.match(justification,/Nenhuma combinação semanticamente possível/);
     // Acrescentar o símbolo do indivíduo não altera as combinações da tabela.
     await page.locator('.free-domain summary').click();
     await page.locator('#freeNewIndividualId').fill('p');
@@ -673,6 +688,8 @@ try{
     await page.reload({waitUntil:'networkidle'});
     assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
     assert.equal(await page.locator('.free-impossible-row').count(),1);
+    assert.match(await page.locator('.free-truth-table th.free-conclusion-head').innerText(),/∴ C · r\(p\)/);
+    assert.equal(await page.locator('.free-argument-explanation').count(),1);
     assert.equal(await page.locator('.free-inference,.free-possibilities').count(),0);
     assert.deepEqual(errors,[]);
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
