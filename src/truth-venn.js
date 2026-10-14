@@ -318,7 +318,36 @@ function positionIndividual(values,layout,occupied=[]){
   }
   return best;
 }
+/** Mais de seis conjuntos: a matriz mantém TODAS as pertinências,
+ * sem desenhar círculos cuja geometria omita interseções possíveis. */
+function renderLargeSetMatrix({predicates=[],people=[],meanings={},conflicts=[]}){
+  const statuses=new Map();
+  const head=predicates.map(name=>'<th scope="col"><code>'+esc(name)+'</code></th>').join('');
+  const body=people.map(person=>{
+    const data=predicates.map(name=>{
+      const value=person.values?.[name]||'';
+      const desc=value==='V'?'pertence':value==='F'?'não pertence':'a definir';
+      return '<td title="'+esc(String(person.label||person.id)+': '+desc+' a '+name)+'"'+
+        ' data-set-value="'+esc(value||'?')+'">'+esc(value||'?')+'</td>';
+    }).join('');
+    const gaps=predicates.filter(name=>!['V','F'].includes(person.values?.[name]));
+    if(gaps.length)statuses.set(String(person.id),'indefinidos: '+gaps.join(', '));
+    return '<tr><th scope="row"><code>'+esc(person.id)+'</code></th>'+data+'</tr>';
+  }).join('');
+  const legend=individualSetLegend(predicates,people,meanings,statuses);
+  return '<section class="truth-venn-panel truth-individual-panel" aria-label="Matriz de pertinência de conjuntos">'+
+    '<div class="truth-venn-heading"><h3>Conjuntos e indivíduos</h3>'+
+    '<p>Com mais de seis conjuntos, a matriz substitui os círculos para não sugerir interseções inexistentes.</p></div>'+
+    '<div class="truth-individual-matrix" role="region" tabindex="0" aria-label="Pertinência dos indivíduos">'+
+    '<table><caption>V = pertence · F = não pertence · ? = não determinado</caption>'+
+    '<thead><tr><th scope="col">Indivíduo</th>'+head+'</tr></thead>'+
+    '<tbody>'+(body||'<tr><td colspan="'+(predicates.length+1)+'">Adicione indivíduos para visualizar os conjuntos.</td></tr>')+
+    '</tbody></table></div>'+legend+
+    (conflicts.length?'<p class="truth-venn-status" role="alert">Há informações contraditórias sobre indivíduos.</p>':'')+
+    '</section>';
+}
 export function renderIndividualSets({predicates=[],people=[],meanings={},conflicts=[],relations=[]}={}){
+  if(predicates.length>6)return renderLargeSetMatrix({predicates,people,meanings,conflicts});
   const layout=individualGeometry(predicates,relations);
   const heading='<div class="truth-venn-heading"><h3>Diagrama de Venn–Euler</h3></div>';
   if(!layout)return '<section class="truth-venn-panel truth-individual-panel">'+heading+
