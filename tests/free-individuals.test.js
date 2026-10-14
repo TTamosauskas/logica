@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {blankFreeTable,addFreeVariable,editFreeVariable,addFreeFormula,
-  addFreeIndividual,readFreeTable} from '../src/core/free-table.js';
-import {freeIndividualModel} from '../src/core/free-individuals.js';
+  addFreeIndividual,readFreeTable,freeIndividualModel} from '../src/core/free-table.js';
 import {renderIndividualSets} from '../src/truth-venn.js';
 
 const setup=()=>{
