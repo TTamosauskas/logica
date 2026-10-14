@@ -1138,6 +1138,28 @@ try{
     await newContext.close();
   }
 
+  // Novos princípios fundamentais e métodos de contradição devem ser estudáveis
+  // sem alterar os 23 temas nem bloquear o acesso à leitura.
+  for(const width of [375,1280]){
+    const context=await browser.newContext({viewport:{width,height:812}});
+    const page=await context.newPage(),errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    for(const [id,heading,topic,card] of [
+      ['classificacao','Princípios fundamentais da lógica clássica','bivalência','Não contradição'],
+      ['provas','Explosão e redução ao absurdo','explosão','Redução ao absurdo clássica']
+    ]){
+      await page.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
+      assert.equal(await page.locator('#courseLesson .reading-section').count(),3);
+      assert.match(await page.locator('#courseLesson').innerText(),new RegExp(heading));
+      assert.match(await page.locator('#courseLesson').innerText(),new RegExp(topic,'i'));
+      await page.locator('[data-caction="read"]').click();
+      await page.locator('[data-caction="example"]').click();
+      assert.match(await page.locator('#courseLesson .advanced-theorem').allTextContents().then(x=>x.join(' ')),new RegExp(card));
+    }
+    assert.deepEqual(errors,[]);
+    await context.close();
+  }
+
   // Ciclo 14: verificação das competências refinadas nas seis etapas existentes.
   for(const width of [375,1280]){
     const context14=await browser.newContext({viewport:{width,height:812},isMobile:width===375,hasTouch:width===375});
