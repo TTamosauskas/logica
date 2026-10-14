@@ -86,3 +86,10 @@
 .free-person-form input{width:100%;padding:8px;border:1px solid var(--border-hi);border-radius:8px;background:var(--input);color:var(--text)}
 .free-person-list{display:flex;flex-wrap:wrap;gap:7px 13px;margin-top:8px}
 .free-person-entry{display:inline-flex;align-items:center;gap:7px;font-size:12px}
+
+.free-person-grid{overflow-x:auto;max-width:100%;margin-top:12px}
+.free-person-grid table{border-collapse:collapse;font-size:12px;min-width:max-content}
+.free-person-grid th,.free-person-grid td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:left}
+.free-person-grid thead th{color:var(--muted)}
+.free-person-grid .button{min-width:35px}
+.free-person-derived{color:var(--muted);font-size:10px}
