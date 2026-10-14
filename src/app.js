@@ -19,6 +19,9 @@ import { DEDUCTION_CONTEXTS, DEDUCTION_NAMES, DEDUCTION_LEVELS } from './content
 import { CATEGORICAL_TERMS } from './content/categorical.js';
 import { THEOREM_WORKSHOPS, THEORY_CARDS } from './content/advanced.js';
 import { COURSE_UNITS, LESSONS } from './content/course.js';
+import { ERROR_READINGS } from './content/errors-course.js';
+import { ERROR_ASSESSMENTS } from './content/errors-assessments.js';
+import { ERROR_PRACTICE } from './content/errors-practice.js';
 import { WORKED_EXAMPLES } from './content/example-walkthroughs.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
 import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
@@ -798,7 +801,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     return '';
   }
 
-  const GENERATORS={inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,metateoria:metatheoryPrecisionMode,falacias:advancedConceptMode,modais:semanticsMode,categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalencePrecisionMode,argumentos:argumentsMode};
+  const GENERATORS={...Object.fromEntries(Object.keys(ERROR_PRACTICE).map(id=>[id,()=>criticalThinkingMode(level,id)])),inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,metateoria:metatheoryPrecisionMode,falacias:advancedConceptMode,modais:semanticsMode,categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalencePrecisionMode,argumentos:argumentsMode};
   const STORE_KEY='logiclab_progress_v1',THEME_KEY='logiclab_theme_v1';
   function blankStats(){return {tries:0,perfect:0,correct:0,total:0,byMode:{},translationTypes:{},deductionLevels:{}}}
   function loadStats(){try{const saved=JSON.parse(localStorage.getItem(STORE_KEY));if(saved&&typeof saved.tries==='number'&&saved.byMode)return saved}catch(e){}return blankStats()}
@@ -1464,6 +1467,18 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       'No quadrado, verifique se S pode estar vazio. Em um silogismo inválido, procure premissas V com conclusão F.',
       'As relações A–O e E–I são sempre contraditórias. '+item.explanation);
   }
+  function criticalThinkingMode(level,id){
+    id=id||mode;
+    const lesson=LESSONS[id],pool=ERROR_PRACTICE[id];
+    if(!pool||!lesson)throw Error('Atividade de pensamento crítico indisponível: '+id);
+    const count=level==='easy'?3:5;
+    const questions=shuffle(pool).slice(0,count);
+    return makeSpecial(id,'Investigue um caso: '+lesson.lead,
+      'Analise a situação e escolha a interpretação melhor justificada. Para cada resposta, confira a razão e os limites da conclusão.',
+      {type:'concept',questions},
+      'Localize exatamente qual evidência sustenta a conclusão. Procure alternativas, denominadores e eventuais informações ausentes.',
+      'Uma boa análise separa fatos, hipótese e inferência; corrigir o diagnóstico importa mais do que memorizar o nome do erro.');
+  }
   function advancedConceptMode(level,id){id=id||mode;const bank=LESSONS[id]?.quiz||LESSONS.metateoria.quiz;const count=level==='easy'?2:3;const questions=shuffle(bank).slice(0,count);return makeSpecial(id,'Interprete o conceito e justifique a escolha','Selecione a resposta de cada questão. Ao corrigir, você verá a explicação da alternativa correta.',{type:'concept',questions},'Releia a definição na miniaula do tema e busque um exemplo que diferencie as alternativas.','Cada questão exige aplicar a definição com precisão. Confira as justificativas de cada resposta.');}
   function onSpecialChange(e){const s=exercise?.special;if(!s||exercise.revealed)return;const field=e.target.closest('[data-special-field]');if(!field)return;s.values[field.dataset.specialField]=field.value;exercise.grade=null;const key=field.dataset.specialField;renderSpecial();renderFeedback();[...$('specialArea').querySelectorAll('[data-special-field]')].find(el=>el.dataset.specialField===key)?.focus({preventScroll:true});}
   function renderSpecial(){const area=$('specialArea');if(!exercise?.special){area.classList.add('hide');$('tableStage').classList.remove('hide');$('checkButton').textContent='✓ Corrigir tabela';return;}
@@ -1558,8 +1573,8 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('courseLocation').textContent=context.location;
     $('courseDescription').textContent=context.description;
   }
-  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS};
-  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS};
+  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS};
+  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS};
   function assessmentForLesson(id){
     const p=courseProgress(id);
     p.assessmentV2=p.assessmentV2||{version:ASSESSMENT_VERSION,history:[]};
