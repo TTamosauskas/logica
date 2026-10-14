@@ -33,6 +33,7 @@ import { UNIT4_ASSESSMENTS } from './content/assessment-unit4.js';
 import { UNIT5_TO_7_ASSESSMENTS } from './content/assessment-unit5to7.js';
 import { ASSESSMENT_VERSION, prepareBank, composeAssessment, gradeAssessment } from './core/assessment.js';
 import { buildIntegratedExamQuestions } from './core/integrated-exam.js';
+import { OTHER_LOGIC_LAB_IDS,createOtherLogicLab } from './core/other-logics-labs.js';
 import { UNIT1_READINGS } from './content/reading-unit1.js';
 import { UNIT2_READINGS } from './content/reading-unit2.js';
 import { UNIT3_READINGS } from './content/reading-unit3.js';
@@ -771,8 +772,8 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   function evaluateTrace(f,i,trace){const [a,b]=f.args;switch(f.op){case 'atom':return trace[i][a];case 'not':return !evaluateTrace(a,i,trace);case 'and':return evaluateTrace(a,i,trace)&&evaluateTrace(b,i,trace);case 'imp':return !evaluateTrace(a,i,trace)||evaluateTrace(b,i,trace);case 'X':return i+1<trace.length?evaluateTrace(a,i+1,trace):false;case 'F':return trace.some((_,j)=>j>=i&&evaluateTrace(a,j,trace));case 'G':return trace.every((_,j)=>j<i||evaluateTrace(a,j,trace));case 'U':return trace.some((_,j)=>j>=i&&evaluateTrace(b,j,trace)&&trace.every((__,k)=>k<i||k>=j||evaluateTrace(a,k,trace)));default:throw Error('Trace operator '+f.op)}}
   const R_PATTERNS=[[[1,2],[2],[]],[[0,1],[1],[2]],[[1],[2],[]],[[1,2],[0],[0]], [[],[1],[0]],[[0,1],[0,2],[1,2]]];
   function truthRow(){return {p:Math.random()<.5,q:Math.random()<.5}}
-  function semanticsMode(level){
-    const temporal=(level==='hard'?Math.random()<.5:level==='medium'&&Math.random()<.5);
+  function semanticsMode(level,id='modais'){
+    const temporal=id==='temporal';
     let special,ex;
     if(!temporal){
       const edges=pick(R_PATTERNS).map(row=>row.slice()),truth=Array.from({length:3},truthRow),world=rng(3),model={edges,truth};
@@ -785,12 +786,22 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       const trace=Array.from({length:4},truthRow),start=rng(3);const formulas=level==='hard'?[M('U',MP,MQ),M('G',M('imp',MP,M('F',MQ))),M('F',M('G',MP))]:[M('F',MP),M('G',MQ),M('X',MP)];
       const items=formulas.map(f=>({formula:fmtFormula(f),value:evaluateTrace(f,start,trace)?'V':'F',reason:temporalReason(f,start,trace)}));
       special={type:'semanticworld',kind:'temporal',start,model:{trace},items,questions:items.map(x=>({question:x.formula})),scope:'Traço finito: F e G incluem o instante atual; X exige um instante seguinte e é F no último; p U q exige ocorrência de q.'};
-      ex=makeSpecial('modais','Avalie uma sequência temporal',`Determine V ou F para cada fórmula no instante t${start}. Leia a linha do tempo até o final.`,special,'Comece em t'+start+' e percorra os instantes seguintes na ordem.','Os resultados foram calculados sobre o traço finito exibido, com uma convenção explícita para X no último instante.');
+      ex=makeSpecial('temporal','Avalie uma sequência temporal',`Determine V ou F para cada fórmula no instante t${start}. Leia a linha do tempo até o final.`,special,'Comece em t'+start+' e percorra os instantes seguintes na ordem.','Os resultados foram calculados sobre o traço finito exibido, com uma convenção explícita para X no último instante.');
       ex.metadata.signature='trace|'+JSON.stringify({trace,start,formulas:items.map(x=>x.formula)});
     }
     return ex;
   }
+  function otherLogicMode(level,id){
+    const model=createOtherLogicLab(id,level);
+    const special={type:'otherlogic',...model,questions:model.items.map(x=>({question:x.formula}))};
+    const ex=makeSpecial(id,model.title,model.context,special,
+      'Leia os mundos, estados ou graus apresentados e aplique as regras explícitas do modelo antes de responder.',
+      model.items.map(item=>item.reason).join(' '));
+    ex.metadata.signature=id+'|'+JSON.stringify({cards:model.cards,items:model.items.map(x=>x.formula)});
+    return ex;
+  }
   function renderAdvancedSpecial(ex){const s=ex.special, graded=!!ex.grade||ex.revealed;
+    if(s.type==='otherlogic')return `<div class="advanced-card"><span class="eyebrow">LABORATÓRIO SEMÂNTICO</span><h3>${escapeHTML(s.title)}</h3><p>${escapeHTML(s.context)}</p><div class="sem-model-grid">${s.cards.map(card=>`<div class="sem-world"><b>${escapeHTML(card.label)}</b><span>${escapeHTML(card.detail)}</span></div>`).join('')}</div><p class="sem-note">${escapeHTML(s.scope)}</p></div><div class="special-grid">${s.items.map((item,i)=>`<section class="special-card"><span class="eyebrow">DESAFIO ${i+1}</span><h4><code>${escapeHTML(item.formula)}</code></h4><label class="inline-label" for="otherLogicChoice${i}">Resultado no modelo</label><select id="otherLogicChoice${i}" data-special-field="${i}" ${ex.revealed?'disabled':''}><option value="">Escolha...</option>${item.options.map(opt=>`<option value="${escapeHTML(opt)}" ${s.values[i]===opt?'selected':''}>${escapeHTML(opt)}</option>`).join('')}</select>${graded?`<p class="course-question-explanation">${s.values[i]===item.value?'✓ Correto.':'Resultado esperado: '+escapeHTML(item.value)+'.'} ${escapeHTML(item.reason)}</p>`:''}</section>`).join('')}</div>`;
     if(s.type==='theorem')return `<div class="advanced-card"><span class="eyebrow">OFICINA DE DEMONSTRAÇÃO</span><h3>${escapeHTML(s.title)}</h3><p><b>Teorema:</b> <code>${escapeHTML(s.claim)}</code></p><p><b>Hipóteses:</b> ${escapeHTML(s.scope)}</p><p>${escapeHTML(s.context)}</p></div><div class="special-grid">${s.parts.map((p,i)=>`<section class="special-card"><span class="eyebrow">PASSO ${i+1} DE ${s.parts.length}</span><h4>${escapeHTML(p.question)}</h4><select aria-label="Resposta ao passo ${i+1}" data-special-field="${i}" ${ex.revealed?'disabled':''}><option value="">Escolha a justificativa...</option>${p.options.map((o,j)=>`<option value="${j}" ${s.values[i]===String(j)?'selected':''}>${escapeHTML(o)}</option>`).join('')}</select>${graded?`<p class="course-question-explanation">${s.values[i]===String(p.correct)?'✓ Acerto.':'Resposta esperada: '+escapeHTML(p.options[p.correct])+'.'} ${escapeHTML(p.why)}</p>`:''}</section>`).join('')}</div>`;
     if(s.type==='semanticworld'){
       let modelHtml='';
@@ -804,7 +815,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     return '';
   }
 
-  const GENERATORS={...Object.fromEntries(Object.keys(ERROR_PRACTICE).map(id=>[id,()=>criticalThinkingMode(level,id)])),inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,metateoria:metatheoryPrecisionMode,falacias:advancedConceptMode,modais:semanticsMode,categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalencePrecisionMode,argumentos:argumentsMode};
+  const GENERATORS={...Object.fromEntries(Object.keys(ERROR_PRACTICE).map(id=>[id,()=>criticalThinkingMode(level,id)])),inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,metateoria:metatheoryPrecisionMode,falacias:advancedConceptMode,modais:l=>semanticsMode(l,'modais'),temporal:l=>semanticsMode(l,'temporal'),...Object.fromEntries(OTHER_LOGIC_LAB_IDS.map(id=>[id,l=>otherLogicMode(l,id)])),categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalencePrecisionMode,argumentos:argumentsMode};
   const STORE_KEY='logiclab_progress_v1',THEME_KEY='logiclab_theme_v1';
   function blankStats(){return {tries:0,perfect:0,correct:0,total:0,byMode:{},translationTypes:{},deductionLevels:{}}}
   function loadStats(){try{const saved=JSON.parse(localStorage.getItem(STORE_KEY));if(saved&&typeof saved.tries==='number'&&saved.byMode)return saved}catch(e){}return blankStats()}
@@ -1486,7 +1497,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   function onSpecialChange(e){const s=exercise?.special;if(!s||exercise.revealed)return;const field=e.target.closest('[data-special-field]');if(!field)return;s.values[field.dataset.specialField]=field.value;exercise.grade=null;const key=field.dataset.specialField;renderSpecial();renderFeedback();[...$('specialArea').querySelectorAll('[data-special-field]')].find(el=>el.dataset.specialField===key)?.focus({preventScroll:true});}
   function renderSpecial(){const area=$('specialArea');if(!exercise?.special){area.classList.add('hide');$('tableStage').classList.remove('hide');$('checkButton').textContent='✓ Corrigir tabela';return;}
     area.classList.remove('hide');$('tableStage').classList.add('hide');$('checkButton').textContent='✓ Corrigir atividade';const ex=exercise,s=ex.special;
-    if(s.type==='theorem'||s.type==='semanticworld'){area.innerHTML=renderAdvancedSpecial(ex);return;}
+    if(s.type==='theorem'||s.type==='semanticworld'||s.type==='otherlogic'){area.innerHTML=renderAdvancedSpecial(ex);return;}
     if(s.type==='proof'){
       const rowCount=s.premises.length;
       let body=`<div class="special-premises"><b>Premissas fornecidas</b>${s.premises.map((a,i)=>`<div><b>${i+1}.</b> <code>${escapeHTML(pretty(a))}</code> — Premissa</div>`).join('')}</div><p class="cat-work-lead">Seu objetivo: demonstrar <strong>${escapeHTML(pretty(s.steps.at(-1).target))}</strong>. Nas próximas linhas, escolha a fórmula e sua justificativa.</p><div class="special-grid">`;
@@ -1499,7 +1510,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   }
   function gradeSpecial(){const ex=exercise,s=ex.special;if(ex.revealed)return;let correct=0,total=0,missing=0;
     if(s.type==='theorem')s.parts.forEach((part,i)=>{total++;const v=s.values[i];if(v===undefined||v==='')missing++;if(v===String(part.correct))correct++});
-    else if(s.type==='semanticworld')s.items.forEach((item,i)=>{total++;const v=s.values[i];if(v===undefined||v==='')missing++;if(v===item.value)correct++});
+    else if(s.type==='semanticworld'||s.type==='otherlogic')s.items.forEach((item,i)=>{total++;const v=s.values[i];if(v===undefined||v==='')missing++;if(v===item.value)correct++});
     else if(s.type==='proof')s.steps.forEach((step,i)=>{for(const [key,want] of [[i+'-formula',pretty(step.target)],[i+'-rule',step.rule]]){total++;const have=s.values[key];if(have===undefined||have==='')missing++;if(have===want)correct++}});
     else s.questions.forEach((q,i)=>{total++;const have=s.values[i];if(have===undefined||have==='')missing++;if(have===String(q.correct))correct++});
     ex.grade={correct,total,missing};if(!ex.gradedEver){ex.firstGrade={...ex.grade};ex.gradedEver=true;const data=stats.byMode[ex.mode]||{tries:0,perfect:0,correct:0,total:0};data.tries++;data.correct+=correct;data.total+=total;if(correct===total)data.perfect++;stats.byMode[ex.mode]=data;stats.tries++;stats.correct+=correct;stats.total+=total;if(correct===total)stats.perfect++;save()}recordGuidedAttempt();renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'});
