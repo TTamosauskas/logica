@@ -22,6 +22,8 @@ import { COURSE_UNITS, LESSONS } from './content/course.js';
 import { ERROR_READINGS } from './content/errors-course.js';
 import { ERROR_ASSESSMENTS } from './content/errors-assessments.js';
 import { ERROR_PRACTICE } from './content/errors-practice.js';
+import { OTHER_LOGIC_READINGS } from './content/other-logics-course.js';
+import { OTHER_LOGIC_ASSESSMENTS } from './content/other-logics-assessments.js';
 import { WORKED_EXAMPLES } from './content/example-walkthroughs.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
 import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
@@ -1574,8 +1576,8 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('courseLocation').textContent=context.location;
     $('courseDescription').textContent=context.description;
   }
-  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS};
-  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS};
+  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS};
+  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS};
   function assessmentForLesson(id){
     const p=courseProgress(id);
     p.assessmentV2=p.assessmentV2||{version:ASSESSMENT_VERSION,history:[]};
