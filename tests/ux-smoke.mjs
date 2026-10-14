@@ -684,7 +684,7 @@ try{
     assert.equal(await ghost.locator('.free-impossible-marker').getAttribute('aria-controls'),'free-impossible-note-1');
     assert.equal(await ghost.locator('td:last-child .free-impossible-marker').count(),1);
     assert.equal(await ghost.locator('td:first-child .free-impossible-marker').count(),0);
-    assert.equal(await ghost.locator('td:last-child').innerText().then(text=>text.trim()),'🚫1');
+    assert.equal((await ghost.locator('td:last-child .free-impossible-marker').textContent()).trim(),'🚫1');
     assert.equal(await ghost.locator('.free-impossible-cell').count(),1);
     assert.equal(await page.locator('.free-impossibility-footer li#free-impossible-note-1 sup').innerText(),'1');
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫1 é impossível porque/);
