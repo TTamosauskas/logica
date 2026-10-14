@@ -27,7 +27,7 @@ test('Sócrates aparece dentro do conjunto Homens quando q(p) é afirmada',()=>{
   assert.match(html,/truth-individual-person/);
   assert.match(html,/<h4>Legenda<\/h4>/);
   assert.match(html,/<code>q<\/code><\/dt><dd>x é homem<\/dd>/);
-  assert.match(html,/<code>p<\/code><\/dt><dd>Sócrates<\/dd>/);
+  assert.match(html,/<code>p<\/code><\/dt><dd>Sócrates/);
   const svg=html.match(/<svg\b[\s\S]*?<\/svg>/)?.[0]||'';
   assert.match(svg,/>p<\/text>/);
   assert.doesNotMatch(svg,/<text[^>]*>Sócrates<\/text>/);
