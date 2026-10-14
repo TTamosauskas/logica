@@ -682,12 +682,15 @@ try{
     assert.equal(await ghost.locator('[data-action="answer"]').count(),0);
     assert.equal(await ghost.locator('.free-impossible-marker').count(),1);
     assert.equal(await ghost.locator('.free-impossible-marker sup').innerText(),'1');
-    assert.equal(await ghost.locator('.free-impossible-marker').getAttribute('href'),'#free-impossible-note-1');
+    assert.equal(await ghost.locator('.free-impossible-marker').getAttribute('aria-controls'),'free-impossible-note-1');
     assert.equal(await ghost.locator('.free-impossible-cell').count(),1);
     assert.equal(await page.locator('.free-impossibility-footer li#free-impossible-note-1 sup').innerText(),'1');
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫1 é impossível porque/);
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/verdadeiras, mas.*falsa/);
     assert.equal(await page.locator('#free-impossible-note-1').count(),1);
+    await ghost.locator('.free-impossible-marker').click();
+    assert.equal(await page.evaluate(()=>location.hash),'#tabela-livre');
+    assert.equal(await page.evaluate(()=>document.activeElement?.id),'free-impossible-note-1');
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Instanciação universal/);
     assert.ok(await page.locator('.truth-venn-impossible').count()>0);
     const active=page.locator('.free-truth-table [data-action="answer"]');
@@ -777,8 +780,8 @@ try{
     const markers=page.locator('.free-impossible-row .free-impossible-marker');
     assert.equal(await markers.count(),2);
     assert.deepEqual(await markers.locator('sup').allTextContents(),['1','2']);
-    assert.deepEqual(await markers.evaluateAll(items=>items.map(x=>x.getAttribute('href'))),
-      ['#free-impossible-note-1','#free-impossible-note-2']);
+    assert.deepEqual(await markers.evaluateAll(items=>items.map(x=>x.getAttribute('aria-controls'))),
+      ['free-impossible-note-1','free-impossible-note-2']);
     assert.equal(await page.locator('.free-impossibility-footer li').count(),2);
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫1 é impossível porque/);
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫2 é impossível porque/);
