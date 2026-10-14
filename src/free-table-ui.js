@@ -118,11 +118,15 @@ export function createFreeTable(root){
     const status=!graded?'':answer===want?' correct':' incorrect';
     return `<button type="button" class="cell${answer?' filled':''}${status}" data-action="answer" data-row="${r}" data-key="${esc(col.key)}" aria-label="Linha ${r+1}, ${esc(col.label)}: ${answer||'vazio'}">${answer||'<span class="cell-placeholder">·</span>'}</button>${graded&&answer!==want?`<small class="free-correction" title="Valor esperado">${want}</small>`:''}`;
   }
-  function cell(row,r,col){
+  function cell(row,r,col,ordinal=null,firstVisible=''){
     if(has(col))return '<td class="truth-cell-collapsed" aria-hidden="true"></td>';
-    if(freeRowImpossible(state,r)){
-      if(col.kind==='var')return '<td class="given">'+t(row[col.name])+'</td>';
-      return '<td class="free-impossible-cell" aria-label="Impossível, não editável"><span aria-hidden="true">🚫</span></td>';
+    if(ordinal!==null){
+      const marker=col.key===firstVisible?
+        '<a class="free-impossible-marker" href="#free-impossible-note-'+ordinal+
+        '" aria-label="Ver justificativa da linha impossível '+ordinal+'" title="Linha impossível: ver justificativa">🚫<sup>'+ordinal+'</sup></a>':'';
+      if(col.kind==='var')return '<td class="given free-impossible-given">'+t(row[col.name])+marker+'</td>';
+      return '<td class="free-impossible-cell" aria-label="Impossível, não editável">'+
+        (marker||'<span aria-hidden="true">—</span>')+'</td>';
     }
     if(col.kind==='var')return '<td class="given">'+t(row[col.node.name])+'</td>';
     return '<td>'+truthButton(r,col)+'</td>';
@@ -141,6 +145,22 @@ export function createFreeTable(root){
       Object.fromEntries(state.variables.map(item=>[item.name,item.meaning||'']));
     const impossibleRows=pred&&report.status==='complete'?
       report.rows.flatMap((item,i)=>item.possible?[]:[i]):[];
+    const impossibleOrdinals=new Map(impossibleRows.map((index,i)=>[index,i+1]));
+    const firstVisible=columns.find(col=>!has(col))?.key||'';
+    const naturalList=parts=>parts.length<2?parts[0]||'':
+      parts.slice(0,-1).join(', ')+' e '+parts.at(-1);
+    const impossibleStatement=row=>{
+      const trueParts=[],falseParts=[];
+      row.values.forEach((value,i)=>{
+        const markup='<code>'+esc(report.expressions[i])+'</code>';
+        (value==='V'?trueParts:falseParts).push(markup);
+      });
+      const positive=trueParts.length?naturalList(trueParts)+' '+
+        (trueParts.length===1?'é verdadeira':'são verdadeiras'):'';
+      const negative=falseParts.length?naturalList(falseParts)+' '+
+        (falseParts.length===1?'é falsa':'são falsas'):'';
+      return positive&&negative?positive+', mas '+negative:positive||negative;
+    };
     const diagram=columns.some(col=>col.kind!=='var')?renderTruthVenn({
       id:'free',variables,variableMeanings:meanings,rows,
       columns:columns.map(col=>({...col,derived:col.kind!=='var'})),
@@ -151,14 +171,16 @@ export function createFreeTable(root){
       checked:state.graded
     }):'';
     const impossible=pred&&report.status==='complete'?report.rows.flatMap((item,i)=>
-      item.possible?[]:[{line:i+1,why:item.explanation}]):[];
+      item.possible?[]:[{ordinal:impossibleOrdinals.get(i),statement:impossibleStatement(item),
+        why:item.explanation}]):[];
     const footer=pred?'<footer class="free-impossibility-footer" aria-label="Justificativas das linhas impossíveis">'+
       (report.status==='undetermined'?
         '<p role="status"><strong>Não determinado:</strong> '+esc(report.reason)+
         '. Nenhuma linha foi bloqueada sem comprovação.</p>':
         report.status==='empty'?'<p>Adicione uma fórmula fechada para construir a tabela-verdade.</p>':
-        impossible.length?'<h3>🚫 Linhas impossíveis — justificativas</h3><ol>'+
-          impossible.map(item=>'<li><strong>Linha '+item.line+':</strong> '+esc(item.why)+'</li>').join('')+
+        impossible.length?'<h3>Linhas impossíveis — justificativas</h3><ol>'+
+          impossible.map(item=>'<li id="free-impossible-note-'+item.ordinal+'"><strong>Linha 🚫<sup>'+
+            item.ordinal+'</sup> é impossível porque '+item.statement+'.</strong> '+esc(item.why)+'</li>').join('')+
           '</ol>':'<p>Nenhuma combinação foi demonstrada impossível.</p>')+
       (report.truncated?'<p><strong>Limite:</strong> projeto antigo com mais de seis fórmulas. A tabela considera apenas as seis primeiras.</p>':'')+
       '<p class="free-impossibility-note">🚫 indica ausência de modelo compatível, não que a implicação seja falsa. As linhas impossíveis não podem ser editadas nem entram na correção.</p></footer>':'';
@@ -166,18 +188,17 @@ export function createFreeTable(root){
       <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2>
         <span class="free-hint">${rows.length} combinações V/F · ${n}/${columns.length} colunas expandidas</span></div>
       <p class="free-table-tip">${pred?
-        'As letras A–F representam fórmulas completas, inclusive com quantificadores. Quando há duas ou mais, preencha a implicação das premissas (as anteriores) para a conclusão (última fórmula). Linhas impossíveis ficam desbotadas e são justificadas no rodapé.':
+        'As letras A–F representam fórmulas completas, inclusive com quantificadores. Quando há duas ou mais, preencha a implicação das premissas (as anteriores) para a conclusão (última fórmula). As linhas impossíveis são identificadas por 🚫¹, 🚫² etc., com a mesma marca na explicação abaixo.':
         'Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas.'}
         Com pelo menos duas fórmulas, ∴ identifica a conclusão (última fórmula), e ∵ explica a inferência após a correção. Use o olho do cabeçalho para recolher colunas.</p>
       ${pred&&report.labels.length?'<p class="free-table-tip">Legenda: '+
         report.labels.map((name,i)=>'<strong>'+name+'</strong> = <code>'+esc(report.expressions[i])+'</code>').join(' · ')+'</p>':''}
       <div class="table-scroll free-table-scroll" role="region" tabindex="0" aria-label="Tabela Livre de ${pred?'predicados e quantificadores':'proposições'}">
         <table class="truth-table free-truth-table">
-          <thead><tr>${pred?'<th scope="col" class="free-status-head">Linha</th>':''}${columns.map(header).join('')}</tr></thead>
-          <tbody>${rows.map((row,r)=>`<tr ${freeRowImpossible(state,r)?'class="free-impossible-row" aria-label="Linha '+(r+1)+' impossível"':''}>
-            ${pred?`<th scope="row" class="${freeRowImpossible(state,r)?'free-impossible-marker':''}">${freeRowImpossible(state,r)?'🚫 ':''}${r+1}</th>`:''}
-            ${columns.map(col=>cell(row,r,col)).join('')}</tr>`).join('')}
-            ${!rows.length?'<tr><td class="free-no-people" colspan="'+Math.max(1,columns.length+(pred?1:0))+'">Cadastre uma fórmula para iniciar.</td></tr>':''}
+          <thead><tr>${columns.map(header).join('')}</tr></thead>
+          <tbody>${rows.map((row,r)=>`<tr ${impossibleOrdinals.has(r)?'class="free-impossible-row" aria-label="Linha impossível '+impossibleOrdinals.get(r)+'"':''}>
+            ${columns.map(col=>cell(row,r,col,impossibleOrdinals.get(r)??null,firstVisible)).join('')}</tr>`).join('')}
+            ${!rows.length?'<tr><td class="free-no-people" colspan="'+Math.max(1,columns.length)+'">Cadastre uma fórmula para iniciar.</td></tr>':''}
           </tbody>
         </table>
       </div>
