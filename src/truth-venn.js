@@ -185,7 +185,46 @@ function propertyTitle(name,meaning){
   return irregular[property]||property.charAt(0).toUpperCase()+
     property.slice(1)+(property.endsWith('s')?'':property.endsWith('m')?'ns':'s');
 }
-export function renderIndividualSets({predicates=[],people=[],meanings={},conflicts=[]}={}){
+/** Se uma universal é premissa, desenha inclusão efetiva entre conjuntos.
+ * Pontos com informação incompleta ficam fora do gráfico, nunca numa região suposta.
+ */
+function inclusionEuler(predicates,people,meanings,relations){
+  if(predicates.length!==2)return '';
+  const rule=relations.find(item=>predicates.includes(item.subset)&&predicates.includes(item.superset));
+  if(!rule||relations.some(item=>item.subset===rule.superset&&item.superset===rule.subset))
+    return '';
+  const inner=rule.subset,outer=rule.superset;
+  const regions={both:[],outer:[],neither:[],unknown:[]};
+  for(const person of people){
+    const inside=person.values?.[inner],outside=person.values?.[outer];
+    if(inside==='V'&&outside==='V')regions.both.push(person);
+    else if(inside==='F'&&outside==='V')regions.outer.push(person);
+    else if(inside==='F'&&outside==='F')regions.neither.push(person);
+    else regions.unknown.push(person);
+  }
+  const markers=(items,x,y)=>items.slice(0,5).map((person,i)=>{
+    const dx=(i%2)*43,dy=Math.floor(i/2)*43;
+    return '<g class="truth-individual-person"><title>'+esc(person.label)+
+      '</title><circle class="truth-individual-dot" cx="'+(x+dx)+'" cy="'+(y+dy)+'" r="8"/>'+
+      '<text x="'+(x+dx)+'" y="'+(y+dy+20)+'" text-anchor="middle">'+
+      esc(person.label.slice(0,9))+'</text></g>';
+  }).join('');
+  const outerName=propertyTitle(outer,meanings[outer]),innerName=propertyTitle(inner,meanings[inner]);
+  const pending=regions.unknown.length?'<p class="truth-venn-note">Não posicionados porque falta informação: '+
+    esc(regions.unknown.map(p=>p.label).join(', '))+'.</p>':'';
+  return '<div class="truth-individual-inclusion"><h4>Inclusão entre conjuntos determinada pela premissa universal</h4>'+
+    '<svg viewBox="0 0 500 350" class="truth-venn-svg truth-individual-svg" role="img" aria-label="'+
+    esc('O conjunto '+innerName+' está totalmente dentro de '+outerName)+
+    '. Indivíduos no conjunto interno: '+regions.both.map(p=>p.label).join(', '))+'">'+
+    '<circle cx="211" cy="167" r="138" class="truth-individual-set-circle"/>'+
+    '<text x="211" y="55" text-anchor="middle" class="truth-individual-set-label">'+esc(outerName)+'</text>'+
+    '<circle cx="180" cy="211" r="79" class="truth-individual-subset-circle"/>'+
+    '<text x="180" y="159" text-anchor="middle" class="truth-individual-set-label">'+esc(innerName)+'</text>'+
+    markers(regions.both,157,204)+markers(regions.outer,264,112)+markers(regions.neither,409,170)+
+    '</svg><p class="truth-venn-note">'+esc(innerName)+' ⊆ '+esc(outerName)+
+    ': todo indivíduo do primeiro conjunto pertence também ao segundo.</p>'+pending+'</div>';
+}
+export function renderIndividualSets({predicates=[],people=[],meanings={},conflicts=[],relations=[]}={}){
   const heading='<div class="truth-venn-heading"><h3>Diagrama de indivíduos</h3>'+
     '<p>Os círculos grandes representam propriedades (conjuntos); cada pequeno círculo representa um indivíduo. '+
     'Um indivíduo só aparece dentro ou fora quando sua pertinência é conhecida.</p></div>';
@@ -224,7 +263,7 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
       describe('A definir',pending)+'</div></article>';
   }).join('');
   return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de indivíduos">'+
-    heading+'<div class="truth-individual-set-grid">'+panels+'</div>'+
+    heading+inclusionEuler(predicates,people,meanings,relations)+'<div class="truth-individual-set-grid">'+panels+'</div>'+
     (conflicts.length?'<p class="truth-individual-conflicts" role="alert">Conflito entre valores informados e premissas: '+
       esc(conflicts.join(' '))+'</p>':'')+
     '<p class="truth-venn-status">Os painéis representam pertinência por propriedade, sem afirmar relações de inclusão entre conjuntos. '+
