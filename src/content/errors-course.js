@@ -453,7 +453,7 @@ export const ERROR_READINGS={
         "Se excursões já existiam antes."
       ],
       "correct": 0,
-      "why": "O enunciado pode excluir soluções intermediárias."
+      "why": "O enunciado descarta soluções intermediárias sem demonstrar que são inviáveis ou impossíveis; é preciso verificar alternativas."
     }
   },
   "vieses_julgamento": {
@@ -633,7 +633,7 @@ export const ERROR_READINGS={
         "Porque qualquer estratificação elimina todo confundimento."
       ],
       "correct": 0,
-      "why": "A composição dos grupos influencia a média agregada."
+      "why": "A gravidade influencia o prognóstico, e clínicas com composições diferentes podem ter totais enganosos apesar de taxas estratificadas melhores."
     }
   },
   "oficina_erros": {
