@@ -2,10 +2,9 @@
 import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableName,
   addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,
   removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
-  parseFreeFormula,describeFreeFormula,freeTableKind,freeArgumentAnalysis,MAX_INDIVIDUALS,
+  parseFreeFormula,describeFreeFormula,freeTableKind,freeArgumentAnalysis,
   predicateTruthAnalysis,freeRowImpossible,
-  addFreeIndividual,editFreeIndividual,removeFreeIndividual,verifyFreeInference,
-  analyzeFreePossibilities} from './core/free-table.js';
+  verifyFreeInference,analyzeFreePossibilities} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
 import {immediateOperands,propositionalRelations,categoricalForm,categoricalRelation} from './core/table-relations.js';
@@ -41,7 +40,7 @@ export function createFreeTable(root){
     catch(error){state=blankFreeTable();recovery={raw:stored||'',reason:error.message}}
   }catch{state=blankFreeTable()}
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
-  let lastFormulaInput=null,domainOpen=false;
+  let lastFormulaInput=null;
   let truthHighlightController=null;
   let vennSelectedKey='',vennFilters={};
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
@@ -72,7 +71,6 @@ export function createFreeTable(root){
     const next=nextFreeVariableName(state);
     return `<section class="free-card" aria-labelledby="freeVarTitle">
       <div class="free-section-heading"><h2 id="freeVarTitle">1. Variáveis e significados</h2><span class="free-hint">${state.variables.length}/${MAX_VARS}</span></div>
-      <p>Os símbolos seguem p, q, r, s, t, u. Ao escrever q(p), o sistema reconhece automaticamente p como indivíduo e q como propriedade. Você pode informar os significados depois, sem cadastrar o indivíduo. A letra x é usada apenas como variável ligada por quantificadores.</p>
       <div class="free-entries">${state.variables.map((v,i)=>`<div class="free-entry">
         <span class="free-variable-symbol" aria-label="Variável ${esc(v.name)}">${esc(v.name)}</span>
         <label>Tipo de ${esc(v.name)} <select data-var-kind="${i}" aria-label="Tipo lógico de ${esc(v.name)}">
@@ -87,36 +85,9 @@ export function createFreeTable(root){
         '<small class="free-hint">Máximo de seis variáveis (64 linhas).</small>'}
     </section>`;
   }
-  function renderDomain(){
-    const assigned=state.variables.filter(v=>v.kind==='individual');
-    const registered=state.domain.filter(item=>!assigned.some(v=>v.name===item.id));
-    const legacy=state.domain.filter(item=>assigned.some(v=>v.name===item.id));
-    return `<details class="free-domain free-domain-advanced" ${domainOpen?'open':''}>
-      <summary>Configurar domínio concreto (avançado)
-        <small>${registered.length} ${registered.length===1?'indivíduo adicional':'indivíduos adicionais'}${legacy.length?' · '+legacy.length+' registro(s) anterior(es)':''}</small></summary>
-      <p>Para fórmulas como q(p), use a seção <strong>Variáveis e significados</strong>: ao marcar p como indivíduo e escrever “Sócrates”, não é necessário cadastrá-lo novamente. Este recurso avançado guarda indivíduos adicionais para modelos concretos; não altera as linhas da tabela-verdade.</p>
-      ${assigned.length?'<p class="free-domain-known"><strong>Indivíduos definidos nas variáveis:</strong> '+
-        assigned.map(v=>'<code>'+esc(v.name)+'</code> = '+esc(v.meaning||'nome não informado')).join(' · ')+'</p>':''}
-      <div class="free-domain-entries">${registered.map(item=>`<div class="free-domain-entry">
-        <code>${esc(item.id)}</code><label>Nome de ${esc(item.id)} <input type="text" data-ind-label="${esc(item.id)}" maxlength="80" value="${esc(item.label)}"></label>
-        <button class="button small" type="button" data-action="save-ind" data-id="${esc(item.id)}">Salvar</button>
-        <button class="button small" type="button" data-action="remove-ind" data-id="${esc(item.id)}" aria-label="Excluir indivíduo ${esc(item.label)}">Excluir</button>
-      </div>`).join('')}
-      ${legacy.map(item=>`<div class="free-domain-entry free-domain-legacy"><code>${esc(item.id)}</code>
-        <span>Registro anterior preservado. Altere o nome deste símbolo em “Variáveis e significados”.</span>
-      </div>`).join('')}</div>
-      <div class="free-domain-add">
-        <label>Símbolo adicional <input id="freeNewIndividualId" maxlength="24" placeholder="a" spellcheck="false"></label>
-        <label>Nome <input id="freeNewIndividualLabel" maxlength="80" placeholder="Ana"></label>
-        <button type="button" class="button" data-action="add-ind" ${state.domain.length>=MAX_INDIVIDUALS?'disabled':''}>+ Adicionar indivíduo ao domínio</button>
-      </div>
-      <small class="free-hint">Não cadastre novamente símbolos marcados como “Indivíduo” nas variáveis. Para ∀ e ∃, a letra x é uma variável ligada, não o nome de uma pessoa.</small>
-    </details>`;
-  }
   function renderFormulas(){
     return `<section class="free-card" aria-labelledby="freeFormulaTitle">
       <div class="free-section-heading"><h2 id="freeFormulaTitle">2. Fórmulas e tradução</h2><span class="free-hint">${state.formulas.length} cadastradas</span></div>
-      <p>Cadastre as fórmulas da tabela. Basta digitar q(p), sem declarar p antes: ele será reconhecido como indivíduo automaticamente. Para quantificadores, use x, como em ∀x(q(x) → r(x)) ou ∃!x(q(x)) (exatamente um). ⊤ representa uma fórmula sempre verdadeira e ⊥ uma fórmula sempre falsa. Com duas ou mais fórmulas, as anteriores são premissas e a última é a conclusão, marcada por ∴ (portanto). Após conferir as respostas, ∵ (porque) apresentará a justificativa da inferência. Exemplo: q(p), ∀x(q(x) → r(x)) e r(p).</p>
       <div class="free-entries">${!state.formulas.length?'<p class="free-empty-formulas">Nenhuma fórmula cadastrada. Use os botões abaixo para criar a primeira.</p>':''}${state.formulas.map(f=>{
         const parsed=parseFreeFormula(state,f.source),d=describeFreeFormula(parsed,state);
         return `<div class="free-formula-card">
@@ -144,7 +115,6 @@ export function createFreeTable(root){
         }).join('')}
       </div>
       <p class="free-symbol-help" id="freeSymbolHelp" role="status" aria-live="polite">${SYMBOL_HELP_DEFAULT}</p>
-      <small class="free-hint">Exemplos: q(p); ∀x(q(x) → r(x)); ∃x(q(x)); ∃!x(q(x)) (um único indivíduo); ⊤ e ⊥. A unicidade conta indivíduos, inclusive quando compartilham propriedades. ∴ (portanto) identifica automaticamente a conclusão no cabeçalho e ∵ (porque) introduz a justificativa após conferir as respostas, nos dois tipos de tabela. São marcadores da argumentação, não conectivos: não são digitados dentro de fórmulas. A última fórmula é a conclusão a partir de duas fórmulas. Nenhum equivale a ¬∃.</small>
     </section>`;
   }
   function truthButton(r,col){
@@ -153,10 +123,10 @@ export function createFreeTable(root){
     const status=!graded?'':answer===want?' correct':' incorrect';
     return `<button type="button" class="cell${answer?' filled':''}${status}" data-action="answer" data-row="${r}" data-key="${esc(col.key)}" aria-label="Linha ${r+1}, ${esc(col.label)}: ${answer||'vazio'}">${answer||'<span class="cell-placeholder">·</span>'}</button>${graded&&answer!==want?`<small class="free-correction" title="Valor esperado">${want}</small>`:''}`;
   }
-  function cell(row,r,col,ordinal=null,firstVisible=''){
+  function cell(row,r,col,ordinal=null,lastVisible=''){
     if(has(col))return '<td class="truth-cell-collapsed" aria-hidden="true"></td>';
     if(ordinal!==null){
-      const marker=col.key===firstVisible?
+      const marker=col.key===lastVisible?
         '<button type="button" class="free-impossible-marker" data-action="show-impossible" data-ordinal="'+ordinal+
         '" aria-controls="free-impossible-note-'+ordinal+'" aria-label="Ver justificativa da linha impossível '+ordinal+'" title="Linha impossível: ver justificativa">🚫<sup>'+ordinal+'</sup></button>':'';
       if(col.kind==='var')return '<td class="given free-impossible-given">'+t(row[col.name])+marker+'</td>';
@@ -169,7 +139,7 @@ export function createFreeTable(root){
   function renderTable(){
     const pred=freeTableKind(state)==='predicates';
     const report=pred?predicateTruthAnalysis(state):null;
-    const columns=freeColumns(state),rows=freeRows(state),n=columns.length-state.hidden.length;
+    const columns=freeColumns(state),rows=freeRows(state);
     let grade=null;
     if(state.graded&&columns.some(col=>col.kind!=='var')){
       try{grade=gradeFreeTable(state)}catch{state.graded=false}
@@ -181,7 +151,7 @@ export function createFreeTable(root){
     const impossibleRows=pred&&report.status==='complete'?
       report.rows.flatMap((item,i)=>item.possible?[]:[i]):[];
     const impossibleOrdinals=new Map(impossibleRows.map((index,i)=>[index,i+1]));
-    const firstVisible=columns.find(col=>!has(col))?.key||'';
+    const lastVisible=columns.findLast(col=>!has(col))?.key||'';
     const naturalList=parts=>parts.length<2?parts[0]||'':
       parts.slice(0,-1).join(', ')+' e '+parts.at(-1);
     const impossibleStatement=row=>{
@@ -218,36 +188,28 @@ export function createFreeTable(root){
             item.ordinal+'</sup> é impossível porque '+item.statement+'.</strong> '+esc(item.why)+'</li>').join('')+
           '</ol>':'<p>Nenhuma combinação foi demonstrada impossível.</p>')+
       (report.truncated?'<p><strong>Limite:</strong> projeto antigo com mais de seis fórmulas. A tabela considera apenas as seis primeiras.</p>':'')+
-      '<p class="free-impossibility-note">🚫 indica ausência de modelo compatível, não que a implicação seja falsa. As linhas impossíveis não podem ser editadas nem entram na correção.</p></footer>':'';
+      '</footer>':'';
     return `<section class="free-card" aria-labelledby="freeTableTitle">
-      <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2>
-        <span class="free-hint">${rows.length} combinações V/F · ${n}/${columns.length} colunas expandidas</span></div>
-      <p class="free-table-tip">${pred?
-        'As letras A–F representam fórmulas completas, inclusive com quantificadores. Quando há duas ou mais, preencha a implicação das premissas (as anteriores) para a conclusão (última fórmula). As linhas impossíveis são identificadas por 🚫¹, 🚫² etc., com a mesma marca na explicação abaixo.':
-        'Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas.'}
-        Com pelo menos duas fórmulas, ∴ identifica a conclusão (última fórmula), e ∵ explica a inferência após a correção. Use o olho do cabeçalho para recolher colunas.</p>
-      ${pred&&report.labels.length?'<p class="free-table-tip">Legenda: '+
-        report.labels.map((name,i)=>'<strong>'+name+'</strong> = <code>'+esc(report.expressions[i])+'</code>').join(' · ')+'</p>':''}
+      <div class="free-section-heading"><h2 id="freeTableTitle">3. Preencher a tabela-verdade</h2></div>
       <div class="table-scroll free-table-scroll" role="region" tabindex="0" aria-label="Tabela Livre de ${pred?'predicados e quantificadores':'proposições'}">
         <table class="truth-table free-truth-table">
           <thead><tr>${columns.map(header).join('')}</tr></thead>
           <tbody>${rows.map((row,r)=>`<tr ${impossibleOrdinals.has(r)?'class="free-impossible-row" aria-label="Linha impossível '+impossibleOrdinals.get(r)+'"':''}>
-            ${columns.map(col=>cell(row,r,col,impossibleOrdinals.get(r)??null,firstVisible)).join('')}</tr>`).join('')}
+            ${columns.map(col=>cell(row,r,col,impossibleOrdinals.get(r)??null,lastVisible)).join('')}</tr>`).join('')}
             ${!rows.length?'<tr><td class="free-no-people" colspan="'+Math.max(1,columns.length)+'">Cadastre uma fórmula para iniciar.</td></tr>':''}
           </tbody>
         </table>
       </div>
-      ${footer}
-      ${diagram}
       ${columns.some(col=>col.kind!=='var')?'<div class="free-table-actions"><button type="button" class="button primary" data-action="grade">Conferir respostas</button></div>':
         '<p class="free-table-tip">Adicione uma fórmula para preencher as colunas derivadas.</p>'}
+      ${footer}
+      ${diagram}
       ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção ignora linhas impossíveis e inclui colunas recolhidas.</p>`:''}
       ${argument?`<div class="free-argument-explanation" role="note" aria-label="Justificativa da inferência">
         <h3>∵ Justificativa da inferência</h3>
         <p>${esc(argument.reason)}</p>
         <small>A validade é avaliada pelas fórmulas, independentemente das respostas preenchidas.</small>
       </div>`:''}
-      ${renderDomain()}
     </section>`;
   }
   function freeHighlightRelations(columns){
@@ -262,15 +224,12 @@ export function createFreeTable(root){
     return propositionalRelations(columns,state.variables.map(item=>item.name),correct)
       .filter(rel=>columns[rel.a].kind!=='var'||columns[rel.b].kind!=='var');
   }
-  const editableSelector='[data-var-meaning],[data-var-kind],[data-formula-source],[data-ind-label],'+
-    '#freeNewFormula,#freeNewIndividualId,#freeNewIndividualLabel';
+  const editableSelector='[data-var-meaning],[data-var-kind],[data-formula-source],#freeNewFormula';
   const draftKey=element=>element.id?'id:'+element.id:
-    ['data-var-meaning','data-var-kind','data-formula-source','data-ind-label']
+    ['data-var-meaning','data-var-kind','data-formula-source']
       .map(name=>element.hasAttribute(name)?name+':'+element.getAttribute(name):'')
       .find(Boolean)||'';
-  function render({resetNewFormula=false,resetNewIndividual=false}={}){
-    const previousDomain=board.querySelector('.free-domain');
-    if(previousDomain)domainOpen=previousDomain.open;
+  function render({resetNewFormula=false}={}){
     const oldScroll=board.querySelector('.free-table-scroll');
     const scroll=oldScroll?{left:oldScroll.scrollLeft,top:oldScroll.scrollTop}:null;
     const active=document.activeElement,focusKey=board.contains(active)?draftKey(active):'';
@@ -280,9 +239,6 @@ export function createFreeTable(root){
       .filter(el=>el.dataset.unsaved==='true')
       .map(el=>[draftKey(el),el.value]));
     if(resetNewFormula)drafts.delete('id:freeNewFormula');
-    if(resetNewIndividual){
-      drafts.delete('id:freeNewIndividualId');drafts.delete('id:freeNewIndividualLabel');
-    }
     truthHighlightController?.destroy();
     truthHighlightController=null;
     if(recovery){
@@ -308,6 +264,11 @@ export function createFreeTable(root){
     const columns=freeColumns(state);
     truthHighlightController=attachTruthHighlights(table,{columns,operands:index=>immediateOperands(columns,index),
       relations:freeHighlightRelations(columns)});
+    // A legenda dinâmica dos destaques fica depois de "Conferir respostas",
+    // preservando o botão imediatamente abaixo da tabela.
+    const relationLegend=board.querySelector('.truth-relation-status');
+    const gradeActions=board.querySelector('.free-table-actions');
+    if(relationLegend&&gradeActions)gradeActions.after(relationLegend);
   }
   function refresh(msg,options={}){
     save();render(options);
@@ -325,7 +286,7 @@ export function createFreeTable(root){
     }
     if(action==='reset-recovery'&&recovery){
       if(!confirm('Reiniciar apagará o rascunho salvo da Tabela Livre. Você já fez o download de recuperação?'))return;
-      recovery=null;state=blankFreeTable();domainOpen=false;
+      recovery=null;state=blankFreeTable();
       refresh('Tabela Livre reiniciada.');return;
     }
     if(recovery)return;
@@ -377,25 +338,6 @@ export function createFreeTable(root){
       const next=old===''?'V':old==='V'?'F':'';
       if(next)state.answers[id]=next;else delete state.answers[id];
       state.graded=false;refresh();root.querySelector('[data-action="answer"][data-row="'+button.dataset.row+'"][data-key="'+CSS.escape(button.dataset.key)+'"]')?.focus({preventScroll:true});return;
-    }
-    if(action==='add-ind'){
-      domainOpen=true;
-      const name=root.querySelector('#freeNewIndividualId').value.trim().toLowerCase();
-      if(state.variables.some(v=>v.name===name&&v.kind==='individual'))
-        throw Error('O símbolo '+name+' já está cadastrado como indivíduo em Variáveis e significados. Edite-o na seção 1, sem duplicar o registro.');
-      addFreeIndividual(state,name,root.querySelector('#freeNewIndividualLabel').value);
-      refresh('Indivíduo cadastrado.',{resetNewIndividual:true});return;
-    }
-    if(action==='save-ind'||action==='remove-ind'){
-      domainOpen=true;
-      const id=button.dataset.id;
-      if(action==='remove-ind')removeFreeIndividual(state,id);
-      else{
-        const input=root.querySelector('[data-ind-label="'+CSS.escape(id)+'"]');
-        editFreeIndividual(state,id,input.value);
-        delete input.dataset.unsaved;
-      }
-      refresh('Domínio atualizado.');return;
     }
     if(action==='predicate-value'){
       const id=button.dataset.ind+'|'+button.dataset.name,old=state.predicateValues[id]||'';
@@ -453,11 +395,9 @@ export function createFreeTable(root){
     try{run(button.dataset.action,button)}catch(error){notice(error.message,true)}
   });
   root.addEventListener('keydown',e=>{
-    if(e.key!=='Enter'||!e.target.matches('#freeNewFormula,[data-formula-source],[data-var-meaning],#freeNewIndividualId,#freeNewIndividualLabel,[data-ind-label]'))return;
+    if(e.key!=='Enter'||!e.target.matches('#freeNewFormula,[data-formula-source],[data-var-meaning]'))return;
     e.preventDefault();
-    const selector=e.target.id==='freeNewIndividualId'||e.target.id==='freeNewIndividualLabel'?'[data-action="add-ind"]':
-      e.target.matches('[data-ind-label]')?'[data-action="save-ind"][data-id="'+e.target.dataset.indLabel+'"]':
-      e.target.id==='freeNewFormula'?'[data-action="add-formula"]':
+    const selector=e.target.id==='freeNewFormula'?'[data-action="add-formula"]':
       e.target.matches('[data-formula-source]')?'[data-action="save-formula"][data-id="'+e.target.dataset.formulaSource+'"]':
       '[data-action="save-var"][data-index="'+e.target.dataset.varMeaning+'"]';
     root.querySelector(selector)?.click();
