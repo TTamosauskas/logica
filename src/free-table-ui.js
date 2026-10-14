@@ -136,17 +136,32 @@ export function createFreeTable(root){
     return '<td>'+truthButton(r,col)+'</td>';
   }
   function renderPeopleControls(){
+    const model=freeIndividualModel(state);
     const existing=state.domain.map(person=>'<span class="free-person-entry">'+
       '<code>'+esc(person.id)+'</code> '+esc(person.label)+
       ' <button type="button" class="button small" data-action="remove-person" data-ind="'+
       esc(person.id)+'" aria-label="Remover indivíduo '+esc(person.label)+'">Excluir</button></span>').join('');
+    const rows=model.people.map(person=>'<tr><th scope="row">'+esc(person.label)+
+      ' <code>('+esc(person.id)+')</code></th>'+model.predicates.map(name=>{
+        const value=person.values[name]||'',origin=person.origins[name]||'';
+        if(origin&&origin!=='informado')return '<td><strong>'+esc(value)+'</strong>'+
+          ' <small class="free-person-derived">premissa</small></td>';
+        return '<td><button type="button" class="button small" data-action="set-person-property"'+
+          ' data-ind="'+esc(person.id)+'" data-pred="'+esc(name)+'" aria-label="'+
+          esc(person.label+': '+name+' '+(value||'indefinido'))+'">'+(value||'?')+'</button></td>';
+      }).join('')+'</tr>').join('');
+    const membership=rows&&model.predicates.length?
+      '<div class="free-person-grid"><table><thead><tr><th>Indivíduo</th>'+
+      model.predicates.map(name=>'<th>'+esc(name)+'</th>').join('')+
+      '</tr></thead><tbody>'+rows+'</tbody></table></div>':'';
     return '<details class="free-person-manager" '+(individualManagerOpen?'open':'')+'>'+
       '<summary>Gerenciar indivíduos adicionais</summary>'+
-      '<p>Inclua mais pessoas sem usar os símbolos p–u reservados aos predicados.</p>'+
+      '<p>Inclua pessoas e defina suas propriedades: ? = desconhecido, V = pertence, F = não pertence.</p>'+
       '<div class="free-person-form"><label>Símbolo <input id="freePersonSymbol" maxlength="30" placeholder="ex.: a"></label>'+
       '<label>Nome <input id="freePersonLabel" maxlength="80" placeholder="ex.: Maria"></label>'+
       '<button type="button" class="button small" data-action="add-person">Adicionar</button></div>'+
-      (existing?'<div class="free-person-list">'+existing+'</div>':'')+'</details>';
+      (existing?'<div class="free-person-list">'+existing+'</div>':'')+
+      membership+'</details>';
   }
   function renderTable(){
     const pred=freeTableKind(state)==='predicates';
@@ -360,6 +375,19 @@ export function createFreeTable(root){
       removeFreeIndividual(state,button.dataset.ind);
       individualManagerOpen=true;
       refresh('Indivíduo removido do diagrama.');return;
+    }
+    if(action==='set-person-property'){
+      const id=button.dataset.ind,name=button.dataset.pred;
+      const model=freeIndividualModel(state);
+      const person=model.people.find(p=>p.id===id);
+      if(!person||!model.predicates.includes(name))return;
+      if(person.origins[name]&&person.origins[name]!=='informado')return;
+      const field=id+'|'+name,old=state.predicateValues[field]||'';
+      const next=old===''?'V':old==='V'?'F':'';
+      if(next)state.predicateValues[field]=next;else delete state.predicateValues[field];
+      state.graded=false;
+      individualManagerOpen=true;
+      refresh('Pertinência atualizada.');return;
     }
     if(action==='answer'){
       if(freeRowImpossible(state,Number(button.dataset.row)))return;
