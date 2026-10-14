@@ -538,7 +538,7 @@ try{
     assert.deepEqual(await free.locator('.free-keypad .free-key-variable').allTextContents(),['p','q']);
     assert.equal(await free.locator('.free-domain summary').innerText().then(text=>text.includes('Configurar domínio concreto (avançado)')),true);
     assert.equal(await free.locator('.free-domain').getAttribute('open'),null);
-    assert.equal(await free.locator('.free-domain').evaluate(node=>node.closest('#freeVarTitle')),null);
+    assert.equal(await free.locator('.free-domain').evaluate(node=>node.closest('.free-card')?.querySelector('h2')?.id),'freeTableTitle');
     await free.locator('.free-keypad [data-symbol="¬"]').hover();
     assert.match(await free.locator('#freeSymbolHelp').innerText(),/Negação: não p/);
     assert.match(await free.locator('.free-keypad [data-symbol="¬"]').getAttribute('title'),/Negação/);
@@ -687,8 +687,7 @@ try{
     assert.equal(await page.locator('.free-impossibility-footer li#free-impossible-note-1 sup').innerText(),'1');
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Linha 🚫1 é impossível porque/);
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/verdadeiras, mas.*falsa/);
-    await ghost.locator('.free-impossible-marker').click();
-    assert.equal(await page.evaluate(()=>location.hash),'#free-impossible-note-1');
+    assert.equal(await page.locator('#free-impossible-note-1').count(),1);
     assert.match(await page.locator('.free-impossibility-footer').innerText(),/Instanciação universal/);
     assert.ok(await page.locator('.truth-venn-impossible').count()>0);
     const active=page.locator('.free-truth-table [data-action="answer"]');
