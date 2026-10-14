@@ -22,7 +22,7 @@ test('Sócrates aparece dentro do conjunto Homens quando q(p) é afirmada',()=>{
   assert.equal(model.people[0].values.q,'V');
   assert.equal(model.people[0].origins.q,'premissa');
   const html=renderIndividualSets(model);
-  assert.match(html,/Homens/);
+  assert.match(html,/<code>q<\/code><\/dt><dd>x é homem<\/dd>/);
   assert.match(html,/Sócrates: Homens sim/);
   assert.match(html,/truth-individual-person/);
   assert.match(html,/<h4>Legenda<\/h4>/);
@@ -48,7 +48,7 @@ test('conclusão não é tomada como fato; universal como premissa deriva mortal
   assert.equal(model.people[0].values.r,'V');
   assert.equal(model.people[0].origins.r,'regra universal');
   const html=renderIndividualSets(model);
-  assert.match(html,/Mortais/);
+  assert.match(html,/<code>r<\/code><\/dt><dd>x é mortal<\/dd>/);
   assert.match(html,/truth-individual-subset-circle/);
   assert.match(html,/Sócrates: Homens sim, Mortais sim/);
   assert.equal((html.match(/<svg\b/g)||[]).length,1);
@@ -89,7 +89,7 @@ test('detecta quando um valor manual contradiz premissas',()=>{
   const model=freeIndividualModel(state);
   assert.equal(model.people[0].values.r,'');
   assert.ok(model.conflicts.length>0);
-  assert.match(renderIndividualSets(model),/Há conflito entre premissas e valores informados/);
+  assert.match(renderIndividualSets(model),/Há informações contraditórias sobre indivíduos/);
 });
 
 test('permite inserir indivíduos extras com pertinência inicialmente indefinida',()=>{
@@ -110,8 +110,8 @@ test('em um único gráfico, apresenta Sócrates na borda quando outra proprieda
    people:[{id:'p',label:'Sócrates',values:{q:'V',r:''}}]
  });
  assert.equal((html.match(/<svg\b/g)||[]).length,1);
- assert.match(html,/Homens/);
- assert.match(html,/Mortais/);
+ assert.match(html,/<code>q<\/code><\/dt><dd>x é homem<\/dd>/);
+ assert.match(html,/<code>r<\/code><\/dt><dd>x é mortal<\/dd>/);
  assert.match(html,/class="truth-individual-dot"/);
  assert.match(html,/posição parcial; falta definir r/);
  assert.doesNotMatch(html,/truth-individual-set-grid/);
