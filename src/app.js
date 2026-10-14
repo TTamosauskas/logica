@@ -24,6 +24,9 @@ import { ERROR_ASSESSMENTS } from './content/errors-assessments.js';
 import { ERROR_PRACTICE } from './content/errors-practice.js';
 import { OTHER_LOGIC_READINGS } from './content/other-logics-course.js';
 import { OTHER_LOGIC_ASSESSMENTS } from './content/other-logics-assessments.js';
+import { FOUNDATIONS_READINGS } from './content/foundations-a.js';
+import { FOUNDATIONS_ASSESSMENTS } from './content/foundations-assessments.js';
+import { FOUNDATIONS_PRACTICE } from './content/foundations-practice.js';
 import { WORKED_EXAMPLES } from './content/example-walkthroughs.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
 import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
@@ -815,7 +818,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     return '';
   }
 
-  const GENERATORS={...Object.fromEntries(Object.keys(ERROR_PRACTICE).map(id=>[id,()=>criticalThinkingMode(level,id)])),inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,metateoria:metatheoryPrecisionMode,falacias:advancedConceptMode,modais:l=>semanticsMode(l,'modais'),temporal:l=>semanticsMode(l,'temporal'),...Object.fromEntries(OTHER_LOGIC_LAB_IDS.map(id=>[id,l=>otherLogicMode(l,id)])),categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalencePrecisionMode,argumentos:argumentsMode};
+  const GENERATORS={...Object.fromEntries(Object.keys(ERROR_PRACTICE).map(id=>[id,()=>criticalThinkingMode(level,id)])),inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,...Object.fromEntries(Object.keys(FOUNDATIONS_PRACTICE).map(id=>[id,l=>foundationsPracticeMode(l,id)])),falacias:advancedConceptMode,modais:l=>semanticsMode(l,'modais'),temporal:l=>semanticsMode(l,'temporal'),...Object.fromEntries(OTHER_LOGIC_LAB_IDS.map(id=>[id,l=>otherLogicMode(l,id)])),categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalencePrecisionMode,argumentos:argumentsMode};
   const STORE_KEY='logiclab_progress_v1',THEME_KEY='logiclab_theme_v1';
   function blankStats(){return {tries:0,perfect:0,correct:0,total:0,byMode:{},translationTypes:{},deductionLevels:{}}}
   function loadStats(){try{const saved=JSON.parse(localStorage.getItem(STORE_KEY));if(saved&&typeof saved.tries==='number'&&saved.byMode)return saved}catch(e){}return blankStats()}
@@ -1435,6 +1438,14 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       'Comece contando as pessoas que satisfazem o predicado. Depois verifique se há uma e apenas uma, se realiza a ação e se dois nomes referem-se ao mesmo indivíduo.',
       'Uma descrição definida exige existência, unicidade e a propriedade atribuída; identidade e escopo dos quantificadores precisam de hipóteses explícitas.');
   }
+  function foundationsPracticeMode(level,id){
+    const questions=shuffle(FOUNDATIONS_PRACTICE[id]).slice(0,level==='easy'?3:5);
+    return makeSpecial(id,'Investigue fundamentos formais',
+      'Distinga símbolos, modelos e inferências aplicando as definições da aula a novos casos.',
+      {type:'concept',questions},
+      'Identifique primeiro a linguagem e a relação envolvida. Depois compare a afirmação com o exemplo ou modelo.',
+      'As respostas dependem da diferença entre sintaxe, satisfação, derivação e consequência semântica.');
+  }
   function metatheoryPrecisionMode(level){
     if(level==='hard'&&rng(3)===0)return theoremMode(level);
     return makeSpecial('metateoria','Distingua prova, verdade e limites dos algoritmos',
@@ -1587,8 +1598,8 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('courseLocation').textContent=context.location;
     $('courseDescription').textContent=context.description;
   }
-  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS};
-  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS};
+  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS};
+  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS};
   function assessmentForLesson(id){
     const p=courseProgress(id);
     p.assessmentV2=p.assessmentV2||{version:ASSESSMENT_VERSION,history:[]};
@@ -1750,7 +1761,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     const reading=COURSE_READINGS[id];
     html+=`<section class="course-lesson-panel" id="course-stage-1"><h3 tabindex="-1">1. Compreender</h3>${reading?renderPedagogicalReading(reading):`<p>${escapeHTML(lesson.theory)}</p>`}${id==='categoricos2'?renderOppositionSquare():''}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
     if(p.read){html+=`<section class="course-lesson-panel" id="course-stage-2"><h3 tabindex="-1">2. Observar um exemplo resolvido</h3>${renderWorkedExample(id,p)}</section>`}
-    if(p.example&&THEORY_CARDS[id]){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
+    if(p.example&&THEORY_CARDS[id]&&id!=='metateoria'){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
     if(p.example){html+=`<section class="course-lesson-panel" id="course-stage-3"><h3 tabindex="-1">3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
     if(p.guided){html+=`<section class="course-lesson-panel" id="course-stage-4"><h3 tabindex="-1">4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
     if(p.independent){
