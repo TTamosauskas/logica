@@ -14,22 +14,23 @@ import {
 const newIds=['inducao','abducao','probabilidade','causalidade'];
 test('unidade de evidências acrescenta quatro aulas sem substituir as 19 conquistas anteriores',()=>{
   const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
-  assert.equal(COURSE_UNITS.length,7);
-  assert.equal(ids.length,23);
+  assert.equal(COURSE_UNITS.length,8);
+  assert.equal(ids.length,30);
   assert.deepEqual(COURSE_UNITS[4].ids,newIds);
-  assert.equal(COURSE_UNITS[5].ids[0],'metateoria');
-  assert.equal(COURSE_UNITS[6].ids[0],'modais');
-  assert.equal(new Set(ids).size,23);
-  assert.equal(MODULES.length,24);
+  assert.equal(COURSE_UNITS[6].ids[0],'metateoria');
+  assert.equal(COURSE_UNITS[7].ids[0],'modais');
+  assert.equal(new Set(ids).size,30);
+  assert.equal(MODULES.length,31);
   for(const id of newIds){
     assert.ok(MODULES.some(m=>m.id===id),id);
     assert.equal(LESSONS[id].quiz.length,4,id);
     assert.equal(LESSONS[id].steps.length,3,id);
     assert.equal(UNIT13_READINGS[id].sections.length,3,id);
   }
-  const old=Object.fromEntries(ids.filter(id=>!newIds.includes(id)).map(id=>[id,{mastered:true}]));
+  const newCritical=COURSE_UNITS[5].ids;
+  const old=Object.fromEntries(ids.filter(id=>!newIds.includes(id)&&!newCritical.includes(id)).map(id=>[id,{mastered:true}]));
   const overview=learningOverview(COURSE_UNITS,old);
-  assert.equal(overview.total,23);
+  assert.equal(overview.total,30);
   assert.equal(overview.approved,19);
   assert.equal(getNextLearningStep(COURSE_UNITS,old).id,'inducao');
 });
