@@ -4,6 +4,7 @@ import {COURSE_UNITS,LESSONS} from '../src/content/course.js';
 import {MODULES} from '../src/content/modules.js';
 import {UNIT2_READINGS} from '../src/content/reading-unit2.js';
 import {UNIT4_TO_6_READINGS} from '../src/content/reading-units4to6.js';
+import {FOUNDATIONS_READINGS} from '../src/content/foundations-a.js';
 import {learningOverview} from '../src/core/learning-feedback.js';
 import {
   DESCRIPTION_CASES,IDENTITY_CASES,RELATION_CASES,REWRITE_CHAINS,META_CASES,
@@ -12,25 +13,25 @@ import {
 } from '../src/core/precision-lab.js';
 const ids=COURSE_UNITS.flatMap(u=>u.ids);
 
-test('ciclo 14 preserva IDs anteriores e progride para 36 aulas em 8 unidades',()=>{
+test('ciclo 14 preserva IDs anteriores e progride para 39 aulas em 8 unidades',()=>{
   assert.equal(COURSE_UNITS.length,8);
-  assert.equal(ids.length,36);
-  assert.equal(new Set(ids).size,36);
-  assert.equal(MODULES.length,37); // 36 aulas + treino misto
+  assert.equal(ids.length,39);
+  assert.equal(new Set(ids).size,39);
+  assert.equal(MODULES.length,40); // 39 aulas + treino misto
   for(const id of ['predicados2','equivalencias','metateoria'])assert.ok(ids.includes(id));
   const learned=Object.fromEntries(ids.map(id=>[id,{mastered:true}]));
   const overview=learningOverview(COURSE_UNITS,learned);
-  assert.equal(overview.approved,36);
-  assert.equal(overview.total,36);
+  assert.equal(overview.approved,39);
+  assert.equal(overview.total,39);
 });
-test('metateoria corrige soundness sem confundir prova e probabilidade',()=>{
+test('metateoria preserva identificador e diferencia consequência de derivação',()=>{
   const first=LESSONS.metateoria.quiz[0];
-  assert.match(first.question,/Correção \(soundness\)/);
-  assert.equal(first.options[first.correct],'Se Γ ⊢ φ, então Γ ⊨ φ.');
-  assert.ok(!first.options.some(o=>o==='Provável implica válido'));
-  const body=UNIT4_TO_6_READINGS.metateoria.sections.flatMap(s=>s.paragraphs).join(' ');
-  for(const term of ['Turing','Gödel','correto','completude','indecidibilidade'])assert.ok(body.includes(term),term);
-  assert.equal(LESSONS.metateoria.quiz.length,5);
+  assert.match(first.question,/Γ⊨φ/);
+  assert.match(first.options[first.correct],/interpretação/);
+  assert.ok(!first.options.some(o=>/probabilidade como prova/.test(o)));
+  const body=FOUNDATIONS_READINGS.metateoria.sections.flatMap(s=>s.paragraphs).join(' ');
+  for(const term of ['derivação','correção','completude','semântica'])assert.ok(body.includes(term),term);
+  assert.equal(LESSONS.metateoria.quiz.length,4);
 });
 test('descrição definida avalia existência, unicidade e atribuição corretamente',()=>{
   const expected={'sem':[false,false,false],'unico-sim':[true,true,true],'unico-nao':[true,true,false],'dois':[true,false,false],'tres':[true,false,false],'outro':[true,true,true]};
@@ -104,7 +105,7 @@ test('todas as cadeias são equivalentes em cada passo; contraexemplo invalida s
 test('leituras e avaliações cobrem os novos objetivos e preservam seis etapas comuns',()=>{
   for(const [id,reading] of [
     ['predicados2',UNIT4_TO_6_READINGS.predicados2],
-    ['metateoria',UNIT4_TO_6_READINGS.metateoria],
+    ['metateoria',FOUNDATIONS_READINGS.metateoria],
     ['equivalencias',UNIT2_READINGS.equivalencias]
   ]){
     assert.equal(reading.sections.length,3,id);
