@@ -92,7 +92,10 @@ export function freeIndividualModel(state){
     }
     return {...person,values,origins};
   });
-  return {predicates,people:entries,conflicts,
+  const relations=rules.filter(rule=>rule.antecedent.value==='V'&&
+    rule.consequent.value==='V'&&rule.antecedent.name!==rule.consequent.name)
+    .map(rule=>({subset:rule.antecedent.name,superset:rule.consequent.name}));
+  return {predicates,people:entries,conflicts,relations,
     meanings:Object.fromEntries(predicates.map(name=>[
       name,state.variables.find(v=>v.name===name)?.meaning||''
     ]))};
