@@ -34,8 +34,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "Combate uma posição mais radical que a enunciada.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Diante de um estudo, o crítico ataca apenas a aparência do pesquisador.",
@@ -46,8 +46,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "A característica pessoal é irrelevante para o achado.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Uma pessoa famosa recomenda um tratamento sem apresentar estudos.",
@@ -132,8 +132,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "As alternativas não são obviamente exaustivas.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Uma regra é defendida por ser boa, e definida como boa por ser essa regra.",
@@ -144,8 +144,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "A premissa reproduz a tese com outras palavras.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Depois de ver duas falhas, alguém conclui que um sistema falha sempre.",
@@ -230,8 +230,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "Referência inicial pode deslocar julgamentos.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Após notícia marcante de acidente raro, alguém julga o risco enorme.",
@@ -242,8 +242,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "A disponibilidade do exemplo não mede probabilidade.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Um leitor escolhe apenas fontes que confirmam sua visão.",
@@ -328,8 +328,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "Pagamento passado não decide a utilidade futura.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Um analista anuncia 90% de confiança e acerta 50% das previsões comparáveis.",
@@ -340,8 +340,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "Confiança declarada precisa acompanhar frequência de acertos.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Um resultado eleitoral parece óbvio depois, mas ninguém registrou previsão anterior.",
@@ -426,8 +426,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "O denominador é necessário mas não resolve representatividade.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Uma taxa cai de 12 por mil para 6 por mil.",
@@ -438,8 +438,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "Doze menos seis casos por mil resultam seis por mil.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Uma barra de 100 parece três vezes maior que uma de 90 por ter eixo iniciado em 85.",
@@ -524,8 +524,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "Diferentes misturas de casos alteram o total.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Uma pesquisa só considera alunos que completaram o curso.",
@@ -536,8 +536,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "A seleção condicionada ao término pode enviesar avaliações.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Um desempenho extremamente ruim é seguido por outro mais próximo do habitual.",
@@ -622,8 +622,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "O grupo observado limita o alcance.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Uma reportagem critica a pessoa que questionou os números em vez de explicar o método.",
@@ -634,8 +634,8 @@ export const ERROR_ASSESSMENTS={
       ],
       "correct": 0,
       "why": "Relação entre razão e conclusão é o critério.",
-      "dimension": "application",
-      "objective": "Aplicação e transferência"
+      "dimension": "concept",
+      "objective": "Reconhecimento conceitual contextualizado"
     },
     {
       "question": "Uma taxa cai de 6% para 3%. Como reportar?",
