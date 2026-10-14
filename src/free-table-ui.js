@@ -3,8 +3,8 @@ import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableNam
   addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,
   removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
   parseFreeFormula,describeFreeFormula,freeTableKind,freeArgumentAnalysis,
-  predicateTruthAnalysis,freeRowImpossible,addFreeIndividual,removeFreeIndividual,
-  freeIndividualModel,verifyFreeInference,analyzeFreePossibilities} from './core/free-table.js';
+  predicateTruthAnalysis,freeRowImpossible,freeIndividualModel,
+  verifyFreeInference,analyzeFreePossibilities} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
 import {immediateOperands,propositionalRelations,categoricalForm,categoricalRelation} from './core/table-relations.js';
@@ -42,7 +42,7 @@ export function createFreeTable(root){
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
   let lastFormulaInput=null;
   let truthHighlightController=null;
-  let vennSelectedKey='',vennFilters={},vennMode='individuals';
+  let vennSelectedKey='',vennFilters={};
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
   function save(){
     if(recovery){notice('O rascunho original está protegido. Exporte os dados antes de reiniciar.',true);return}
@@ -135,33 +135,6 @@ export function createFreeTable(root){
     if(col.kind==='var')return '<td class="given">'+t(row[col.node.name])+'</td>';
     return '<td>'+truthButton(r,col)+'</td>';
   }
-  function renderIndividualsEditor(model){
-    const rows=model.people.map(person=>'<tr><th scope="row">'+esc(person.label)+
-      ' <code>('+esc(person.id)+')</code></th>'+model.predicates.map(name=>{
-        const value=person.values[name]||'',origin=person.origins[name]||'';
-        if(origin&&origin!=='informado')
-          return '<td><strong>'+esc(value)+'</strong> <span class="truth-individual-derived">'+
-            esc(origin)+'</span></td>';
-        return '<td><button type="button" class="button small" data-action="predicate-value" data-ind="'+
-          esc(person.id)+'" data-name="'+esc(name)+'" aria-label="Pertinência de '+esc(person.label)+
-          ' a '+esc(name)+': '+esc(value||'indefinida')+'">'+
-          (value||'<span class="truth-individual-pending">?</span>')+'</button></td>';
-      }).join('')+'</tr>').join('');
-    return '<div class="truth-individual-editor"><h4>Definir pertinência dos indivíduos</h4>'+
-      '<p>V = pertence; F = não pertence; ? = ainda não informado. Clique para alternar. '+
-      'Os valores deduzidos das premissas aparecem identificados e não podem ser alterados aqui.</p>'+
-      (rows?'<div class="truth-individual-table-wrap"><table class="truth-individual-table"><thead><tr>'+
-        '<th scope="col">Indivíduo</th>'+model.predicates.map(name=>'<th scope="col">'+esc(name)+
-          '(x)</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>':'')+
-      '<div class="truth-individual-add"><label>Símbolo do indivíduo'+
-      '<input id="freePersonId" placeholder="ex.: s" maxlength="30" autocomplete="off"></label>'+
-      '<label>Nome do indivíduo<input id="freePersonName" placeholder="ex.: Sócrates" maxlength="80" autocomplete="off"></label>'+
-      '<button type="button" class="button small" data-action="add-individual">Adicionar indivíduo</button></div>'+
-      (state.domain.length?'<p>Indivíduos adicionados: '+state.domain.map(person=>esc(person.label)+
-        ' <button type="button" class="button small" data-action="remove-individual" data-ind="'+
-        esc(person.id)+'" aria-label="Excluir '+esc(person.label)+'">Excluir</button>').join(' · ')+'</p>':'')+
-      '</div>';
-  }
   function renderTable(){
     const pred=freeTableKind(state)==='predicates';
     const report=pred?predicateTruthAnalysis(state):null;
@@ -193,7 +166,7 @@ export function createFreeTable(root){
         (falseParts.length===1?'é falsa':'são falsas'):'';
       return positive&&negative?positive+', mas '+negative:positive||negative;
     };
-    const interpretationDiagram=columns.some(col=>col.kind!=='var')?renderTruthVenn({
+    const interpretationDiagram=!pred&&columns.some(col=>col.kind!=='var')?renderTruthVenn({
       id:'free',variables,variableMeanings:meanings,rows,
       columns:columns.map(col=>({...col,derived:col.kind!=='var'})),
       selectedKey:vennSelectedKey,filters:vennFilters,impossibleRows,
@@ -202,14 +175,7 @@ export function createFreeTable(root){
       getExpected:(i,col)=>evaluateFreeRow(rows[i],col,state)?'V':'F',
       checked:state.graded
     }):'';
-    const individualModel=pred?freeIndividualModel(state):null;
-    const tabs=pred?'<nav class="truth-venn-mode" aria-label="Tipo de diagrama">'+
-      '<button type="button" class="button small" data-action="venn-mode" data-mode="individuals" aria-pressed="'+
-        (vennMode==='individuals')+'">Indivíduos e conjuntos</button>'+
-      '<button type="button" class="button small" data-action="venn-mode" data-mode="interpretations" aria-pressed="'+
-        (vennMode==='interpretations')+'">Interpretações V/F</button></nav>':'';
-    const diagram=pred&&vennMode==='individuals'?
-      renderIndividualSets(individualModel)+renderIndividualsEditor(individualModel):interpretationDiagram;
+    const diagram=pred?renderIndividualSets(freeIndividualModel(state)):interpretationDiagram;
     const impossible=pred&&report.status==='complete'?report.rows.flatMap((item,i)=>
       item.possible?[]:[{ordinal:impossibleOrdinals.get(i),statement:impossibleStatement(item),
         why:item.explanation}]):[];
@@ -238,7 +204,6 @@ export function createFreeTable(root){
       ${columns.some(col=>col.kind!=='var')?'<div class="free-table-actions"><button type="button" class="button primary" data-action="grade">Conferir respostas</button></div>':
         '<p class="free-table-tip">Adicione uma fórmula para preencher as colunas derivadas.</p>'}
       ${footer}
-      ${tabs}
       ${diagram}
       ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção ignora linhas impossíveis e inclui colunas recolhidas.</p>`:''}
       ${argument?`<div class="free-argument-explanation" role="note" aria-label="Justificativa da inferência">
@@ -368,30 +333,12 @@ export function createFreeTable(root){
       state.hidden=state.hidden.includes(id)?state.hidden.filter(k=>k!==id):[...state.hidden,id];
       refresh();root.querySelector('[data-action="toggle-col"][data-key="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});return;
     }
-    if(action==='venn-mode'){
-      vennMode=button.dataset.mode==='interpretations'?'interpretations':'individuals';
-      render();root.querySelector('[data-action="venn-mode"][data-mode="'+vennMode+'"]')?.focus({preventScroll:true});return;
-    }
-    if(action==='add-individual'){
-      addFreeIndividual(state,root.querySelector('#freePersonId').value,root.querySelector('#freePersonName').value);
-      refresh('Indivíduo adicionado.');return;
-    }
-    if(action==='remove-individual'){
-      removeFreeIndividual(state,button.dataset.ind);refresh('Indivíduo removido.');return;
-    }
     if(action==='answer'){
       if(freeRowImpossible(state,Number(button.dataset.row)))return;
       const id=key(button.dataset.row,button.dataset.key),old=state.answers[id]||'';
       const next=old===''?'V':old==='V'?'F':'';
       if(next)state.answers[id]=next;else delete state.answers[id];
       state.graded=false;refresh();root.querySelector('[data-action="answer"][data-row="'+button.dataset.row+'"][data-key="'+CSS.escape(button.dataset.key)+'"]')?.focus({preventScroll:true});return;
-    }
-    if(action==='predicate-value'){
-      const id=button.dataset.ind+'|'+button.dataset.name,old=state.predicateValues[id]||'';
-      const next=old===''?'V':old==='V'?'F':'';
-      if(next)state.predicateValues[id]=next;else delete state.predicateValues[id];
-      state.graded=false;refresh();
-      root.querySelector('[data-action="predicate-value"][data-ind="'+CSS.escape(button.dataset.ind)+'"][data-name="'+CSS.escape(button.dataset.name)+'"]')?.focus({preventScroll:true});return;
     }
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
