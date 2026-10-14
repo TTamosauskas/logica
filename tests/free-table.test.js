@@ -23,7 +23,7 @@ test('adiciona variáveis somente na sequência r s t u; p e q não são excluí
   assert.throws(()=>addFreeVariable(s,'t'),/próxima variável é r/);
   assert.throws(()=>removeFreeVariable(s,'p'),/permanentes/);
   for(const name of ['r','s','t','u'])addFreeVariable(s,name);
-  assert.deepEqual(s.variables.map(v=>v.name),VARIABLE_SEQUENCE);
+  assert.deepEqual(s.variables.map(v=>v.name),VARIABLE_SEQUENCE.slice(0,MAX_VARS));
   assert.equal(s.variables.length,MAX_VARS);
   assert.equal(freeRows(s).length,64);
   assert.equal(nextFreeVariableName(s),null);
@@ -114,4 +114,22 @@ test('migra tabela antiga preservando fórmulas autorais e removendo apenas o ex
   assert.deepEqual(restored.hidden,['v:p']);
   assert.equal(restored.variables[0].meaning,'fui ao cinema');
   assert.equal(nextFreeVariableName(restored),'r');
+});
+
+test('tabela ampliada passa de seis para oito variáveis, sem ampliar o diagrama',()=>{
+ const state=blankFreeTable();
+ for(const name of ['r','s','t','u'])addFreeVariable(state,name);
+ assert.equal(state.extendedTable,false);
+ assert.equal(freeRows(state).length,64);
+ assert.equal(nextFreeVariableName(state),null);
+ state.extendedTable=true;
+ assert.equal(nextFreeVariableName(state),'v');
+ addFreeVariable(state,'v');
+ addFreeVariable(state,'w');
+ assert.equal(freeRows(state).length,256);
+ assert.equal(nextFreeVariableName(state),null);
+ assert.equal(readFreeTable(JSON.stringify(state),{strict:true}).variables.length,8);
+ assert.equal(readFreeTable(JSON.stringify(state),{strict:true}).extendedTable,true);
+ const invalid={...state,extendedTable:false};
+ assert.throws(()=>readFreeTable(JSON.stringify(invalid),{strict:true}),/Estrutura de tabela inválida/);
 });
