@@ -12,16 +12,16 @@ import {
 } from '../src/core/precision-lab.js';
 const ids=COURSE_UNITS.flatMap(u=>u.ids);
 
-test('ciclo 14 mantém exatamente 23 aulas, 7 unidades, os IDs anteriores e o progresso',()=>{
-  assert.equal(COURSE_UNITS.length,7);
-  assert.equal(ids.length,23);
-  assert.equal(new Set(ids).size,23);
-  assert.equal(MODULES.length,24); // 23 aulas + treino misto
+test('ciclo 14 preserva IDs anteriores e progride para 30 aulas em 8 unidades',()=>{
+  assert.equal(COURSE_UNITS.length,8);
+  assert.equal(ids.length,30);
+  assert.equal(new Set(ids).size,30);
+  assert.equal(MODULES.length,31); // 30 aulas + treino misto
   for(const id of ['predicados2','equivalencias','metateoria'])assert.ok(ids.includes(id));
   const learned=Object.fromEntries(ids.map(id=>[id,{mastered:true}]));
   const overview=learningOverview(COURSE_UNITS,learned);
-  assert.equal(overview.approved,23);
-  assert.equal(overview.total,23);
+  assert.equal(overview.approved,30);
+  assert.equal(overview.total,30);
 });
 test('metateoria corrige soundness sem confundir prova e probabilidade',()=>{
   const first=LESSONS.metateoria.quiz[0];
