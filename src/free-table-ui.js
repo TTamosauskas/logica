@@ -25,7 +25,7 @@ export function createFreeTable(root){
     catch(error){state=blankFreeTable();recovery={raw:stored||'',reason:error.message}}
   }catch{state=blankFreeTable()}
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
-  let lastFormulaInput=null,domainOpen=state.domain.length>0;
+  let lastFormulaInput=null,domainOpen=false;
   let truthHighlightController=null;
   let vennSelectedKey='',vennFilters={};
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
@@ -69,24 +69,32 @@ export function createFreeTable(root){
       </div>`).join('')}</div>
       ${next?`<button type="button" class="button" data-action="add-var">+ Adicionar variável ${next}</button>`:
         '<small class="free-hint">Máximo de seis variáveis (64 linhas).</small>'}
-      ${renderDomain()}
     </section>`;
   }
   function renderDomain(){
-    return `<details class="free-domain" ${domainOpen?'open':''}>
-      <summary>Nomes de indivíduos (opcional) <small>${state.domain.length} cadastrados</small></summary>
-      <p>Use esta área apenas se quiser dar um nome a um indivíduo, como s = Sócrates. Não é obrigatório cadastrar o símbolo para escrever q(s) ou q(p), e isso não cria linhas adicionais na tabela.</p>
-      <div class="free-domain-entries">${state.domain.map(item=>`<div class="free-domain-entry">
+    const assigned=state.variables.filter(v=>v.kind==='individual');
+    const registered=state.domain.filter(item=>!assigned.some(v=>v.name===item.id));
+    const legacy=state.domain.filter(item=>assigned.some(v=>v.name===item.id));
+    return `<details class="free-domain free-domain-advanced" ${domainOpen?'open':''}>
+      <summary>Configurar domínio concreto (avançado)
+        <small>${registered.length} ${registered.length===1?'indivíduo adicional':'indivíduos adicionais'}${legacy.length?' · '+legacy.length+' registro(s) anterior(es)':''}</small></summary>
+      <p>Para fórmulas como q(p), use a seção <strong>Variáveis e significados</strong>: ao marcar p como indivíduo e escrever “Sócrates”, não é necessário cadastrá-lo novamente. Este recurso avançado guarda indivíduos adicionais para modelos concretos; não altera as linhas da tabela-verdade.</p>
+      ${assigned.length?'<p class="free-domain-known"><strong>Indivíduos definidos nas variáveis:</strong> '+
+        assigned.map(v=>'<code>'+esc(v.name)+'</code> = '+esc(v.meaning||'nome não informado')).join(' · ')+'</p>':''}
+      <div class="free-domain-entries">${registered.map(item=>`<div class="free-domain-entry">
         <code>${esc(item.id)}</code><label>Nome de ${esc(item.id)} <input type="text" data-ind-label="${esc(item.id)}" maxlength="80" value="${esc(item.label)}"></label>
         <button class="button small" type="button" data-action="save-ind" data-id="${esc(item.id)}">Salvar</button>
         <button class="button small" type="button" data-action="remove-ind" data-id="${esc(item.id)}" aria-label="Excluir indivíduo ${esc(item.label)}">Excluir</button>
+      </div>`).join('')}
+      ${legacy.map(item=>`<div class="free-domain-entry free-domain-legacy"><code>${esc(item.id)}</code>
+        <span>Registro anterior preservado. Altere o nome deste símbolo em “Variáveis e significados”.</span>
       </div>`).join('')}</div>
       <div class="free-domain-add">
-        <label>Símbolo <input id="freeNewIndividualId" maxlength="24" placeholder="s" spellcheck="false"></label>
-        <label>Nome <input id="freeNewIndividualLabel" maxlength="80" placeholder="Sócrates"></label>
-        <button type="button" class="button" data-action="add-ind" ${state.domain.length>=MAX_INDIVIDUALS?'disabled':''}>+ Adicionar indivíduo</button>
+        <label>Símbolo adicional <input id="freeNewIndividualId" maxlength="24" placeholder="a" spellcheck="false"></label>
+        <label>Nome <input id="freeNewIndividualLabel" maxlength="80" placeholder="Ana"></label>
+        <button type="button" class="button" data-action="add-ind" ${state.domain.length>=MAX_INDIVIDUALS?'disabled':''}>+ Adicionar indivíduo ao domínio</button>
       </div>
-      <small class="free-hint">Em q(p), p representa um indivíduo particular; use x apenas dentro de expressões quantificadas, como ∀x(q(x)).</small>
+      <small class="free-hint">Não cadastre novamente símbolos marcados como “Indivíduo” nas variáveis. Para ∀ e ∃, a letra x é uma variável ligada, não o nome de uma pessoa.</small>
     </details>`;
   }
   function renderFormulas(){
@@ -212,6 +220,7 @@ export function createFreeTable(root){
         <p>${esc(argument.reason)}</p>
         <small>A validade é avaliada pelas fórmulas, independentemente das respostas preenchidas.</small>
       </div>`:''}
+      ${renderDomain()}
     </section>`;
   }
   function freeHighlightRelations(columns){
@@ -339,7 +348,10 @@ export function createFreeTable(root){
     }
     if(action==='add-ind'){
       domainOpen=true;
-      addFreeIndividual(state,root.querySelector('#freeNewIndividualId').value,root.querySelector('#freeNewIndividualLabel').value);
+      const name=root.querySelector('#freeNewIndividualId').value.trim().toLowerCase();
+      if(state.variables.some(v=>v.name===name&&v.kind==='individual'))
+        throw Error('O símbolo '+name+' já está cadastrado como indivíduo em Variáveis e significados. Edite-o na seção 1, sem duplicar o registro.');
+      addFreeIndividual(state,name,root.querySelector('#freeNewIndividualLabel').value);
       refresh('Indivíduo cadastrado.',{resetNewIndividual:true});return;
     }
     if(action==='save-ind'||action==='remove-ind'){
