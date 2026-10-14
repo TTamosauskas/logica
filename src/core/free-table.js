@@ -611,8 +611,9 @@ export function freeIndividualModel(state){
   const used=predicateAtomicNames(roots);
   // O usuário pode criar um conjunto pelo significado do predicado,
   // sem precisar inventar uma fórmula para fazê-lo aparecer.
-  const predicates=[...new Set([...state.variables.filter(v=>
-    v.kind!=='individual'&&(clean(v.meaning)||used.has(v.name))).map(v=>v.name),
+  const predicates=[...new Set([...(freeTableKind(state)==='predicates'?
+    state.variables.filter(v=>v.kind!=='individual'&&
+      (clean(v.meaning)||used.has(v.name))).map(v=>v.name):[]),
     ...(state.diagramSets||[]).map(v=>v.name),...used])];
   const people=new Map();
   for(const d of state.domain||[])people.set(d.id,{id:d.id,label:d.label||d.id});
