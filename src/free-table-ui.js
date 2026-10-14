@@ -139,6 +139,21 @@ export function createFreeTable(root){
     if(col.kind==='var')return '<td class="given">'+t(row[col.node.name])+'</td>';
     return '<td>'+truthButton(r,col)+'</td>';
   }
+  function renderDiagramSetControls(){
+    const sets=(state.diagramSets||[]).map(item=>
+      '<div class="free-set-entry"><code>'+esc(item.name)+'</code>'+
+      '<input type="text" maxlength="160" data-set-meaning="'+esc(item.name)+
+      '" value="'+esc(item.meaning)+'" aria-label="Significado do conjunto '+esc(item.name)+'">'+
+      '<button type="button" class="button small" data-action="save-set" data-set="'+esc(item.name)+'">Salvar</button>'+
+      '<button type="button" class="button small" data-action="remove-set" data-set="'+esc(item.name)+'">Excluir</button></div>').join('');
+    return '<details class="free-person-manager" '+(diagramSetManagerOpen?'open':'')+'>'+
+      '<summary>Conjuntos adicionais do diagrama ('+(state.diagramSets||[]).length+'/'+MAX_DIAGRAM_SETS+')</summary>'+
+      '<p>Independentes das variáveis e linhas da tabela. Com mais de seis conjuntos, a visualização usa uma matriz de pertinência.</p>'+
+      '<div class="free-person-form"><label>Símbolo <input id="freeSetSymbol" maxlength="30" placeholder="ex.: artista"></label>'+
+      '<label>Significado <input id="freeSetMeaning" maxlength="160" placeholder="ex.: x é artista"></label>'+
+      '<button type="button" class="button small" data-action="add-set">Adicionar conjunto</button></div>'+
+      (sets?'<div class="free-set-list">'+sets+'</div>':'')+'</details>';
+  }
   function renderPeopleControls(){
     const model=freeIndividualModel(state);
     const existing=state.domain.map(person=>'<span class="free-person-entry">'+
@@ -207,7 +222,8 @@ export function createFreeTable(root){
       getExpected:(i,col)=>evaluateFreeRow(rows[i],col,state)?'V':'F',
       checked:state.graded
     }):'';
-    const diagram=pred?renderIndividualSets(freeIndividualModel(state)):interpretationDiagram;
+    const showSets=pred||Boolean(state.diagramSets?.length);
+    const diagram=showSets?renderIndividualSets(freeIndividualModel(state)):interpretationDiagram;
     const impossible=pred&&report.status==='complete'?report.rows.flatMap((item,i)=>
       item.possible?[]:[{ordinal:impossibleOrdinals.get(i),statement:impossibleStatement(item),
         why:item.explanation}]):[];
@@ -239,7 +255,8 @@ export function createFreeTable(root){
         '<p class="free-table-tip">Adicione uma fórmula para preencher as colunas derivadas.</p>'}
       ${footer}
       ${diagram}
-      ${pred?renderPeopleControls():''}
+      ${renderDiagramSetControls()}
+      ${showSets?renderPeopleControls():''}
       ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção ignora linhas impossíveis e inclui colunas recolhidas.</p>`:''}
       ${argument?`<div class="free-argument-explanation" role="note" aria-label="Justificativa da inferência">
         <h3>∵ Justificativa da inferência</h3>
