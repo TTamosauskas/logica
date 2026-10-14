@@ -1,7 +1,6 @@
 import { MODULES } from './content/modules.js';
 import { LEARNING_STAGES, getPracticeGroups, getNextLearningStep } from './core/learning-path.js';
 import { routeFromHash } from './core/navigation.js';
-import { createFreeTable } from './free-table-ui.js';
 import { reviewStatus,beginReviewTracking,recordReview,reviewQueue,consolidatedCount,studyRecommendation } from './core/reviews.js';
 import { createBackup,importBackup,PORTABLE_KEYS } from './core/progress-portability.js';
 import { performanceSummary } from './core/performance.js';
@@ -45,7 +44,19 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   
   
   const $=id=>document.getElementById(id);
-  const freeTable=createFreeTable($('freeTableView'));
+  // O restante da navegação não pode depender da Tabela Livre.
+  // Importação tardia isola falhas do editor e do diagrama.
+  let freeTable=null,freeTableLoading=null;
+  function loadFreeTable(){
+    if(freeTable)return Promise.resolve(freeTable);
+    if(!freeTableLoading){
+      freeTableLoading=import('./free-table-ui.js').then(({createFreeTable})=>{
+        freeTable=createFreeTable($('freeTableView'));
+        return freeTable;
+      }).catch(error=>{freeTableLoading=null;throw error});
+    }
+    return freeTableLoading;
+  }
   function setRouteHash(hash){const next='#'+hash;if(location.hash!==next)history.pushState(null,'',next)}
   
     
@@ -918,7 +929,14 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('courseView').classList.add('hide');
     $('freeTableView').classList.remove('hide');
     if(updateHash)setRouteHash('tabela-livre');
-    freeTable.open();
+    loadFreeTable().then(instance=>{
+      if(!$('freeTableView').classList.contains('hide'))instance.open();
+    }).catch(error=>{
+      const feedback=$('freeFeedback');
+      feedback.textContent='Não foi possível abrir a Tabela Livre. Os outros módulos continuam disponíveis. Atualize a página e tente novamente.';
+      feedback.dataset.result='error';
+      console.error('Falha ao carregar Tabela Livre:',error);
+    });
     scrollTo({top:0,behavior:'instant'});
   }
   function goHome(updateHash=true){courseAttempt=null;$('freeTableView').classList.add('hide');$('courseView').classList.add('hide');$('workView').classList.add('hide');$('homeView').classList.remove('hide');if(updateHash)setRouteHash('inicio');renderHome();scrollTo({top:0,behavior:'instant'})}
