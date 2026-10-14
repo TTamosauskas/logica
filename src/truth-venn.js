@@ -190,8 +190,10 @@ function propertyTitle(name,meaning){
     estudante:'Estudantes',aluno:'Alunos',aluna:'Alunas',humano:'Humanos'};
   return known[adjective]||adjective.charAt(0).toUpperCase()+adjective.slice(1);
 }
-/** Uma inclusão é desenhada como círculos concêntricos apenas quando há
- * uma regra universal inequívoca entre exatamente os dois conjuntos visíveis. */
+/** Relações universais são representadas geometricamente quando possível.
+ * Não se pretende um Venn completo com 4+ círculos: regiões sem área são
+ * tratadas explicitamente como não representáveis.
+ */
 function individualGeometry(predicates,relations){
   const n=predicates.length;
   if(!n||n>6)return null;
@@ -205,27 +207,49 @@ function individualGeometry(predicates,relations){
       nested:true
     };
   }
+  let circles,labels,width,baseHeight;
   if(n<=3){
     const layout=shapes[n];
-    return {width:480,baseHeight:330,names:predicates,
-      circles:layout.circles,labels:layout.labels,nested:false};
+    ({circles,labels}=layout);
+    width=480;baseHeight=330;
+  }else{
+    width=640;baseHeight=425;
+    const centerX=320,centerY=205;
+    const orbit=n===4?72:76;
+    const radius=n===4?123:120;
+    circles=predicates.map((_,i)=>{
+      const angle=-Math.PI/2+2*Math.PI*i/n;
+      return [centerX+orbit*Math.cos(angle),centerY+orbit*.8*Math.sin(angle),radius];
+    });
+    labels=circles.map(([x,y,r],i)=>{
+      const angle=-Math.PI/2+2*Math.PI*i/n;
+      return [Math.max(24,Math.min(width-24,x+Math.cos(angle)*(r-19))),
+        Math.max(24,Math.min(baseHeight-24,y+Math.sin(angle)*(r-19)))];
+    });
   }
-  // Círculos em arranjo sobreposto; algumas das 2^n regiões podem
-  // não existir geometricamente, como em qualquer Euler de muitos círculos.
-  const width=640,baseHeight=425;
-  const centerX=320,centerY=205;
-  const orbit=n===4?72:76;
-  const radius=n===4?123:120;
-  const circles=predicates.map((_,i)=>{
-    const angle=-Math.PI/2+2*Math.PI*i/n;
-    return [centerX+orbit*Math.cos(angle),centerY+orbit*.8*Math.sin(angle),radius];
-  });
-  const labels=circles.map(([x,y,r],i)=>{
-    const angle=-Math.PI/2+2*Math.PI*i/n;
-    return [Math.max(24,Math.min(width-24,x+Math.cos(angle)*(r-19))),
-      Math.max(24,Math.min(baseHeight-24,y+Math.sin(angle)*(r-19)))];
-  });
-  return {width,baseHeight,names:predicates,circles,labels,nested:false};
+  circles=circles.map(c=>[...c]);
+  labels=labels.map(c=>[...c]);
+  const nestedNames=new Set();
+  for(let pass=0;pass<n;pass++){
+    let changed=false;
+    for(const {subset,superset} of relations){
+      const child=predicates.indexOf(subset),parent=predicates.indexOf(superset);
+      if(child<0||parent<0||child===parent)continue;
+      if(relations.some(other=>other.subset===superset&&other.superset===subset))continue;
+      const [x,y,r]=circles[parent];
+      const childRadius=Math.min(circles[child][2],r*.58);
+      if(childRadius<18)continue;
+      // Aninhamento central: a borda do subconjunto permanece dentro do pai.
+      if(circles[child][0]!==x||circles[child][1]!==y||circles[child][2]!==childRadius){
+        circles[child]=[x,y,childRadius];
+        labels[child]=[x,y-childRadius+19];
+        changed=true;
+      }
+      nestedNames.add(subset);
+    }
+    if(!changed)break;
+  }
+  return {width,baseHeight,names:predicates,circles,labels,nested:nestedNames.size>0};
 }
 function individualMarker(person,x,y){
   const symbol=String(person.id||'').trim();
