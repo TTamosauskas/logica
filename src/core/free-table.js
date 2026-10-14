@@ -7,8 +7,10 @@ import {isPredicateSource,parsePredicateFormula,predicateSignature,predicatePret
  predicateAtomicNames,rootHasFreeX,hasQuantifier,evaluatePredicate,predicateReading,predicateEvidence} from './free-predicates.js';
 
 export const FREE_TABLE_KEY='logiclab_tabela_livre_v1';
-export const VARIABLE_SEQUENCE=Object.freeze(['p','q','r','s','t','u']);
-export const MAX_VARS=VARIABLE_SEQUENCE.length;
+export const VARIABLE_SEQUENCE=Object.freeze(['p','q','r','s','t','u','v','w']);
+export const MAX_VARS=6;
+export const MAX_EXTENDED_VARS=8;
+export const MAX_DIAGRAM_SETS=12;
 export const MAX_FORMULAS=16;
 export const MAX_PREDICATE_TABLE_FORMULAS=6;
 export const MAX_INDIVIDUALS=20;
@@ -22,14 +24,17 @@ const isNeutralTruthSource=source=>/[⊤⊥]/.test(source)&&!/[a-zà-ÿ]/i.test(
 
 export function blankFreeTable(){
   return {version:4,variables:[{name:'p',meaning:'',kind:'predicate'},{name:'q',meaning:'',kind:'predicate'}],
-    formulas:[],nextId:1,hidden:[],answers:{},graded:false,inferenceMode:false,domain:[],predicateValues:{},inferenceConclusion:'',inferenceReport:null};
+    formulas:[],nextId:1,hidden:[],answers:{},graded:false,inferenceMode:false,extendedTable:false,
+    diagramSets:[],domain:[],predicateValues:{},inferenceConclusion:'',inferenceReport:null};
 }
-export const nextFreeVariableName=state=>VARIABLE_SEQUENCE[state.variables.length]||null;
+export const nextFreeVariableName=state=>state.variables.length<(state.extendedTable?MAX_EXTENDED_VARS:MAX_VARS)?
+    VARIABLE_SEQUENCE[state.variables.length]:null;
 export function parseFreeFormula(state,source){
   const text=clean(source);
   if(!text||text.length>240)throw Error('A fórmula precisa ter entre 1 e 240 caracteres.');
   if(isPredicateSource(text)||(isNeutralTruthSource(text)&&freeTableKind(state)==='predicates'))return parsePredicateFormula(text,
-    state.variables.filter(v=>v.kind!=='individual').map(v=>v.name),
+    [...state.variables.filter(v=>v.kind!=='individual').map(v=>v.name),
+      ...(state.diagramSets||[]).map(v=>v.name)],
     [...state.domain.map(d=>d.id),...state.variables.filter(v=>v.kind==='individual').map(v=>v.name)],
     {allowImplicitIndividuals:true});
   if(state.variables.some(v=>v.kind==='individual'))
@@ -63,8 +68,12 @@ function inferIndividualRoles(state,ast,excludedId=null){
 }
 export function addFreeVariable(state,name,meaning=''){
   const next=nextFreeVariableName(state);
-  if(!next)throw Error('O limite da tabela é de seis variáveis (64 linhas).');
+  if(!next)throw Error(state.extendedTable?
+    'O limite ampliado é de oito variáveis (256 linhas).':
+    'O limite padrão é de seis variáveis (64 linhas). Ative a ampliação para oito.');
   if(name!==next)throw Error('A próxima variável é '+next+'.');
+  if((state.diagramSets||[]).some(d=>d.name===next))
+    throw Error('Este símbolo já identifica um conjunto adicional. Remova-o antes de ampliar as variáveis.');
   const usedAsIndividual=state.domain.some(d=>d.id===next)||
     state.formulas.some(f=>predicateTerms(parseFreeFormula(state,f.source)).has(next));
   if(usedAsIndividual&&state.formulas.length&&freeTableKind(state)==='propositional')
@@ -112,12 +121,47 @@ export function removeFreeVariable(state,name){
 }
 export const freeTableKind=state=>state.formulas.some(f=>isPredicateSource(f.source))||
   state.variables?.some(v=>v.kind==='individual')?'predicates':'propositional';
+/** Conjuntos extras pertencem só ao diagrama: não aumentam linhas da tabela. */
+export function addDiagramSet(state,name,meaning){
+  const id=normalName(name),description=clean(meaning);
+  if(!validName(id)||id==='x')throw Error('Use um símbolo de conjunto como humano, artista ou grupo1.');
+  if(!description)throw Error('Informe o significado do conjunto.');
+  if((state.diagramSets||[]).length>=MAX_DIAGRAM_SETS)
+    throw Error('Máximo de '+MAX_DIAGRAM_SETS+' conjuntos adicionais.');
+  if(state.variables.some(v=>v.name===id)||state.domain.some(p=>p.id===id)||
+     state.diagramSets.some(v=>v.name===id))
+    throw Error('Símbolo já utilizado no projeto.');
+  state.diagramSets.push({name:id,meaning:description.slice(0,160)});
+  return state;
+}
+export function removeDiagramSet(state,name){
+  const id=normalName(name);
+  if(!state.diagramSets.some(v=>v.name===id))throw Error('Conjunto não encontrado.');
+  for(const formula of state.formulas){
+    const root=parseFreeFormula(state,formula.source);
+    if(predicateAtomicNames([root]).has(id))
+      throw Error('Remova primeiro as fórmulas que usam o conjunto '+id+'.');
+  }
+  state.diagramSets=state.diagramSets.filter(v=>v.name!==id);
+  for(const key of Object.keys(state.predicateValues))
+    if(key.endsWith('|'+id))delete state.predicateValues[key];
+  return state;
+}
+export function editDiagramSet(state,name,meaning){
+  const entry=state.diagramSets.find(v=>v.name===normalName(name));
+  if(!entry)throw Error('Conjunto não encontrado.');
+  if(!clean(meaning))throw Error('Informe o significado do conjunto.');
+  entry.meaning=clean(meaning).slice(0,160);
+  return state;
+}
 export function addFreeIndividual(state,id,label){
   const name=normalName(id);
   if(!/^[a-z][a-z0-9_]*$/.test(name)||name==='x'||RESERVED.has(name))
     throw Error('Use um identificador como a, b ou s para o indivíduo (não x).');
   if(!clean(label))throw Error('Informe o nome do indivíduo, como Sócrates.');
   if(state.domain.length>=MAX_INDIVIDUALS)throw Error('Máximo de 20 indivíduos.');
+  if((state.diagramSets||[]).some(set=>set.name===name))
+    throw Error('Este símbolo identifica um conjunto, não um indivíduo.');
   if(state.domain.some(d=>d.id===name))
     throw Error('Já existe um indivíduo com esse símbolo.');
   const variable=state.variables.find(v=>v.name===name);
@@ -553,7 +597,8 @@ export function freeIndividualModel(state){
   // O usuário pode criar um conjunto pelo significado do predicado,
   // sem precisar inventar uma fórmula para fazê-lo aparecer.
   const predicates=[...new Set([...state.variables.filter(v=>
-    v.kind!=='individual'&&(clean(v.meaning)||used.has(v.name))).map(v=>v.name),...used])];
+    v.kind!=='individual'&&(clean(v.meaning)||used.has(v.name))).map(v=>v.name),
+    ...(state.diagramSets||[]).map(v=>v.name),...used])];
   const people=new Map();
   for(const d of state.domain||[])people.set(d.id,{id:d.id,label:d.label||d.id});
   for(const v of state.variables||[]){
@@ -630,6 +675,7 @@ export function freeIndividualModel(state){
     .map(rule=>({subset:rule.antecedent.name,superset:rule.consequent.name}));
   return {predicates,people:entries,conflicts,relations,
     meanings:Object.fromEntries(predicates.map(name=>[
-      name,state.variables.find(v=>v.name===name)?.meaning||''
+      name,state.variables.find(v=>v.name===name)?.meaning||
+        state.diagramSets?.find(v=>v.name===name)?.meaning||''
     ]))};
 }
