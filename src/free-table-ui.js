@@ -157,8 +157,8 @@ export function createFreeTable(root){
     if(has(col))return '<td class="truth-cell-collapsed" aria-hidden="true"></td>';
     if(ordinal!==null){
       const marker=col.key===firstVisible?
-        '<a class="free-impossible-marker" href="#free-impossible-note-'+ordinal+
-        '" aria-label="Ver justificativa da linha impossível '+ordinal+'" title="Linha impossível: ver justificativa">🚫<sup>'+ordinal+'</sup></a>':'';
+        '<button type="button" class="free-impossible-marker" data-action="show-impossible" data-ordinal="'+ordinal+
+        '" aria-controls="free-impossible-note-'+ordinal+'" aria-label="Ver justificativa da linha impossível '+ordinal+'" title="Linha impossível: ver justificativa">🚫<sup>'+ordinal+'</sup></button>':'';
       if(col.kind==='var')return '<td class="given free-impossible-given">'+t(row[col.name])+marker+'</td>';
       return '<td class="free-impossible-cell" aria-label="Impossível, não editável">'+
         (marker||'<span aria-hidden="true">—</span>')+'</td>';
@@ -214,7 +214,7 @@ export function createFreeTable(root){
         '. Nenhuma linha foi bloqueada sem comprovação.</p>':
         report.status==='empty'?'<p>Adicione uma fórmula fechada para construir a tabela-verdade.</p>':
         impossible.length?'<h3>Linhas impossíveis — justificativas</h3><ol>'+
-          impossible.map(item=>'<li id="free-impossible-note-'+item.ordinal+'"><strong>Linha 🚫<sup>'+
+          impossible.map(item=>'<li id="free-impossible-note-'+item.ordinal+'" tabindex="-1"><strong>Linha 🚫<sup>'+
             item.ordinal+'</sup> é impossível porque '+item.statement+'.</strong> '+esc(item.why)+'</li>').join('')+
           '</ol>':'<p>Nenhuma combinação foi demonstrada impossível.</p>')+
       (report.truncated?'<p><strong>Limite:</strong> projeto antigo com mais de seis fórmulas. A tabela considera apenas as seis primeiras.</p>':'')+
@@ -360,6 +360,11 @@ export function createFreeTable(root){
         delete input.dataset.unsaved;
       }
       refresh('Fórmulas atualizadas.');return;
+    }
+    if(action==='show-impossible'){
+      const note=board.querySelector('#free-impossible-note-'+Number(button.dataset.ordinal));
+      if(note){note.scrollIntoView({block:'nearest'});note.focus({preventScroll:true})}
+      return;
     }
     if(action==='toggle-col'){
       const id=button.dataset.key;
