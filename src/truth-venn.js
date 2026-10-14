@@ -177,8 +177,9 @@ export function renderPredicateVenn({id='free',variables=[],variableMeanings={},
  * Painéis separados evitam inventar interseções quando outros predicados são desconhecidos.
  */
 
-/** Um único diagrama para indivíduos: predicados são conjuntos e nomes são pontos.
- * Interpretações V/F das fórmulas continuam na tabela, não nos círculos.
+/** Diagrama único dos predicados com até seis círculos e todos os indivíduos.
+ * Nunca inventa pertinências: uma região sem área nesta geometria é indicada
+ * na faixa neutra, sem colocar o indivíduo num conjunto inadequado.
  */
 function propertyTitle(name,meaning){
   const text=String(meaning||'').trim().replace(/[.!?]+$/,'');
@@ -189,46 +190,50 @@ function propertyTitle(name,meaning){
     estudante:'Estudantes',aluno:'Alunos',aluna:'Alunas',humano:'Humanos'};
   return known[adjective]||adjective.charAt(0).toUpperCase()+adjective.slice(1);
 }
-/** Escolhe até três conjuntos sem inventar relações.
- * Se houver inclusão universal comprovada, mostra os dois conjuntos relacionados
- * com a geometria aninhada, em vez de desenhar sua interseção como opcional.
- */
-function selectIndividualSets(predicates,relations){
-  const candidate=relations.find(({subset,superset})=>subset!==superset&&
-    predicates.includes(subset)&&predicates.includes(superset)&&
-    !relations.some(r=>r.subset===superset&&r.superset===subset));
-  return candidate?{shown:[candidate.subset,candidate.superset],nested:candidate}:
-    {shown:predicates.slice(0,3),nested:null};
-}
-function individualGeometry(shown,nested){
-  if(nested&&shown.length===2){
-    // Ordem de shown: subconjunto, superconjunto. Máscara: 00, 01, 10, 11.
-    return {circles:[[240,184,78],[240,160,138]],
-      labels:[[240,155],[240,43]],
-      points:[[430,268],[345,141],null,[240,214]]};
+/** Uma inclusão é desenhada como círculos concêntricos apenas quando há
+ * uma regra universal inequívoca entre exatamente os dois conjuntos visíveis. */
+function individualGeometry(predicates,relations){
+  const n=predicates.length;
+  if(!n||n>6)return null;
+  if(n===2){
+    const nested=relations.find(rule=>rule.subset!==rule.superset&&
+      predicates.includes(rule.subset)&&predicates.includes(rule.superset)&&
+      !relations.some(other=>other.subset===rule.superset&&other.superset===rule.subset));
+    if(nested)return {
+      width:480,baseHeight:330,names:[nested.subset,nested.superset],
+      circles:[[240,184,78],[240,160,138]],labels:[[240,155],[240,43]],
+      nested:true
+    };
   }
-  return shapes[shown.length]||null;
-}
-/** Ponto sobre a borda do conjunto indefinido: indica a propriedade
- * conhecida sem decidir arbitrariamente a pertença ao outro conjunto. */
-function partialPoint(values,nested){
-  if(values.length!==2||values.filter(v=>v==='').length!==1)return null;
-  const signature=values.map(v=>v||'?').join('');
-  if(nested){
-    return ({'?V':[240,106],'F?':[378,160],'?F':[378,160],'V?':[240,106]})[signature]||null;
+  if(n<=3){
+    const layout=shapes[n];
+    return {width:480,baseHeight:330,names:predicates,
+      circles:layout.circles,labels:layout.labels,nested:false};
   }
-  return ({'V?':[189,163],'?V':[291,163],'F?':[393,163],'?F':[87,163]})[signature]||null;
+  // Círculos em arranjo sobreposto; algumas das 2^n regiões podem
+  // não existir geometricamente, como em qualquer Euler de muitos círculos.
+  const width=640,baseHeight=425;
+  const centerX=320,centerY=205;
+  const orbit=n===4?72:76;
+  const radius=n===4?123:120;
+  const circles=predicates.map((_,i)=>{
+    const angle=-Math.PI/2+2*Math.PI*i/n;
+    return [centerX+orbit*Math.cos(angle),centerY+orbit*.8*Math.sin(angle),radius];
+  });
+  const labels=circles.map(([x,y,r],i)=>{
+    const angle=-Math.PI/2+2*Math.PI*i/n;
+    return [Math.max(24,Math.min(width-24,x+Math.cos(angle)*(r-19))),
+      Math.max(24,Math.min(baseHeight-24,y+Math.sin(angle)*(r-19)))];
+  });
+  return {width,baseHeight,names:predicates,circles,labels,nested:false};
 }
-function individualMarker(person,x,y,index){
-  const dx=index?((index%2)?28:-28)*Math.ceil(index/2):0;
-  const dy=index?Math.floor((index-1)/2)*-28:0;
+function individualMarker(person,x,y){
   const symbol=String(person.id||'').trim();
   return '<g class="truth-individual-person"><title>Indivíduo '+esc(symbol)+'</title>'+
-    '<circle class="truth-individual-dot" cx="'+(x+dx)+'" cy="'+(y+dy)+'" r="11"/>'+
-    '<text class="truth-individual-symbol" x="'+(x+dx)+'" y="'+(y+dy)+
+    '<circle class="truth-individual-dot" cx="'+x+'" cy="'+y+'" r="11"/>'+
+    '<text class="truth-individual-symbol" x="'+x+'" y="'+y+
     '" text-anchor="middle" dominant-baseline="central">'+esc(symbol.slice(0,4))+'</text></g>';
 }
-/** O desenho identifica indivíduos apenas por símbolos; seus nomes aparecem na legenda. */
 function individualSetLegend(shown,people,meanings,statuses){
   const sets=shown.map(name=>'<div class="truth-venn-variable"><dt><code>'+
     esc(name)+'</code></dt><dd>'+esc(String(meanings?.[name]||'').trim()||
@@ -250,64 +255,95 @@ function individualSetLegend(shown,people,meanings,statuses){
       '<div class="truth-venn-variable"><dt>—</dt><dd>Nenhum indivíduo identificado.</dd></div>')+
     '</dl></div></div></section>';
 }
-export function renderIndividualSets({predicates=[],people=[],meanings={},conflicts=[],relations=[]}={}){
-  const {shown,nested}=selectIndividualSets(predicates,relations);
-  const geometry=individualGeometry(shown,nested);
-  const heading='<div class="truth-venn-heading"><h3>Diagrama de Venn–Euler</h3></div>';
-  if(!geometry)return '<section class="truth-venn-panel truth-individual-panel">'+heading+
-    '<p class="truth-venn-note">Adicione uma fórmula com predicados para visualizar seus conjuntos.</p></section>';
-  const names=shown.map(name=>propertyTitle(name,meanings[name]));
-  const regionPeople=new Map(),partialPeople=[],pending=[],inconsistent=[];
-  const legendStatuses=new Map();
-  for(const person of people){
-    const values=shown.map(name=>person.values?.[name]||'');
-    if(values.some(value=>!['V','F'].includes(value))){
-      const point=partialPoint(values,nested);
-      if(point){
-        partialPeople.push({person,point,missing:shown.filter((_,i)=>values[i]==='')});
-        legendStatuses.set(String(person.id),'posição parcial (sobre a borda)');
-      }else{
-        pending.push(person);
-        legendStatuses.set(String(person.id),'posição indefinida');
+/** Busca uma posição cuja relação geométrica respeite todos os V/F conhecidos.
+ * Com exatamente uma incógnita, admite a borda do círculo desconhecido.
+ * Se não houver posição válida, retorna null para a faixa de indefinidos.
+ */
+function positionIndividual(values,layout,occupied=[]){
+  const unknown=values.flatMap((value,i)=>value===''?[i]:[]);
+  if(unknown.length>1||unknown.length===values.length)return null;
+  const boundary=unknown.length===1?unknown[0]:-1;
+  const {circles,width,baseHeight}=layout;
+  let best=null,bestScore=-Infinity;
+  for(let y=19;y<=baseHeight-19;y+=5){
+    for(let x=19;x<=width-19;x+=5){
+      let margin=80,allowed=true;
+      for(let i=0;i<circles.length;i++){
+        const [cx,cy,r]=circles[i],distance=Math.hypot(x-cx,y-cy);
+        if(i===boundary){
+          if(Math.abs(distance-r)>4){allowed=false;break}
+          continue;
+        }
+        if(values[i]==='V'&&distance>r-13){allowed=false;break}
+        if(values[i]==='F'&&distance<r+13){allowed=false;break}
+        margin=Math.min(margin,Math.abs(distance-r));
       }
-      continue;
+      if(!allowed)continue;
+      const nearest=occupied.length?Math.min(...occupied.map(([px,py])=>Math.hypot(x-px,y-py))):100;
+      if(nearest<30)continue;
+      const score=Math.min(margin,45)+Math.min(nearest,60)*.7-
+        Math.hypot(x-width/2,y-baseHeight/2)*.045;
+      if(score>bestScore){best=[x,y];bestScore=score}
     }
-    const mask=values.reduce((bits,value)=>bits*2+(value==='V'?1:0),0);
-    if(nested&&mask===2){
-      inconsistent.push(person);
-      legendStatuses.set(String(person.id),'pertinência contraditória');
-      continue;
-    }
-    regionPeople.set(mask,[...(regionPeople.get(mask)||[]),person]);
   }
-  const circles=geometry.circles.map(([cx,cy,r],i)=>
-    '<circle class="truth-individual-set-circle'+(nested&&i===0?' truth-individual-subset-circle':'')+
+  return best;
+}
+export function renderIndividualSets({predicates=[],people=[],meanings={},conflicts=[],relations=[]}={}){
+  const layout=individualGeometry(predicates,relations);
+  const heading='<div class="truth-venn-heading"><h3>Diagrama de Venn–Euler</h3></div>';
+  if(!layout)return '<section class="truth-venn-panel truth-individual-panel">'+heading+
+    '<p class="truth-venn-note">Adicione predicados para desenhar seus conjuntos.</p></section>';
+  const {names,circles,labels,width,baseHeight}=layout;
+  const statuses=new Map(),placed=[],neutral=[];
+  for(const person of people){
+    const values=names.map(name=>person.values?.[name]||'');
+    if(values.some(value=>value!==''&&value!=='V'&&value!=='F')){
+      statuses.set(String(person.id),'valor inválido');neutral.push(person);continue;
+    }
+    const known=values.filter(value=>value!=='').length;
+    const point=positionIndividual(values,layout,placed.map(({point})=>point));
+    if(point){
+      placed.push({person,point});
+      if(known<names.length)
+        statuses.set(String(person.id),'posição parcial; falta definir '+
+          names.filter((_,i)=>values[i]==='').join(', '));
+    }else{
+      neutral.push(person);
+      statuses.set(String(person.id),known===0?'propriedades não informadas':
+        known<names.length?'posição indeterminada; informações incompletas':
+          'combinação sem região desenhável nesta disposição');
+    }
+  }
+  const circlesSvg=circles.map(([cx,cy,r],i)=>
+    '<circle class="truth-individual-set-circle'+(layout.nested&&i===0?' truth-individual-subset-circle':'')+
     '" cx="'+cx+'" cy="'+cy+'" r="'+r+'"/>'+
-    '<text class="truth-individual-set-label" x="'+geometry.labels[i][0]+'" y="'+geometry.labels[i][1]+
+    '<text class="truth-individual-set-label" x="'+labels[i][0]+'" y="'+labels[i][1]+
     '" text-anchor="middle">'+esc(names[i])+'</text>').join('');
-  const markers=[...regionPeople].map(([mask,persons])=>{
-    const point=geometry.points[mask];
-    if(!point)return '';
-    return persons.slice(0,2).map((person,i)=>individualMarker(person,point[0],point[1],i)).join('')+
-      (persons.length>2?'<text class="truth-individual-more" x="'+point[0]+'" y="'+(point[1]+37)+
-      '" text-anchor="middle">+'+(persons.length-2)+'</text>':'');
-  }).join('');
-  const partialMarkers=partialPeople.map(({person,point})=>
-    individualMarker(person,point[0],point[1],0)).join('');
-  const info=[];
-  if(inconsistent.length)info.push('Há valores incompatíveis com a inclusão entre conjuntos.');
-  if(shown.length<predicates.length)
-    info.push('Exibindo '+shown.length+' de '+predicates.length+' propriedades.');
-  if(conflicts.length)info.push('Há conflito entre premissas e valores informados.');
-  // Uma mesma área pode conter vários indivíduos. A distribuição visual nunca
-  // decide se uma propriedade é verdadeira ou falsa.
-  const description='Conjuntos '+names.join(', ')+'. '+
-    people.map(p=>String(p.label||p.id)+': '+shown.map((name,i)=>
-      names[i]+' '+(p.values?.[name]==='V'?'sim':p.values?.[name]==='F'?'não':'indefinido')).join(', ')).join('. ');
+  const positioned=placed.map(({person,point})=>individualMarker(person,point[0],point[1])).join('');
+  // Faixa neutra é explicitamente separada do universo das circunferências.
+  // Não significa que um indivíduo esteja fora de todos os conjuntos.
+  const stripHeight=neutral.length?70+Math.floor((neutral.length-1)/10)*36:0;
+  const stripY=baseHeight+12;
+  const neutralSvg=neutral.length?
+    '<g class="truth-individual-undetermined"><rect x="12" y="'+stripY+
+    '" width="'+(width-24)+'" height="'+(stripHeight-8)+'" rx="9"/>'+
+    '<text class="truth-individual-strip-caption" x="25" y="'+(stripY+20)+
+    '">POSIÇÃO NÃO DETERMINADA</text>'+
+    neutral.map((person,i)=>individualMarker(person,38+(i%10)*Math.min(54,(width-70)/10),
+      stripY+43+Math.floor(i/10)*36)).join('')+'</g>':'';
+  const notes=[];
+  if(conflicts.length)notes.push('Há informações contraditórias sobre indivíduos.');
+  if(placed.some(({person})=>statuses.has(String(person.id))))
+    notes.push('Um ponto na borda indica pertinência ainda não determinada.');
+  if(neutral.length)notes.push('A faixa inferior não representa o exterior dos conjuntos.');
+  if(names.length>=4)notes.push('Com quatro ou mais círculos, nem todas as interseções são desenháveis.');
+  const description='Conjuntos '+names.join(', ')+'. '+people.map(p=>
+    String(p.label||p.id)+': '+names.map(name=>name+' '+
+      (p.values?.[name]==='V'?'sim':p.values?.[name]==='F'?'não':'indefinido')).join(', ')).join('. ');
   return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de Venn–Euler de indivíduos">'+
-    heading+'<svg class="truth-venn-svg truth-individual-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+
-    esc(description)+'">'+circles+markers+partialMarkers+'</svg>'+
-    individualSetLegend(shown,people,meanings,legendStatuses)+
-    (info.length?'<p class="truth-venn-status"'+(inconsistent.length||conflicts.length?' role="alert"':'')+'>'+
-      esc(info.join(' '))+'</p>':'')+'</section>';
+    heading+'<svg class="truth-venn-svg truth-individual-svg" viewBox="0 0 '+width+' '+
+    (baseHeight+stripHeight+12)+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+
+    esc(description)+'">'+circlesSvg+positioned+neutralSvg+'</svg>'+
+    individualSetLegend(names,people,meanings,statuses)+
+    (notes.length?'<p class="truth-venn-status">'+esc(notes.join(' '))+'</p>':'')+'</section>';
 }
