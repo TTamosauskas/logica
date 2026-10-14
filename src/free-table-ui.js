@@ -3,7 +3,7 @@ import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableNam
   addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,
   removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
   parseFreeFormula,describeFreeFormula,freeTableKind,freeArgumentAnalysis,
-  predicateTruthAnalysis,freeRowImpossible,freeIndividualModel,
+  predicateTruthAnalysis,freeRowImpossible,freeIndividualModel,addFreeIndividual,removeFreeIndividual,
   verifyFreeInference,analyzeFreePossibilities} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
@@ -42,7 +42,7 @@ export function createFreeTable(root){
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
   let lastFormulaInput=null;
   let truthHighlightController=null;
-  let vennSelectedKey='',vennFilters={};
+  let vennSelectedKey='',vennFilters={},individualManagerOpen=false;
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
   function save(){
     if(recovery){notice('O rascunho original está protegido. Exporte os dados antes de reiniciar.',true);return}
@@ -135,6 +135,19 @@ export function createFreeTable(root){
     if(col.kind==='var')return '<td class="given">'+t(row[col.node.name])+'</td>';
     return '<td>'+truthButton(r,col)+'</td>';
   }
+  function renderPeopleControls(){
+    const existing=state.domain.map(person=>'<span class="free-person-entry">'+
+      '<code>'+esc(person.id)+'</code> '+esc(person.label)+
+      ' <button type="button" class="button small" data-action="remove-person" data-ind="'+
+      esc(person.id)+'" aria-label="Remover indivíduo '+esc(person.label)+'">Excluir</button></span>').join('');
+    return '<details class="free-person-manager" '+(individualManagerOpen?'open':'')+'>'+
+      '<summary>Gerenciar indivíduos adicionais</summary>'+
+      '<p>Inclua mais pessoas sem usar os símbolos p–u reservados aos predicados.</p>'+
+      '<div class="free-person-form"><label>Símbolo <input id="freePersonSymbol" maxlength="30" placeholder="ex.: a"></label>'+
+      '<label>Nome <input id="freePersonLabel" maxlength="80" placeholder="ex.: Maria"></label>'+
+      '<button type="button" class="button small" data-action="add-person">Adicionar</button></div>'+
+      (existing?'<div class="free-person-list">'+existing+'</div>':'')+'</details>';
+  }
   function renderTable(){
     const pred=freeTableKind(state)==='predicates';
     const report=pred?predicateTruthAnalysis(state):null;
@@ -207,6 +220,7 @@ export function createFreeTable(root){
         '<p class="free-table-tip">Adicione uma fórmula para preencher as colunas derivadas.</p>'}
       ${footer}
       ${diagram}
+      ${pred?renderPeopleControls():''}
       ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção ignora linhas impossíveis e inclui colunas recolhidas.</p>`:''}
       ${argument?`<div class="free-argument-explanation" role="note" aria-label="Justificativa da inferência">
         <h3>∵ Justificativa da inferência</h3>
@@ -335,6 +349,18 @@ export function createFreeTable(root){
       state.hidden=state.hidden.includes(id)?state.hidden.filter(k=>k!==id):[...state.hidden,id];
       refresh();root.querySelector('[data-action="toggle-col"][data-key="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});return;
     }
+    if(action==='add-person'){
+      const id=root.querySelector('#freePersonSymbol').value;
+      const label=root.querySelector('#freePersonLabel').value;
+      addFreeIndividual(state,id,label);
+      individualManagerOpen=true;
+      refresh('Indivíduo adicionado ao diagrama.');return;
+    }
+    if(action==='remove-person'){
+      removeFreeIndividual(state,button.dataset.ind);
+      individualManagerOpen=true;
+      refresh('Indivíduo removido do diagrama.');return;
+    }
     if(action==='answer'){
       if(freeRowImpossible(state,Number(button.dataset.row)))return;
       const id=key(button.dataset.row,button.dataset.key),old=state.answers[id]||'';
@@ -344,6 +370,9 @@ export function createFreeTable(root){
     }
     if(action==='grade'){const grade=gradeFreeTable(state);refresh(grade.correct+' de '+grade.total+' respostas corretas.');return}
   }
+  root.addEventListener('toggle',e=>{
+    if(e.target.matches?.('.free-person-manager'))individualManagerOpen=e.target.open;
+  },true);
   root.addEventListener('input',e=>{
     if(e.target.matches(editableSelector)){
       e.target.dataset.unsaved='true';
