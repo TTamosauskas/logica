@@ -40,7 +40,11 @@ test('conclusão não é tomada como fato; universal como premissa deriva mortal
   model=freeIndividualModel(state);
   assert.equal(model.people[0].values.r,'V');
   assert.equal(model.people[0].origins.r,'regra universal');
-  assert.match(renderIndividualSets(model),/Mortais/);
+  const html=renderIndividualSets(model);
+  assert.match(html,/Mortais/);
+  assert.match(html,/Inclusão entre conjuntos determinada pela premissa universal/);
+  assert.match(html,/Homens ⊆ Mortais/);
+  assert.match(html,/Sócrates/);
 });
 
 test('negação de universal não atribui falso ao indivíduo nomeado',()=>{
@@ -51,7 +55,9 @@ test('negação de universal não atribui falso ao indivíduo nomeado',()=>{
   const model=freeIndividualModel(state);
   assert.equal(model.people[0].values.q,'V');
   assert.equal(model.people[0].values.r,'');
-  assert.match(renderIndividualSets(model),/A definir/);
+  const html=renderIndividualSets(model);
+  assert.match(html,/A definir/);
+  assert.doesNotMatch(html,/Inclusão entre conjuntos determinada pela premissa universal/);
 });
 
 test('valores manuais persistem para indivíduos usados em fórmulas',()=>{
