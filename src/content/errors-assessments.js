@@ -473,7 +473,7 @@ export const ERROR_ASSESSMENTS={
         "Cresce cinco por cento relativamente."
       ],
       "correct": 0,
-      "why": "Aumento relativo é 5/10.",
+      "why": "Aumento relativo é 5 dividido pela taxa inicial 10, isto é, 50%; em pontos percentuais, a diferença é 5.",
       "dimension": "application",
       "objective": "Aplicação e transferência"
     },
