@@ -63,6 +63,7 @@ test('negação de universal não atribui falso ao indivíduo nomeado',()=>{
 test('valores manuais persistem para indivíduos usados em fórmulas',()=>{
   const state=setup();
   addFreeFormula(state,'q(p)');
+  addFreeFormula(state,'r(p)');
   state.predicateValues['p|r']='F';
   const read=readFreeTable(JSON.stringify(state),{strict:true});
   assert.equal(read.predicateValues['p|r'],'F');
