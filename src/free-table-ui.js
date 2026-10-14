@@ -109,7 +109,7 @@ export function createFreeTable(root){
       <div class="free-keypad" role="group" aria-label="Inserir variáveis e símbolos lógicos">
         ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','∀','∃','∃!','⊤','⊥','(',')'].map(sym=>`<button class="button small ${state.variables.some(v=>v.name===sym)?'free-key-variable':''}" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
       </div>
-      <small class="free-hint">Exemplos: q(p); ∀x(q(x) → r(x)); ∃x(q(x)); ∃!x(q(x)) (um único indivíduo); ⊤ e ⊥. A unicidade conta indivíduos, inclusive quando compartilham propriedades. ∴ (portanto) e ∵ (porque) são marcadores da argumentação, não conectivos: não são digitados dentro de fórmulas. Na tabela, a última fórmula é a conclusão. Nenhum equivale a ¬∃.</small>
+      <small class="free-hint">Exemplos: q(p); ∀x(q(x) → r(x)); ∃x(q(x)); ∃!x(q(x)) (um único indivíduo); ⊤ e ⊥. A unicidade conta indivíduos, inclusive quando compartilham propriedades. ∴ (portanto) identifica automaticamente a conclusão no cabeçalho e ∵ (porque) introduz a justificativa após conferir as respostas, nos dois tipos de tabela. São marcadores da argumentação, não conectivos: não são digitados dentro de fórmulas. A última fórmula é a conclusão a partir de duas fórmulas. Nenhum equivale a ¬∃.</small>
     </section>`;
   }
   function truthButton(r,col){
