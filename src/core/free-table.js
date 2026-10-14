@@ -22,7 +22,7 @@ const isNeutralTruthSource=source=>/[⊤⊥]/.test(source)&&!/[a-zà-ÿ]/i.test(
 
 export function blankFreeTable(){
   return {version:4,variables:[{name:'p',meaning:'',kind:'predicate'},{name:'q',meaning:'',kind:'predicate'}],
-    formulas:[],nextId:1,hidden:[],answers:{},graded:false,domain:[],predicateValues:{},inferenceConclusion:'',inferenceReport:null};
+    formulas:[],nextId:1,hidden:[],answers:{},graded:false,inferenceMode:false,domain:[],predicateValues:{},inferenceConclusion:'',inferenceReport:null};
 }
 export const nextFreeVariableName=state=>VARIABLE_SEQUENCE[state.variables.length]||null;
 export function parseFreeFormula(state,source){
@@ -256,12 +256,14 @@ export function freeColumns(state){
       name:letter,node:v(letter),kind:'var',given:true
     }));
     if(!letters.length)return given;
-    // Para uma fórmula, pratique sua negação; a partir de duas, a última
-    // é a conclusão e as anteriores são as premissas da implicação.
-    const node=letters.length===1?not(v(letters[0])):
+    // O padrão é combinar afirmações, sem concluir automaticamente pela última.
+    // Somente o modo de inferência transforma a última em conclusão.
+    const node=letters.length===1?not(v(letters[0])):state.inferenceMode?
       I(letters.slice(0,-1).map(letter=>v(letter)).reduce((acc,current)=>
-        acc?A(acc,current):current,null),v(letters.at(-1)));
-    return [...given,{key:'f:combined',label:pretty(node),node,kind:'formula'}];
+        acc?A(acc,current):current,null),v(letters.at(-1))):
+      letters.map(letter=>v(letter)).reduce((acc,current)=>acc?A(acc,current):current,null);
+    return [...given,{key:state.inferenceMode?'f:combined':'f:conjunction',
+      label:pretty(node),node,kind:'formula'}];
   }
   const vars=state.variables.map(item=>({key:'v:'+item.name,label:item.name,node:v(item.name),kind:'var'}));
   const steps=stepNodes(roots).map(node=>({key:'s:'+sig(node),label:pretty(node),node,kind:'step'}));
@@ -317,6 +319,7 @@ function freeArgumentRule(roots,mode){
 export function freeArgumentAnalysis(state){
   if(state.formulas.length<2)return null;
   const mode=freeTableKind(state);
+  if(mode==='predicates'&&!state.inferenceMode)return null;
   const roots=state.formulas.map(f=>parseFreeFormula(state,f.source));
   if(mode==='predicates'){
     const report=predicateTruthAnalysis(state);
@@ -463,12 +466,16 @@ export function readFreeTable(raw,{strict=false}={}){
         }
       }
     }
+    // Compatibilidade: projetos antigos começam no modo de conjuntos, sem
+    // impor conclusão à última fórmula. O usuário pode ativar inferência.
+    state.inferenceMode=input.inferenceMode===true;
     const columns=freeColumns(state);
     state.hidden=[];
     state.answers={};
     if(!isDefaultV1){
       const oldState={variables:names.map((name,i)=>({name,kind:state.variables[i].kind})),
-        formulas:originalSources.map((source,i)=>({id:input.formulas[i].id,source}))};
+        formulas:originalSources.map((source,i)=>({id:input.formulas[i].id,source})),
+        inferenceMode:state.inferenceMode};
       if(input.version>=3){oldState.domain=state.domain;oldState.predicateValues=state.predicateValues}
       const oldColumns=freeColumns(oldState);
       const mapping=Object.fromEntries(oldColumns.map((col,i)=>[col.key,columns[i]?.key]).filter(x=>x[1]));
@@ -531,10 +538,10 @@ const atom=node=>{
 };
 const key=(person,predicate)=>person+'|'+predicate;
 
-/** Identifica indivíduos e propriedades e deduz apenas pertinências justificadas.
- * Fórmulas anteriores à última são premissas quando há ao menos duas;
- * com apenas uma fórmula, ela pode fornecer um fato atômico ao exemplo.
- * Nenhuma conclusão é assumida verdadeira. Universais negativas não identificam testemunhas.
+/** Indivíduos e propriedades são independentes da análise de validade.
+ * Todas as fórmulas são afirmações no modo padrão. No modo de inferência,
+ * somente então a última é conclusão e não é assumida verdadeira.
+ * Universais negativas não identificam testemunhas específicas.
  */
 export function freeIndividualModel(state){
   const roots=state.formulas.map(f=>parseFreeFormula(state,f.source));
@@ -555,7 +562,7 @@ export function freeIndividualModel(state){
   };
   roots.forEach(collect);
   const persons=[...people.values()];
-  const premises=roots.length>=2?roots.slice(0,-1):roots;
+  const premises=state.inferenceMode&&roots.length>=2?roots.slice(0,-1):roots;
   const rules=[];
   const assignments=new Map();
   const record=(id,name,value,origin)=>{
