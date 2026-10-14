@@ -14,11 +14,11 @@ import {
 
 const expected=['modais','temporal','epistemica','deontica','difusa','paraconsistente','intuicionista'];
 
-test('a unidade VIII contém sete aulas, mantém o id modal antigo e eleva o total a 36',()=>{
+test('a unidade VII contém sete aulas, mantém o id modal antigo e eleva o total a 36',()=>{
  assert.equal(COURSE_UNITS.length,8);
- assert.deepEqual(COURSE_UNITS[7].ids,expected);
- assert.equal(COURSE_UNITS.flatMap(u=>u.ids).length,36);
- assert.equal(MODULES.length,37);
+ assert.deepEqual(COURSE_UNITS[6].ids,expected);
+ assert.equal(COURSE_UNITS.flatMap(u=>u.ids).length,39);
+ assert.equal(MODULES.length,40);
  assert.equal(new Set(COURSE_UNITS.flatMap(u=>u.ids)).size,36);
  for(const id of expected){
   assert.ok(MODULES.some(m=>m.id===id));
