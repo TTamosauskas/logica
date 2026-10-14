@@ -6,7 +6,7 @@ import {blankFreeTable,addFreeFormula,addFreeVariable,editFreeVariable,
 
 const fill=(formulas,{predicates=false}={})=>{
   const state=blankFreeTable();
-  if(predicates){editFreeVariable(state,'p','p','Sócrates','individual');addFreeVariable(state,'r');}
+  if(predicates){editFreeVariable(state,'p','p','Sócrates','individual');addFreeVariable(state,'r');state.inferenceMode=true;}
   for(const source of formulas)addFreeFormula(state,source);
   return state;
 };
@@ -75,6 +75,7 @@ test('∵ detecta invalidade e premissas incompatíveis também em predicados',(
 
 test('∵ não inventa decisão se análise de predicados é indeterminada',()=>{
   const state=blankFreeTable();
+  state.inferenceMode=true;
   addFreeVariable(state,'r');
   addFreeVariable(state,'s');
   for(const formula of ['p(a)','q(a)','r(a)','s(a)'])addFreeFormula(state,formula);
