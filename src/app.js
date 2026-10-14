@@ -30,6 +30,7 @@ import { UNIT3_ASSESSMENTS } from './content/assessment-unit3.js';
 import { UNIT4_ASSESSMENTS } from './content/assessment-unit4.js';
 import { UNIT5_TO_7_ASSESSMENTS } from './content/assessment-unit5to7.js';
 import { ASSESSMENT_VERSION, prepareBank, composeAssessment, gradeAssessment } from './core/assessment.js';
+import { buildIntegratedExamQuestions } from './core/integrated-exam.js';
 import { UNIT1_READINGS } from './content/reading-unit1.js';
 import { UNIT2_READINGS } from './content/reading-unit2.js';
 import { UNIT3_READINGS } from './content/reading-unit3.js';
@@ -1893,28 +1894,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     if(fresh)finalExamSession=null;
     finalExamSession=finalExamSession||savedExam();
     if(!finalExamSession){
-      let questions=[];const ids=new Set();
-      // Seis competências centrais continuam representadas. As seis unidades ainda
-      // não cobertas recebem uma questão cada, incluindo a nova Unidade VI.
-      for(const id of ['pressupostos','categoricos2','inducao','abducao','probabilidade','causalidade']){
-        ids.add(id);questions.push({...pick(LESSONS[id].quiz),id});
-      }
-      COURSE_UNITS.forEach(unit=>{
-        if(unit.ids.some(id=>ids.has(id)))return;
-        const candidates=unit.ids.filter(id=>!ids.has(id));
-        if(!candidates.length)return;
-        const id=pick(candidates);
-        ids.add(id);questions.push({...pick(LESSONS[id].quiz),id});
-      });
-      // A oitava unidade reúne sete novas competências; duas delas entram
-      // em cada prova, escolhidas em aulas diferentes.
-      const additional=COURSE_UNITS.find(unit=>unit.title.includes('Erros Lógicos Comuns'))
-        ?.ids.filter(id=>!ids.has(id))||[];
-      if(questions.length===11&&additional.length){
-        const id=pick(additional);
-        ids.add(id);questions.push({...pick(LESSONS[id].quiz),id});
-      }
-      if(questions.length!==12)throw Error('Composição da prova integrada incompleta.');
+      const questions=buildIntegratedExamQuestions(COURSE_UNITS,LESSONS,pick);
       finalExamSession={questions:shuffle(questions),answers:Array(12).fill(null),result:null};
     }
     if(updateHash)setRouteHash('avaliacao-final');
