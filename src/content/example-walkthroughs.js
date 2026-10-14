@@ -1,5 +1,7 @@
-/** Exemplos resolvidos concretos e segmentados para as 23 aulas do Curso Guiado. */
+/** Exemplos resolvidos concretos e segmentados para as 30 aulas do Curso Guiado. */
+import { ERROR_WORKED_EXAMPLES } from './errors-course.js';
 export const WORKED_EXAMPLES={
+  ...ERROR_WORKED_EXAMPLES,
   "fundamentos": {
     "context": "p = “O laboratório está aberto”; q = “A equipe chegou”.",
     "steps": [
