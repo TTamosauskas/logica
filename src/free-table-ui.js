@@ -17,6 +17,22 @@ const eye=open=>open?
   '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle>':
   '<path d="M3 3l18 18"></path><path d="M10.5 5.1A11 11 0 0 1 12 5c6.6 0 10 7 10 7a14 14 0 0 1-3.3 4.1"></path><path d="M6.6 6.6C3.6 8.6 2 12 2 12s3.4 7 10 7c1.3 0 2.5-.3 3.6-.7"></path>';
 const key=(r,col)=>r+'|'+col;
+const SYMBOL_HELP=Object.freeze({
+  '¬':'Negação: não p; inverte o valor lógico.',
+  '∧':'Conjunção (E): verdadeira somente se as duas partes forem verdadeiras.',
+  '∨':'Disjunção inclusiva (OU): verdadeira se ao menos uma parte for verdadeira, inclusive ambas.',
+  '→':'Condicional (SE... ENTÃO): falsa somente quando o antecedente é V e o consequente é F.',
+  '↔':'Bicondicional (SE, E SOMENTE SE): verdadeira quando ambos os valores coincidem.',
+  '⊕':'OU exclusivo: verdadeira quando exatamente uma das partes é verdadeira.',
+  '∀':'Quantificador universal: para todo indivíduo x do domínio.',
+  '∃':'Quantificador existencial: existe pelo menos um indivíduo x.',
+  '∃!':'Quantificador de unicidade: existe exatamente um indivíduo x.',
+  '⊤':'Constante verdadeira: sempre V em qualquer interpretação.',
+  '⊥':'Constante falsa ou absurdo: sempre F em qualquer interpretação.',
+  '(':'Abre parênteses: começa uma subexpressão.',
+  ')':'Fecha parênteses: termina uma subexpressão.'
+});
+const SYMBOL_HELP_DEFAULT='Passe o mouse, use Tab ou toque em um símbolo para ver seu significado.';
 export function createFreeTable(root){
   let state,recovery=null;
   try{
@@ -115,8 +131,19 @@ export function createFreeTable(root){
       <div class="free-formula-new"><label>Adicionar fórmula <input id="freeNewFormula" type="text" maxlength="240" placeholder="Ex.: ¬(p → q)" spellcheck="false"></label>
         <button type="button" class="button primary" data-action="add-formula">+ Adicionar fórmula</button></div>
       <div class="free-keypad" role="group" aria-label="Inserir variáveis e símbolos lógicos">
-        ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','∀','∃','∃!','⊤','⊥','(',')'].map(sym=>`<button class="button small ${state.variables.some(v=>v.name===sym)?'free-key-variable':''}" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
+        ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','∀','∃','∃!','⊤','⊥','(',')'].map(sym=>{
+          const variable=state.variables.find(v=>v.name===sym);
+          const help=variable?
+            (variable.kind==='individual'?'Indivíduo':'Proposição ou propriedade')+
+              ' '+sym+': '+(variable.meaning||'significado ainda não informado'):
+            SYMBOL_HELP[sym];
+          return `<button class="button small ${variable?'free-key-variable':''}" type="button"
+            data-symbol="${esc(sym)}" data-help="${esc(help)}" title="${esc(help)}"
+            aria-label="Inserir ${esc(sym)} — ${esc(help)}"
+            aria-describedby="freeSymbolHelp">${esc(sym)}</button>`;
+        }).join('')}
       </div>
+      <p class="free-symbol-help" id="freeSymbolHelp" role="status" aria-live="polite">${SYMBOL_HELP_DEFAULT}</p>
       <small class="free-hint">Exemplos: q(p); ∀x(q(x) → r(x)); ∃x(q(x)); ∃!x(q(x)) (um único indivíduo); ⊤ e ⊥. A unicidade conta indivíduos, inclusive quando compartilham propriedades. ∴ (portanto) identifica automaticamente a conclusão no cabeçalho e ∵ (porque) introduz a justificativa após conferir as respostas, nos dois tipos de tabela. São marcadores da argumentação, não conectivos: não são digitados dentro de fórmulas. A última fórmula é a conclusão a partir de duas fórmulas. Nenhum equivale a ¬∃.</small>
     </section>`;
   }
@@ -391,15 +418,28 @@ export function createFreeTable(root){
     else return;
     render();
   });
-  root.addEventListener('focusin',e=>{if(e.target.matches('#freeNewFormula,[data-formula-source]'))lastFormulaInput=e.target});
+  const showSymbolHelp=button=>{
+    const panel=root.querySelector('#freeSymbolHelp');
+    if(panel)panel.textContent=button?.dataset.help||SYMBOL_HELP_DEFAULT;
+  };
+  root.addEventListener('pointerover',e=>{
+    const symbol=e.target.closest('.free-keypad [data-symbol]');
+    if(symbol)showSymbolHelp(symbol);
+  });
+  root.addEventListener('focusin',e=>{
+    if(e.target.matches('#freeNewFormula,[data-formula-source]'))lastFormulaInput=e.target;
+    const symbol=e.target.closest('.free-keypad [data-symbol]');
+    if(symbol)showSymbolHelp(symbol);
+  });
   root.addEventListener('click',e=>{
     const sym=e.target.closest('[data-symbol]');
     if(sym){
+      showSymbolHelp(sym);
       const input=lastFormulaInput?.isConnected?lastFormulaInput:root.querySelector('#freeNewFormula');
       if(!input)return;
       const start=input.selectionStart??input.value.length,end=input.selectionEnd??start;
       const predicateInput=freeTableKind(state)==='predicates'||input.value.includes('∀')||input.value.includes('∃');
-      const insert=sym.dataset.symbol==='∀'||sym.dataset.symbol==='∃'?sym.dataset.symbol+'x(':
+      const insert=['∀','∃','∃!'].includes(sym.dataset.symbol)?sym.dataset.symbol+'x(':
         (predicateInput&&state.variables.some(v=>v.name===sym.dataset.symbol&&v.kind!=='individual')?sym.dataset.symbol+'(x)':sym.dataset.symbol);
       input.value=input.value.slice(0,start)+insert+input.value.slice(end);
       input.focus();input.setSelectionRange(start+insert.length,start+insert.length);return;
