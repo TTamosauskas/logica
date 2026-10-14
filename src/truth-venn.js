@@ -184,7 +184,7 @@ export function renderPredicateVenn({id='free',variables=[],variableMeanings={},
 function propertyTitle(name,meaning){
   const text=String(meaning||'').trim().replace(/[.!?]+$/,'');
   const adjective=/^x\s+(?:é|está|tem|possui)\s+(?:um |uma )?(.+)$/i.exec(text)?.[1]?.toLowerCase();
-  if(!adjective)return name;
+  if(!adjective)return text||name;
   const known={homem:'Homens',mulher:'Mulheres',mortal:'Mortais',animal:'Animais',
     pessoa:'Pessoas',cidadão:'Cidadãos',cidadã:'Cidadãs',vivo:'Vivos',
     estudante:'Estudantes',aluno:'Alunos',aluna:'Alunas',humano:'Humanos'};
