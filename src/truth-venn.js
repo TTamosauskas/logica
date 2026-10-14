@@ -170,3 +170,64 @@ export function renderPredicateVenn({id='free',variables=[],variableMeanings={},
     pending+' indivíduo(s) ainda com predicados indefinidos; '+
     filtered+' fora do recorte.</p></section>';
 }
+
+
+/** Euler por propriedade: cada pequeno círculo é um indivíduo, não um conjunto.
+ * Uma pertinência indefinida NÃO é desenhada do lado de fora.
+ * Painéis separados evitam inventar interseções quando outros predicados são desconhecidos.
+ */
+function propertyTitle(name,meaning){
+  const text=String(meaning||'').trim().replace(/[.!?]+$/,'');
+  const property=/^x\s+(?:é|está)\s+(.+)$/i.exec(text)?.[1]?.toLowerCase();
+  if(!property)return 'Conjunto '+name;
+  const irregular={homem:'Homens',mulher:'Mulheres',mortal:'Mortais',
+    animal:'Animais',pessoa:'Pessoas',cidadão:'Cidadãos',cidadã:'Cidadãs'};
+  return irregular[property]||property.charAt(0).toUpperCase()+
+    property.slice(1)+(property.endsWith('s')?'':property.endsWith('m')?'ns':'s');
+}
+export function renderIndividualSets({predicates=[],people=[],meanings={},conflicts=[]}={}){
+  const heading='<div class="truth-venn-heading"><h3>Diagrama de indivíduos</h3>'+
+    '<p>Os círculos grandes representam propriedades (conjuntos); cada pequeno círculo representa um indivíduo. '+
+    'Um indivíduo só aparece dentro ou fora quando sua pertinência é conhecida.</p></div>';
+  if(!predicates.length||!people.length)
+    return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de indivíduos">'+
+      heading+'<p class="truth-venn-note">Cadastre um predicado e pelo menos um indivíduo para visualizar a pertinência.</p></section>';
+  const panels=predicates.map(name=>{
+    const inside=people.filter(person=>person.values?.[name]==='V');
+    const outside=people.filter(person=>person.values?.[name]==='F');
+    const pending=people.filter(person=>!['V','F'].includes(person.values?.[name]));
+    const circles=inside.slice(0,6).map((person,i)=>{
+      const x=inside.length===1?164:164+((i%3)-1)*53;
+      const y=inside.length===1?126:104+Math.floor(i/3)*47;
+      return '<g class="truth-individual-person"><title>'+esc(person.label+' pertence a '+propertyTitle(name,meanings[name]))+
+        '</title><circle cx="'+x+'" cy="'+y+'" r="9" class="truth-individual-dot"/>'+
+        '<text x="'+x+'" y="'+(y+22)+'" text-anchor="middle">'+esc(person.label.slice(0,12))+'</text></g>';
+    }).join('');
+    const outsiders=outside.slice(0,6).map((person,i)=>{
+      const x=345+(i%2)*67,y=53+Math.floor(i/2)*61;
+      return '<g class="truth-individual-person truth-individual-outside"><title>'+
+        esc(person.label+' não pertence a '+propertyTitle(name,meanings[name]))+
+        '</title><circle cx="'+x+'" cy="'+y+'" r="9" class="truth-individual-dot"/>'+
+        '<text x="'+x+'" y="'+(y+22)+'" text-anchor="middle">'+esc(person.label.slice(0,10))+'</text></g>';
+    }).join('');
+    const title=propertyTitle(name,meanings[name]);
+    const describe=(label,list)=>list.length?'<p><strong>'+label+':</strong> '+esc(list.map(p=>p.label).join(', '))+'</p>':'';
+    return '<article class="truth-individual-set"><h4>'+esc(title)+'</h4>'+
+      '<p class="truth-individual-formula"><code>'+esc(name)+'(x)</code> — '+esc(meanings[name]||'Propriedade sem significado cadastrado')+'</p>'+
+      '<svg class="truth-venn-svg truth-individual-svg" viewBox="0 0 470 260" role="img" aria-label="'+
+      esc('Conjunto '+title+'. Dentro: '+inside.map(p=>p.label).join(', ')+
+        '. Fora: '+outside.map(p=>p.label).join(', ')+'. Indefinidos: '+pending.map(p=>p.label).join(', '))+'">'+
+      '<circle cx="164" cy="126" r="102" class="truth-individual-set-circle"/>'+
+      '<text x="164" y="39" text-anchor="middle" class="truth-individual-set-label">'+esc(title)+'</text>'+
+      circles+outsiders+'</svg>'+
+      '<div class="truth-individual-members">'+describe('Dentro',inside)+describe('Fora',outside)+
+      describe('A definir',pending)+'</div></article>';
+  }).join('');
+  return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de indivíduos">'+
+    heading+'<div class="truth-individual-set-grid">'+panels+'</div>'+
+    (conflicts.length?'<p class="truth-individual-conflicts" role="alert">Conflito entre valores informados e premissas: '+
+      esc(conflicts.join(' '))+'</p>':'')+
+    '<p class="truth-venn-status">Os painéis representam pertinência por propriedade, sem afirmar relações de inclusão entre conjuntos. '+
+    'Premissas atômicas e aplicações simples de regras universais fornecem valores quando cabível; '+
+    'a conclusão não é tomada como fato. Um valor desconhecido não significa falso.</p></section>';
+}
