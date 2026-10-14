@@ -143,26 +143,73 @@ export function evaluatePredicate(node,domain,truth,subject=null){
     default:throw Error('Expressão não reconhecida.');
   }
 }
+/** Extrai uma propriedade simples de x para formar frases sem repetir o sujeito. */
+function propertyOfX(node,meanings,individualNames){
+  if(node?.type!=='pred'&&!(node?.type==='not'&&node.a?.type==='pred'))return null;
+  const atom=node.type==='not'?node.a:node;
+  if(atom.term!=='x')return null;
+  const text=predicateReading(node,meanings,individualNames);
+  return /^x\s+/i.test(text)?text.replace(/^x\s+/i,''):null;
+}
 export function predicateReading(node,meanings,individualNames={}){
   if(node.type==='truth')return 'verdade lógica (sempre verdadeiro)';
   if(node.type==='falsity')return 'falsidade lógica (sempre falso)';
   if(node.type==='pred'){
-    const text=meanings[node.name]||node.name;
+    const text=String(meanings?.[node.name]||'').trim().replace(/[.!?]+$/,'');
     const who=node.term==='x'?'x':individualNames[node.term]||node.term;
+    if(!text)return who+' satisfaz a propriedade '+node.name;
     if(/\bx\b/i.test(text))return text.replace(/\bx\b/gi,who);
     const lowered=text.charAt(0).toLowerCase()+text.slice(1);
-    return who+' '+(/^(é|são|está|estão|foi|tem|possui|faz|era|será)\b/i.test(text)?lowered:'é '+lowered);
+    return who+' '+(/^(é|são|está|estão|foi|tem|possui|faz|era|será)(?=\s|$)/i.test(text)?lowered:'é '+lowered);
   }
-  if(node.type==='not'&&node.a.type==='exists')return 'nenhum indivíduo do domínio satisfaz: '+predicateReading(node.a.a,meanings,individualNames);
+  if(node.type==='not'&&node.a.type==='pred'){
+    const text=predicateReading(node.a,meanings,individualNames);
+    const negated=text.replace(/^(.+?)\s+(é|era|foi|será|está|esteve|tem|tinha|possui|são|foram|faz|fez|satisfaz)(?=\s|$)/i,'$1 não $2');
+    return negated!==text?negated:'não é verdade que ('+text+')';
+  }
+  if(node.type==='not'&&node.a.type==='forall'){
+    const reading=predicateReading(node.a,meanings,individualNames);
+    return /^todo x\b/i.test(reading)?'nem '+reading:'não é verdade que ('+reading+')';
+  }
+  if(node.type==='not'&&node.a.type==='exists'){
+    const property=propertyOfX(node.a.a,meanings,individualNames);
+    return property?'nenhum x '+property:
+      'não existe x para o qual '+predicateReading(node.a.a,meanings,individualNames);
+  }
   if(node.type==='not')return 'não é verdade que ('+predicateReading(node.a,meanings,individualNames)+')';
-  if(node.type==='forall')return 'para todo indivíduo x, '+predicateReading(node.a,meanings,individualNames);
-  if(node.type==='exists')return 'existe ao menos um indivíduo x para o qual '+predicateReading(node.a,meanings,individualNames);
-  if(node.type==='existsUnique')return 'existe exatamente um indivíduo x para o qual '+predicateReading(node.a,meanings,individualNames);
-  const a=predicateReading(node.a,meanings,individualNames),b=predicateReading(node.b,meanings,individualNames);
+  if(node.type==='forall'){
+    if(node.a.type==='implies'){
+      const a=propertyOfX(node.a.a,meanings,individualNames);
+      const b=propertyOfX(node.a.b,meanings,individualNames);
+      if(a&&b)return 'todo x que '+a+' '+b;
+      return 'para todo x, se ('+predicateReading(node.a.a,meanings,individualNames)+
+        '), então ('+predicateReading(node.a.b,meanings,individualNames)+')';
+    }
+    const property=propertyOfX(node.a,meanings,individualNames);
+    return property?'todo x '+property:
+      'para todo x, vale que '+predicateReading(node.a,meanings,individualNames);
+  }
+  if(node.type==='exists'||node.type==='existsUnique'){
+    const start=node.type==='exists'?'existe pelo menos um x':'existe exatamente um x';
+    const property=propertyOfX(node.a,meanings,individualNames);
+    if(property)return start+' que '+property;
+    if(node.a.type==='and'){
+      const a=propertyOfX(node.a.a,meanings,individualNames);
+      const b=propertyOfX(node.a.b,meanings,individualNames);
+      if(a&&b)return start+' que '+a+' e '+b;
+    }
+    return start+' para o qual '+predicateReading(node.a,meanings,individualNames);
+  }
+  const a=predicateReading(node.a,meanings,individualNames);
+  const b=predicateReading(node.b,meanings,individualNames);
   if(node.type==='implies')return 'se ('+a+'), então ('+b+')';
   if(node.type==='iff')return '('+a+') se, e somente se, ('+b+')';
   if(node.type==='xor')return 'ou ('+a+') ou ('+b+'), mas não ambos';
-  return '('+a+') '+(spell[node.type]||node.type)+' ('+b+')';
+  const simple=part=>part.type==='pred'||(part.type==='not'&&part.a.type==='pred');
+  const left=simple(node.a)?a:'('+a+')';
+  const right=simple(node.b)?b:'('+b+')';
+  if(node.type==='or')return left+' ou '+right+' (inclusive ambos)';
+  return left+' '+(spell[node.type]||node.type)+' '+right;
 }
 export function predicateEvidence(node,domain,truth){
   const quantified=node.type==='not'&&['forall','exists','existsUnique'].includes(node.a.type)?node.a:
