@@ -17,7 +17,7 @@ test('Sócrates aparece dentro do conjunto Homens quando q(p) é afirmada',()=>{
   const state=setup();
   addFreeFormula(state,'q(p)');
   const model=freeIndividualModel(state);
-  assert.deepEqual(model.predicates,['q']);
+  assert.deepEqual(model.predicates,['q','r']);
   assert.equal(model.people[0].label,'Sócrates');
   assert.equal(model.people[0].values.q,'V');
   assert.equal(model.people[0].origins.q,'premissa');
@@ -173,6 +173,36 @@ test('mostra seis conjuntos e conserva símbolos mesmo sem região representáve
  assert.match(html,/>m<\/text>/);
  assert.match(html,/<code>m<\/code><\/dt><dd>Maria/);
  assert.match(html,/POSIÇÃO NÃO DETERMINADA/);
+});
+
+test('propriedades nomeadas aparecem como círculos sem fórmulas adicionais',()=>{
+ const state=setup();
+ addFreeVariable(state,'s');
+ editFreeVariable(state,'s','s','x é filósofo');
+ addFreeVariable(state,'t');
+ editFreeVariable(state,'t','t','x é grego');
+ addFreeFormula(state,'q(p)');
+ const model=freeIndividualModel(state);
+ assert.deepEqual(model.predicates,['q','r','s','t']);
+ const html=renderIndividualSets(model);
+ assert.equal((html.match(/class="truth-individual-set-circle/g)||[]).length,4);
+ assert.match(html,/<code>t<\/code><\/dt><dd>x é grego/);
+ assert.match(html,/<code>p<\/code><\/dt><dd>Sócrates/);
+});
+test('indivíduos extras não consomem símbolos de predicados',()=>{
+ const state=setup();
+ addFreeIndividual(state,'a','Maria');
+ addFreeIndividual(state,'b','João');
+ addFreeFormula(state,'q(p)');
+ const model=freeIndividualModel(state);
+ assert.equal(model.people.length,3);
+ const html=renderIndividualSets(model);
+ assert.match(html,/<code>a<\/code><\/dt><dd>Maria/);
+ assert.match(html,/<code>b<\/code><\/dt><dd>João/);
+ assert.match(html,/>a<\/text>/);
+ assert.match(html,/>b<\/text>/);
+ const restored=readFreeTable(JSON.stringify(state),{strict:true});
+ assert.deepEqual(restored.domain.map(d=>d.label),['Maria','João']);
 });
 test('escapa rótulos fornecidos pelo usuário no SVG e na descrição',()=>{
   const html=renderIndividualSets({predicates:['q'],people:[{
