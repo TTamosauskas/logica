@@ -454,8 +454,12 @@ export function readFreeTable(raw,{strict=false}={}){
       if(input.predicateValues&&typeof input.predicateValues==='object'&&!Array.isArray(input.predicateValues)){
         for(const [k,v] of Object.entries(input.predicateValues)){
           const [id,name]=k.split('|');
-          if(state.domain.some(d=>d.id===id)&&state.variables.some(x=>x.name===name)&&(v==='V'||v==='F'))
-            state.predicateValues[k]=v;
+          // Também persistem valores de indivíduos implícitos em q(p), sem cadastro no domínio.
+          const knownIndividual=state.domain.some(d=>d.id===id)||
+            state.variables.some(x=>x.name===id&&x.kind==='individual')||
+            state.formulas.some(f=>f.source.toLowerCase().includes('('+id+')'));
+          if(knownIndividual&&state.variables.some(x=>x.name===name&&x.kind!=='individual')&&
+             (v==='V'||v==='F'))state.predicateValues[k]=v;
         }
       }
     }
