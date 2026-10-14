@@ -371,8 +371,8 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
     notes.push('O símbolo ? indica dados incompletos; a posição em relação aos outros círculos não determina esses valores.');
   if(neutral.length)notes.push('A faixa inferior não representa o exterior dos conjuntos.');
   if(names.length>=4)notes.push('Com quatro ou mais círculos, nem todas as interseções são desenháveis.');
-  const description='Conjuntos '+names.join(', ')+'. '+people.map(p=>
-    String(p.label||p.id)+': '+names.map(name=>name+' '+
+  const description='Conjuntos '+names.map(name=>propertyTitle(name,meanings[name])).join(', ')+'. '+people.map(p=>
+    String(p.label||p.id)+': '+names.map(name=>propertyTitle(name,meanings[name])+' '+
       (p.values?.[name]==='V'?'sim':p.values?.[name]==='F'?'não':'indefinido')).join(', ')).join('. ');
   return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de Venn–Euler de indivíduos">'+
     heading+'<svg class="truth-venn-svg truth-individual-svg" viewBox="0 0 '+width+' '+
