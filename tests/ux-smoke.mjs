@@ -848,7 +848,7 @@ try{
       const red=node.querySelector('.truth-relation-line--contradictory');
       const green=node.querySelector('.truth-relation-line--equivalent');
       const structure=node.querySelector('.truth-relation-line--structure');
-      const heads=[...node.previousElementSibling.querySelectorAll('thead th[data-rel-col]')];
+      const heads=[...node.closest('.free-card').querySelectorAll('thead th[data-rel-col]')];
       const redBorder=getComputedStyle(heads[5],'::after').borderTopColor;
       const greenBorder=getComputedStyle(heads[3],'::after').borderTopColor;
       const rects=[...node.querySelectorAll('.truth-relation-line')].map(el=>el.getBoundingClientRect());
