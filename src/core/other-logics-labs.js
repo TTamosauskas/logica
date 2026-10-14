@@ -99,9 +99,9 @@ function fuzzyLab(level,random){
     {label:'Convenção',detail:'Zadeh: ¬p=1−p; p∧q=min(p,q); p∨q=max(p,q)'}],
   scope:'Os valores são graus de satisfação de propriedades. Este laboratório utiliza as operações min, max e complemento de Zadeh, não todas as lógicas fuzzy.',
   items:[
-   item('¬p',fmt(r.notP),'1 − '+fmt(p)+' = '+fmt(r.notP)+'.',options),
-   item('p ∧ q',fmt(r.and),'min('+fmt(p)+', '+fmt(q)+') = '+fmt(r.and)+'.',options),
-   item('p ∨ q',fmt(r.or),'max('+fmt(p)+', '+fmt(q)+') = '+fmt(r.or)+'.',options)
+   item('¬p',fmt(r.notP),'Na convenção de Zadeh, o grau da negação é calculado subtraindo o grau original de 1: 1 − '+fmt(p)+' = '+fmt(r.notP)+'.',options),
+   item('p ∧ q',fmt(r.and),'A conjunção pela t-norma mínimo recebe o menor dos graus de p e q: min('+fmt(p)+', '+fmt(q)+') = '+fmt(r.and)+'.',options),
+   item('p ∨ q',fmt(r.or),'A disjunção pela operação máximo seleciona o maior dos graus atribuídos: max('+fmt(p)+', '+fmt(q)+') = '+fmt(r.or)+'.',options)
   ]
  };
 }
