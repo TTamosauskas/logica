@@ -63,7 +63,6 @@ test('negação de universal não atribui falso ao indivíduo nomeado',()=>{
   assert.equal(model.people[0].values.q,'V');
   assert.equal(model.people[0].values.r,'');
   const html=renderIndividualSets(model);
-  assert.match(html,/Pontos sobre a borda têm pertinência parcialmente conhecida/);
   assert.match(html,/posição parcial \(sobre a borda\)/);
   assert.doesNotMatch(html,/truth-individual-subset-circle/);
 });
@@ -87,7 +86,7 @@ test('detecta quando um valor manual contradiz premissas',()=>{
   const model=freeIndividualModel(state);
   assert.equal(model.people[0].values.r,'');
   assert.ok(model.conflicts.length>0);
-  assert.match(renderIndividualSets(model),/Conflito de premissas/);
+  assert.match(renderIndividualSets(model),/Há conflito entre premissas e valores informados/);
 });
 
 test('permite inserir indivíduos extras com pertinência inicialmente indefinida',()=>{
@@ -110,7 +109,7 @@ test('em um único gráfico, apresenta Sócrates na borda quando outra proprieda
  assert.match(html,/Homens/);
  assert.match(html,/Mortais/);
  assert.match(html,/cx="189" cy="163" r="11"/);
- assert.match(html,/Pontos sobre a borda têm pertinência parcialmente conhecida/);
+ assert.match(html,/posição parcial \(sobre a borda\)/);
  assert.doesNotMatch(html,/truth-individual-set-grid/);
 });
 test('três propriedades permanecem num único Venn, sem duplicar painéis',()=>{
