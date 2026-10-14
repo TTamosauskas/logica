@@ -1,5 +1,6 @@
 /** Exemplos resolvidos concretos e segmentados para as 30 aulas do Curso Guiado. */
 import { ERROR_WORKED_EXAMPLES } from './errors-course.js';
+import { OTHER_LOGIC_WORKED } from './other-logics-course.js';
 export const WORKED_EXAMPLES={
   ...ERROR_WORKED_EXAMPLES,
   "fundamentos": {
@@ -691,5 +692,6 @@ export const WORKED_EXAMPLES={
       "correct": 1,
       "why": "Há testemunhas distintas para p e para ¬p, mas nem todas satisfazem p."
     }
-  }
+  },
+  ...OTHER_LOGIC_WORKED
 };
