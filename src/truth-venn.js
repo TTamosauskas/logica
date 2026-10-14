@@ -251,12 +251,14 @@ function individualGeometry(predicates,relations){
   }
   return {width,baseHeight,names:predicates,circles,labels,nested:nestedNames.size>0};
 }
-function individualMarker(person,x,y){
+function individualMarker(person,x,y,partial=false){
   const symbol=String(person.id||'').trim();
   return '<g class="truth-individual-person"><title>Indivíduo '+esc(symbol)+'</title>'+
     '<circle class="truth-individual-dot" cx="'+x+'" cy="'+y+'" r="11"/>'+
     '<text class="truth-individual-symbol" x="'+x+'" y="'+y+
-    '" text-anchor="middle" dominant-baseline="central">'+esc(symbol.slice(0,4))+'</text></g>';
+    '" text-anchor="middle" dominant-baseline="central">'+esc(symbol.slice(0,4))+'</text>'+
+    (partial?'<text class="truth-individual-question" x="'+(x+12)+'" y="'+(y-9)+'">?</text>':'')+
+    '</g>';
 }
 function individualSetLegend(shown,people,meanings,statuses){
   const sets=shown.map(name=>'<div class="truth-venn-variable"><dt><code>'+
@@ -285,7 +287,9 @@ function individualSetLegend(shown,people,meanings,statuses){
  */
 function positionIndividual(values,layout,occupied=[]){
   const unknown=values.flatMap((value,i)=>value===''?[i]:[]);
-  if(unknown.length>1||unknown.length===values.length)return null;
+  // Sem qualquer dado, usa a faixa neutra. Com vários desconhecidos,
+  // respeita os fatos conhecidos e sinaliza a posição como aproximada.
+  if(unknown.length===values.length)return null;
   const boundary=unknown.length===1?unknown[0]:-1;
   const {circles,width,baseHeight}=layout;
   let best=null,bestScore=-Infinity;
@@ -327,7 +331,8 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
     const known=values.filter(value=>value!=='').length;
     const point=positionIndividual(values,layout,placed.map(({point})=>point));
     if(point){
-      placed.push({person,point});
+      placed.push({person,point,partial:known<names.length,
+        manyUnknown:names.length-known>1,oneUnknown:names.length-known===1});
       if(known<names.length)
         statuses.set(String(person.id),'posição parcial; falta definir '+
           names.filter((_,i)=>values[i]==='').join(', '));
@@ -343,7 +348,8 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
     '" cx="'+cx+'" cy="'+cy+'" r="'+r+'"/>'+
     '<text class="truth-individual-set-label" x="'+labels[i][0]+'" y="'+labels[i][1]+
     '" text-anchor="middle">'+esc(names[i])+'</text>').join('');
-  const positioned=placed.map(({person,point})=>individualMarker(person,point[0],point[1])).join('');
+  const positioned=placed.map(({person,point,partial})=>
+    individualMarker(person,point[0],point[1],partial)).join('');
   // Faixa neutra é explicitamente separada do universo das circunferências.
   // Não significa que um indivíduo esteja fora de todos os conjuntos.
   const stripHeight=neutral.length?70+Math.floor((neutral.length-1)/10)*36:0;
@@ -357,8 +363,10 @@ export function renderIndividualSets({predicates=[],people=[],meanings={},confli
       stripY+43+Math.floor(i/10)*36)).join('')+'</g>':'';
   const notes=[];
   if(conflicts.length)notes.push('Há informações contraditórias sobre indivíduos.');
-  if(placed.some(({person})=>statuses.has(String(person.id))))
-    notes.push('Um ponto na borda indica pertinência ainda não determinada.');
+  if(placed.some(item=>item.oneUnknown))
+    notes.push('Um ponto sobre a borda indica pertinência ainda não determinada.');
+  if(placed.some(item=>item.manyUnknown))
+    notes.push('O símbolo ? indica dados incompletos; a posição em relação aos outros círculos não determina esses valores.');
   if(neutral.length)notes.push('A faixa inferior não representa o exterior dos conjuntos.');
   if(names.length>=4)notes.push('Com quatro ou mais círculos, nem todas as interseções são desenháveis.');
   const description='Conjuntos '+names.join(', ')+'. '+people.map(p=>
