@@ -49,8 +49,7 @@ export function createFreeTable(root){
     try{
       localStorage.setItem(FREE_TABLE_KEY,JSON.stringify(state));
       notice(board.querySelector('[data-unsaved="true"]')?
-        'Dados anteriores salvos. Há textos em edição que ainda exigem Salvar ou Atualizar.':
-        'Tabela salva automaticamente neste navegador.');
+        'Há textos em edição que ainda exigem Salvar ou Atualizar.':'');
     }
     catch{notice('Não foi possível salvar: armazenamento indisponível.',true)}
   }
@@ -146,8 +145,9 @@ export function createFreeTable(root){
     }
     const argument=grade?freeArgumentAnalysis(state):null;
     const variables=pred?report.labels:state.variables.map(item=>item.name);
-    const meanings=pred?Object.fromEntries(report.labels.map((name,i)=>[name,report.expressions[i]])):
-      Object.fromEntries(state.variables.map(item=>[item.name,item.meaning||'']));
+    const meanings=pred?Object.fromEntries(report.labels.map((name,i)=>[
+      name,describeFreeFormula(parseFreeFormula(state,report.expressions[i]),state).literal
+    ])):Object.fromEntries(state.variables.map(item=>[item.name,item.meaning||'']));
     const impossibleRows=pred&&report.status==='complete'?
       report.rows.flatMap((item,i)=>item.possible?[]:[i]):[];
     const impossibleOrdinals=new Map(impossibleRows.map((index,i)=>[index,i+1]));
@@ -405,5 +405,5 @@ export function createFreeTable(root){
   render();
   if(recovery)notice('Não foi possível abrir os dados salvos; o original foi preservado para download.',true);
   return {open(){render();if(recovery)notice('Rascunho protegido: baixe os dados antes de reiniciar.',true);
-    else notice('Tabela salva neste navegador.')}};
+    else notice('')}};
 }
