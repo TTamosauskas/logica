@@ -6,7 +6,7 @@ const spell={and:'e',or:'ou',xor:'ou exclusivamente',implies:'se',iff:'se, e som
 const replacements=[['<->','iff'],['↔','iff'],['->','implies'],['=>','implies'],['→','implies'],['&&','and'],['∧','and'],['&','and'],['||','or'],['∨','or'],['|','or'],['⊕','xor'],['^','xor'],['¬','not'],['!','not'],['~','not'],['∀','forall'],['∃!','existsUnique'],['∃','exists'],['⊤','truth'],['⊥','falsity'],['(', '('],[')',')']];
 export function predicateTokens(input){
   const s=String(input||'').toLowerCase(),out=[];
-  if(/[∴∵]/.test(s))throw Error('∴ (portanto) e ∵ (porque) indicam etapas do argumento, não são conectivos de fórmulas. A última fórmula da Tabela Livre é a conclusão.');
+  if(/[∴∵]/.test(s))throw Error('∴ (portanto) e ∵ (porque) indicam etapas do argumento, não são conectivos de fórmulas. Na Tabela Livre, a conclusão é opcional e depende da escolha do modo de inferência.');
   for(let i=0;i<s.length;){
     if(/\s/.test(s[i])){i++;continue}
     const match=replacements.find(([value])=>s.startsWith(value,i));
