@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {parsePredicateFormula,predicateSignature,predicatePretty,rootHasFreeX,evaluatePredicate,
   predicateReading,predicateEvidence} from '../src/core/free-predicates.js';
 import {blankFreeTable,addFreeIndividual,editFreeIndividual,removeFreeIndividual,editFreeVariable,
-  addFreeFormula,removeFreeFormula,freeTableKind,freeColumns,freeRows,gradeFreeTable,
+  addFreeFormula,removeFreeFormula,freeTableKind,freeColumns,freeRows,gradeFreeTable,freeArgumentAnalysis,
   readFreeTable,parseFreeFormula,describeFreeFormula} from '../src/core/free-table.js';
 
 const setup=()=>{
@@ -78,7 +78,10 @@ test('P(s) refere-se a Sócrates e cada fórmula vira coluna-base da mesma tabel
  assert.equal(describeFreeFormula(node,s).literal,'Sócrates é mortal.');
  assert.equal(freeRows(s).length,4);
  assert.deepEqual(freeColumns(s).filter(c=>c.kind==='var').map(c=>c.name),['A','B']);
+ assert.equal(freeColumns(s).at(-1).label,'A ∧ B');
+ s.inferenceMode=true;
  assert.equal(freeColumns(s).at(-1).label,'A → B');
+ s.inferenceMode=false;
  assert.throws(()=>removeFreeIndividual(s,'s'),/Remova ou edite/);
  editFreeIndividual(s,'s','Sócrates, o filósofo');
  assert.equal(describeFreeFormula(node,s).literal,'Sócrates, o filósofo é mortal.');
@@ -86,6 +89,7 @@ test('P(s) refere-se a Sócrates e cada fórmula vira coluna-base da mesma tabel
 
 test('linhas impossíveis não são editáveis nem entram na correção',()=>{
  const s=setup();
+ s.inferenceMode=true;
  addFreeFormula(s,'p(s)');
  addFreeFormula(s,'q(s)');
  const columns=freeColumns(s),rows=freeRows(s),derived=columns.at(-1);
@@ -169,4 +173,22 @@ test('excluir indivíduo citado pela conclusão é impedido antes de corromper a
   assert.throws(()=>removeFreeIndividual(s,'s'),/conclusão que usa s/);
   assert.equal(s.domain.length,1);
   assert.equal(readFreeTable(JSON.stringify(s),{strict:true}).domain[0].id,'s');
+});
+
+test('em predicados, último enunciado não vira conclusão sem opção explícita',()=>{
+ const s=blankFreeTable();
+ editFreeVariable(s,'p','p','Sócrates','individual');
+ editFreeVariable(s,'q','q','x é homem');
+ addFreeFormula(s,'q(p)');
+ assert.equal(s.inferenceMode,false);
+ addFreeFormula(s,'¬q(p)');
+ assert.equal(freeColumns(s).at(-1).label,'A ∧ B');
+ assert.equal(freeArgumentAnalysis(s),null);
+ const saved=readFreeTable(JSON.stringify(s),{strict:true});
+ assert.equal(saved.inferenceMode,false);
+ assert.equal(saved.formulas.length,2);
+ saved.inferenceMode=true;
+ assert.equal(freeColumns(saved).at(-1).label,'A → B');
+ assert.ok(freeArgumentAnalysis(saved));
+ assert.equal(readFreeTable(JSON.stringify(saved),{strict:true}).inferenceMode,true);
 });
