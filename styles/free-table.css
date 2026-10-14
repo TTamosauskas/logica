@@ -5,6 +5,7 @@
 .free-page-head p{color:var(--muted);max-width:780px;line-height:1.8;margin:0}
 .free-feedback{font-size:13px;margin:12px 0;color:var(--muted);min-height:20px}
 .free-feedback[data-result="error"]{color:var(--danger);font-weight:700}
+.free-feedback:empty{display:none}
 #freeBoard{display:grid;gap:18px}
 .free-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:21px;min-width:0}
 .free-card>p{color:var(--muted);font-size:13px;line-height:1.8;margin:6px 0 18px}
@@ -154,7 +155,7 @@
 .free-truth-table td.free-impossible-given{white-space:nowrap}
 .free-impossibility-footer li:focus{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
 .free-truth-table .free-impossible-cell{font-size:19px;text-align:center;cursor:not-allowed;min-width:70px}
-.free-impossibility-footer{margin:16px 0 12px;padding:13px 16px;border:1px solid var(--border);border-radius:10px;background:var(--panel2);font-size:13px;line-height:1.65}
+.free-impossibility-footer{margin:16px 0 12px;padding:0;font-size:13px;line-height:1.65}
 .free-impossibility-footer h3{margin:0 0 9px;font-size:15px}
 .free-impossibility-footer ol{list-style:none;padding-left:0;margin:8px 0;max-height:290px;overflow-y:auto}
 .free-impossibility-footer li{margin:5px 0;overflow-wrap:anywhere}
