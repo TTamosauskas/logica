@@ -84,8 +84,8 @@ export function createFreeTable(root){
       ${next?`<button type="button" class="button" data-action="add-var">+ Adicionar variável ${next}</button>`:
         '<small class="free-hint">Limite de '+(state.extendedTable?'oito':'seis')+' variáveis.</small>'}
       <label class="free-table-expand"><input type="checkbox" data-extended-table ${state.extendedTable?'checked':''}>
-        Ampliar tabela-verdade para até 8 variáveis (256 linhas)</label>
-      <p class="free-hint">As linhas dependem das variáveis da tabela, não de conjuntos ou indivíduos.</p>
+        Ampliar tabela proposicional para até 8 variáveis (256 linhas)</label>
+      <p class="free-hint">A tabela de predicados mantém até seis fórmulas (64 linhas). Conjuntos e indivíduos não acrescentam linhas.</p>
     </section>`;
   }
   function renderFormulas(){
