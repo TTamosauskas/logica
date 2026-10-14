@@ -176,97 +176,91 @@ export function renderPredicateVenn({id='free',variables=[],variableMeanings={},
  * Uma pertinência indefinida NÃO é desenhada do lado de fora.
  * Painéis separados evitam inventar interseções quando outros predicados são desconhecidos.
  */
+
+/** Um único diagrama para indivíduos: predicados são conjuntos e nomes são pontos.
+ * Interpretações V/F das fórmulas continuam na tabela, não nos círculos.
+ */
 function propertyTitle(name,meaning){
   const text=String(meaning||'').trim().replace(/[.!?]+$/,'');
-  const property=/^x\s+(?:é|está)\s+(.+)$/i.exec(text)?.[1]?.toLowerCase();
-  if(!property)return 'Conjunto '+name;
-  const irregular={homem:'Homens',mulher:'Mulheres',mortal:'Mortais',
-    animal:'Animais',pessoa:'Pessoas',cidadão:'Cidadãos',cidadã:'Cidadãs'};
-  return irregular[property]||property.charAt(0).toUpperCase()+
-    property.slice(1)+(property.endsWith('s')?'':property.endsWith('m')?'ns':'s');
+  const adjective=/^x\s+(?:é|está|tem|possui)\s+(?:um |uma )?(.+)$/i.exec(text)?.[1]?.toLowerCase();
+  if(!adjective)return name;
+  const known={homem:'Homens',mulher:'Mulheres',mortal:'Mortais',animal:'Animais',
+    pessoa:'Pessoas',cidadão:'Cidadãos',cidadã:'Cidadãs',vivo:'Vivos',
+    estudante:'Estudantes',aluno:'Alunos',aluna:'Alunas',humano:'Humanos'};
+  return known[adjective]||adjective.charAt(0).toUpperCase()+adjective.slice(1);
 }
-/** Se uma universal é premissa, desenha inclusão efetiva entre conjuntos.
- * Pontos com informação incompleta ficam fora do gráfico, nunca numa região suposta.
+/** Escolhe até três conjuntos sem inventar relações.
+ * Se houver inclusão universal comprovada, mostra os dois conjuntos relacionados
+ * com a geometria aninhada, em vez de desenhar sua interseção como opcional.
  */
-function inclusionEuler(predicates,people,meanings,relations){
-  if(predicates.length!==2)return '';
-  const rule=relations.find(item=>predicates.includes(item.subset)&&predicates.includes(item.superset));
-  if(!rule||relations.some(item=>item.subset===rule.superset&&item.superset===rule.subset))
-    return '';
-  const inner=rule.subset,outer=rule.superset;
-  const regions={both:[],outer:[],neither:[],unknown:[]};
-  for(const person of people){
-    const inside=person.values?.[inner],outside=person.values?.[outer];
-    if(inside==='V'&&outside==='V')regions.both.push(person);
-    else if(inside==='F'&&outside==='V')regions.outer.push(person);
-    else if(inside==='F'&&outside==='F')regions.neither.push(person);
-    else regions.unknown.push(person);
+function selectIndividualSets(predicates,relations){
+  const candidate=relations.find(({subset,superset})=>subset!==superset&&
+    predicates.includes(subset)&&predicates.includes(superset)&&
+    !relations.some(r=>r.subset===superset&&r.superset===subset));
+  return candidate?{shown:[candidate.subset,candidate.superset],nested:candidate}:
+    {shown:predicates.slice(0,3),nested:null};
+}
+function individualGeometry(shown,nested){
+  if(nested&&shown.length===2){
+    // Ordem de shown: subconjunto, superconjunto. Máscara: 00, 01, 10, 11.
+    return {circles:[[240,184,78],[240,160,138]],
+      labels:[[240,155],[240,43]],
+      points:[[430,268],[345,141],null,[240,214]]};
   }
-  const markers=(items,x,y,limit=5)=>items.slice(0,limit).map((person,i)=>{
-    const dx=(i%2)*43,dy=Math.floor(i/2)*43;
-    return '<g class="truth-individual-person"><title>'+esc(person.label)+
-      '</title><circle class="truth-individual-dot" cx="'+(x+dx)+'" cy="'+(y+dy)+'" r="8"/>'+
-      '<text x="'+(x+dx)+'" y="'+(y+dy+20)+'" text-anchor="middle">'+
-      esc(person.label.slice(0,9))+'</text></g>';
-  }).join('');
-  const outerName=propertyTitle(outer,meanings[outer]),innerName=propertyTitle(inner,meanings[inner]);
-  const pending=regions.unknown.length?'<p class="truth-venn-note">Não posicionados porque falta informação: '+
-    esc(regions.unknown.map(p=>p.label).join(', '))+'.</p>':'';
-  return '<div class="truth-individual-inclusion"><h4>Inclusão entre conjuntos determinada pela premissa universal</h4>'+
-    '<svg viewBox="0 0 500 350" class="truth-venn-svg truth-individual-svg" role="img" aria-label="'+
-    esc('O conjunto '+innerName+' está totalmente dentro de '+outerName+
-    '. Indivíduos no conjunto interno: '+regions.both.map(p=>p.label).join(', '))+'">'+
-    '<circle cx="211" cy="167" r="138" class="truth-individual-set-circle"/>'+
-    '<text x="211" y="55" text-anchor="middle" class="truth-individual-set-label">'+esc(outerName)+'</text>'+
-    '<circle cx="180" cy="211" r="79" class="truth-individual-subset-circle"/>'+
-    '<text x="180" y="159" text-anchor="middle" class="truth-individual-set-label">'+esc(innerName)+'</text>'+
-    markers(regions.both,157,204,4)+markers(regions.outer,282,112)+markers(regions.neither,409,170)+
-    '</svg><p class="truth-venn-note">'+esc(innerName)+' ⊆ '+esc(outerName)+
-    ': todo indivíduo do primeiro conjunto pertence também ao segundo.</p>'+pending+'</div>';
+  return shapes[shown.length]||null;
+}
+function individualMarker(person,x,y,index){
+  const dx=index?((index%2)?24:-24)*Math.ceil(index/2):0;
+  const dy=index?Math.floor((index-1)/2)*-24:0;
+  const name=String(person.label||person.id);
+  return '<g class="truth-individual-person"><title>'+esc(name)+'</title>'+
+    '<circle class="truth-individual-dot" cx="'+(x+dx)+'" cy="'+(y+dy)+'" r="7"/>'+
+    '<text x="'+(x+dx)+'" y="'+(y+dy+20)+'" text-anchor="middle">'+
+    esc(name.length>17?name.slice(0,16)+'…':name)+'</text></g>';
 }
 export function renderIndividualSets({predicates=[],people=[],meanings={},conflicts=[],relations=[]}={}){
-  const heading='<div class="truth-venn-heading"><h3>Diagrama de indivíduos</h3>'+
-    '<p>Os círculos grandes representam propriedades (conjuntos); cada pequeno círculo representa um indivíduo. '+
-    'Um indivíduo só aparece dentro ou fora quando sua pertinência é conhecida.</p></div>';
-  if(!predicates.length||!people.length)
-    return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de indivíduos">'+
-      heading+'<p class="truth-venn-note">Cadastre um predicado e pelo menos um indivíduo para visualizar a pertinência.</p></section>';
-  const panels=predicates.map(name=>{
-    const inside=people.filter(person=>person.values?.[name]==='V');
-    const outside=people.filter(person=>person.values?.[name]==='F');
-    const pending=people.filter(person=>!['V','F'].includes(person.values?.[name]));
-    const circles=inside.slice(0,6).map((person,i)=>{
-      const x=inside.length===1?164:164+((i%3)-1)*53;
-      const y=inside.length===1?126:104+Math.floor(i/3)*47;
-      return '<g class="truth-individual-person"><title>'+esc(person.label+' pertence a '+propertyTitle(name,meanings[name]))+
-        '</title><circle cx="'+x+'" cy="'+y+'" r="9" class="truth-individual-dot"/>'+
-        '<text x="'+x+'" y="'+(y+22)+'" text-anchor="middle">'+esc(person.label.slice(0,12))+'</text></g>';
-    }).join('');
-    const outsiders=outside.slice(0,6).map((person,i)=>{
-      const x=345+(i%2)*67,y=53+Math.floor(i/2)*61;
-      return '<g class="truth-individual-person truth-individual-outside"><title>'+
-        esc(person.label+' não pertence a '+propertyTitle(name,meanings[name]))+
-        '</title><circle cx="'+x+'" cy="'+y+'" r="9" class="truth-individual-dot"/>'+
-        '<text x="'+x+'" y="'+(y+22)+'" text-anchor="middle">'+esc(person.label.slice(0,10))+'</text></g>';
-    }).join('');
-    const title=propertyTitle(name,meanings[name]);
-    const describe=(label,list)=>list.length?'<p><strong>'+label+':</strong> '+esc(list.map(p=>p.label).join(', '))+'</p>':'';
-    return '<article class="truth-individual-set"><h4>'+esc(title)+'</h4>'+
-      '<p class="truth-individual-formula"><code>'+esc(name)+'(x)</code> — '+esc(meanings[name]||'Propriedade sem significado cadastrado')+'</p>'+
-      '<svg class="truth-venn-svg truth-individual-svg" viewBox="0 0 470 260" role="img" aria-label="'+
-      esc('Conjunto '+title+'. Dentro: '+inside.map(p=>p.label).join(', ')+
-        '. Fora: '+outside.map(p=>p.label).join(', ')+'. Indefinidos: '+pending.map(p=>p.label).join(', '))+'">'+
-      '<circle cx="164" cy="126" r="102" class="truth-individual-set-circle"/>'+
-      '<text x="164" y="39" text-anchor="middle" class="truth-individual-set-label">'+esc(title)+'</text>'+
-      circles+outsiders+'</svg>'+
-      '<div class="truth-individual-members">'+describe('Dentro',inside)+describe('Fora',outside)+
-      describe('A definir',pending)+'</div></article>';
+  const {shown,nested}=selectIndividualSets(predicates,relations);
+  const geometry=individualGeometry(shown,nested);
+  const heading='<div class="truth-venn-heading"><h3>Diagrama de Venn–Euler</h3></div>';
+  if(!geometry)return '<section class="truth-venn-panel truth-individual-panel">'+heading+
+    '<p class="truth-venn-note">Adicione uma fórmula com predicados para visualizar seus conjuntos.</p></section>';
+  const names=shown.map(name=>propertyTitle(name,meanings[name]));
+  const regionPeople=new Map(),pending=[],inconsistent=[];
+  for(const person of people){
+    const values=shown.map(name=>person.values?.[name]||'');
+    if(values.some(value=>!['V','F'].includes(value))){
+      pending.push(String(person.label||person.id));continue;
+    }
+    const mask=values.reduce((bits,value)=>bits*2+(value==='V'?1:0),0);
+    if(nested&&mask===2){inconsistent.push(String(person.label||person.id));continue}
+    regionPeople.set(mask,[...(regionPeople.get(mask)||[]),person]);
+  }
+  const circles=geometry.circles.map(([cx,cy,r],i)=>
+    '<circle class="truth-individual-set-circle'+(nested&&i===0?' truth-individual-subset-circle':'')+
+    '" cx="'+cx+'" cy="'+cy+'" r="'+r+'"/>'+
+    '<text class="truth-individual-set-label" x="'+geometry.labels[i][0]+'" y="'+geometry.labels[i][1]+
+    '" text-anchor="middle">'+esc(names[i])+'</text>').join('');
+  const markers=[...regionPeople].map(([mask,persons])=>{
+    const point=geometry.points[mask];
+    if(!point)return '';
+    return persons.slice(0,2).map((person,i)=>individualMarker(person,point[0],point[1],i)).join('')+
+      (persons.length>2?'<text class="truth-individual-more" x="'+point[0]+'" y="'+(point[1]+37)+
+      '" text-anchor="middle">+'+(persons.length-2)+'</text>':'');
   }).join('');
-  return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de indivíduos">'+
-    heading+inclusionEuler(predicates,people,meanings,relations)+'<div class="truth-individual-set-grid">'+panels+'</div>'+
-    (conflicts.length?'<p class="truth-individual-conflicts" role="alert">Conflito entre valores informados e premissas: '+
-      esc(conflicts.join(' '))+'</p>':'')+
-    '<p class="truth-venn-status">Os painéis representam pertinência por propriedade, sem afirmar relações de inclusão entre conjuntos. '+
-    'Premissas atômicas e aplicações simples de regras universais fornecem valores quando cabível; '+
-    'a conclusão não é tomada como fato. Um valor desconhecido não significa falso.</p></section>';
+  const info=[];
+  if(pending.length)info.push('Posição ainda indeterminada: '+pending.join(', ')+'.');
+  if(inconsistent.length)info.push('Pertinência incompatível com a inclusão: '+inconsistent.join(', ')+'.');
+  if(shown.length<predicates.length)
+    info.push('Exibindo '+shown.length+' de '+predicates.length+' propriedades.');
+  if(conflicts.length)info.push('Conflito de premissas: '+conflicts.join(' '));
+  // Uma mesma área pode conter vários indivíduos. A distribuição visual nunca
+  // decide se uma propriedade é verdadeira ou falsa.
+  const description='Conjuntos '+names.join(', ')+'. '+
+    people.map(p=>String(p.label||p.id)+': '+shown.map((name,i)=>
+      names[i]+' '+(p.values?.[name]==='V'?'sim':p.values?.[name]==='F'?'não':'indefinido')).join(', ')).join('. ');
+  return '<section class="truth-venn-panel truth-individual-panel" aria-label="Diagrama de Venn–Euler de indivíduos">'+
+    heading+'<svg class="truth-venn-svg truth-individual-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+
+    esc(description)+'">'+circles+markers+'</svg>'+
+    (info.length?'<p class="truth-venn-status"'+(inconsistent.length||conflicts.length?' role="alert"':'')+'>'+
+      esc(info.join(' '))+'</p>':'')+'</section>';
 }
