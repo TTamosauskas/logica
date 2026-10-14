@@ -297,7 +297,7 @@ export const ERROR_PRACTICE={
         "Termina em 75."
       ],
       "correct": 0,
-      "why": "100×1,25×0,75=93,75."
+      "why": "100 × 1,25 × 0,75 = 93,75; aplicar o mesmo percentual em bases diferentes não desfaz a mudança anterior."
     },
     {
       "question": "Um gráfico de linha com eixo estreito tem escala indicada e compara flutuações pequenas.",
