@@ -1,9 +1,10 @@
 /** Interface isolada da Tabela Livre: sem interferir em exercícios ou avaliações. */
-import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableName,
+import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,MAX_EXTENDED_VARS,MAX_DIAGRAM_SETS,nextFreeVariableName,
   addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,
   removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
   parseFreeFormula,describeFreeFormula,freeTableKind,freeArgumentAnalysis,
   predicateTruthAnalysis,freeRowImpossible,freeIndividualModel,addFreeIndividual,removeFreeIndividual,
+  addDiagramSet,editDiagramSet,removeDiagramSet,
   verifyFreeInference,analyzeFreePossibilities} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
@@ -42,7 +43,7 @@ export function createFreeTable(root){
   const board=root.querySelector('#freeBoard'),feedback=root.querySelector('#freeFeedback');
   let lastFormulaInput=null;
   let truthHighlightController=null;
-  let vennSelectedKey='',vennFilters={},individualManagerOpen=false;
+  let vennSelectedKey='',vennFilters={},individualManagerOpen=false,diagramSetManagerOpen=false;
   const notice=(message,error=false)=>{feedback.textContent=message;feedback.dataset.result=error?'error':'ok'};
   function save(){
     if(recovery){notice('O rascunho original está protegido. Exporte os dados antes de reiniciar.',true);return}
@@ -69,7 +70,7 @@ export function createFreeTable(root){
   function renderVariables(){
     const next=nextFreeVariableName(state);
     return `<section class="free-card" aria-labelledby="freeVarTitle">
-      <div class="free-section-heading"><h2 id="freeVarTitle">1. Variáveis e significados</h2><span class="free-hint">${state.variables.length}/${MAX_VARS}</span></div>
+      <div class="free-section-heading"><h2 id="freeVarTitle">1. Variáveis e significados</h2><span class="free-hint">${state.variables.length}/${state.extendedTable?MAX_EXTENDED_VARS:MAX_VARS}</span></div>
       <div class="free-entries">${state.variables.map((v,i)=>`<div class="free-entry">
         <span class="free-variable-symbol" aria-label="Variável ${esc(v.name)}">${esc(v.name)}</span>
         <label>Tipo de ${esc(v.name)} <select data-var-kind="${i}" aria-label="Tipo lógico de ${esc(v.name)}">
@@ -81,7 +82,10 @@ export function createFreeTable(root){
         ${i===state.variables.length-1&&i>=2?`<button type="button" class="button small" data-action="remove-var" data-index="${i}" aria-label="Excluir variável ${esc(v.name)}">Excluir</button>`:''}</div>
       </div>`).join('')}</div>
       ${next?`<button type="button" class="button" data-action="add-var">+ Adicionar variável ${next}</button>`:
-        '<small class="free-hint">Máximo de seis variáveis (64 linhas).</small>'}
+        '<small class="free-hint">Limite de '+(state.extendedTable?'oito':'seis')+' variáveis.</small>'}
+      <label class="free-table-expand"><input type="checkbox" data-extended-table ${state.extendedTable?'checked':''}>
+        Ampliar tabela-verdade para até 8 variáveis (256 linhas)</label>
+      <p class="free-hint">As linhas dependem das variáveis da tabela, não de conjuntos ou indivíduos.</p>
     </section>`;
   }
   function renderFormulas(){
