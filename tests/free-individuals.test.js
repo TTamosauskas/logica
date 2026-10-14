@@ -24,9 +24,10 @@ test('Sócrates aparece dentro do conjunto Homens quando q(p) é afirmada',()=>{
   assert.equal(model.people[0].origins.q,'premissa');
   const html=renderIndividualSets(model);
   assert.match(html,/Homens/);
-  assert.match(html,/Sócrates pertence a Homens/);
+  assert.match(html,/Sócrates: Homens sim/);
   assert.match(html,/truth-individual-person/);
-  assert.doesNotMatch(html,/A definir:<\/strong> Sócrates/);
+  assert.equal((html.match(/<svg\b/g)||[]).length,1);
+  assert.doesNotMatch(html,/truth-individual-set-grid|truth-individual-editor|venn-mode/);
 });
 
 test('conclusão não é tomada como fato; universal como premissa deriva mortalidade',()=>{
@@ -42,8 +43,9 @@ test('conclusão não é tomada como fato; universal como premissa deriva mortal
   assert.equal(model.people[0].origins.r,'regra universal');
   const html=renderIndividualSets(model);
   assert.match(html,/Mortais/);
-  assert.match(html,/Inclusão entre conjuntos determinada pela premissa universal/);
-  assert.match(html,/Homens ⊆ Mortais/);
+  assert.match(html,/truth-individual-subset-circle/);
+  assert.match(html,/Sócrates: Homens sim, Mortais sim/);
+  assert.equal((html.match(/<svg\b/g)||[]).length,1);
   assert.match(html,/Sócrates/);
 });
 
@@ -56,8 +58,8 @@ test('negação de universal não atribui falso ao indivíduo nomeado',()=>{
   assert.equal(model.people[0].values.q,'V');
   assert.equal(model.people[0].values.r,'');
   const html=renderIndividualSets(model);
-  assert.match(html,/A definir/);
-  assert.doesNotMatch(html,/Inclusão entre conjuntos determinada pela premissa universal/);
+  assert.match(html,/Sobre a borda: pertinência ainda indefinida/);
+  assert.doesNotMatch(html,/truth-individual-subset-circle/);
 });
 
 test('valores manuais persistem para indivíduos usados em fórmulas',()=>{
@@ -79,7 +81,7 @@ test('detecta quando um valor manual contradiz premissas',()=>{
   const model=freeIndividualModel(state);
   assert.equal(model.people[0].values.r,'');
   assert.ok(model.conflicts.length>0);
-  assert.match(renderIndividualSets(model),/Conflito entre valores informados e premissas/);
+  assert.match(renderIndividualSets(model),/Conflito de premissas/);
 });
 
 test('permite inserir indivíduos extras com pertinência inicialmente indefinida',()=>{
@@ -88,9 +90,29 @@ test('permite inserir indivíduos extras com pertinência inicialmente indefinid
   addFreeFormula(state,'q(p)');
   const model=freeIndividualModel(state);
   assert.equal(model.people.find(p=>p.id==='s').values.q,'');
-  assert.match(renderIndividualSets(model),/A definir/);
+  assert.match(renderIndividualSets(model),/Posição ainda indeterminada/);
 });
 
+test('em um único gráfico, apresenta Sócrates na borda quando outra propriedade é desconhecida',()=>{
+ const html=renderIndividualSets({
+   predicates:['q','r'],meanings:{q:'x é homem',r:'x é mortal'},
+   people:[{id:'p',label:'Sócrates',values:{q:'V',r:''}}]
+ });
+ assert.equal((html.match(/<svg\b/g)||[]).length,1);
+ assert.match(html,/Homens/);
+ assert.match(html,/Mortais/);
+ assert.match(html,/cx="189" cy="163" r="7"/);
+ assert.match(html,/Sobre a borda: pertinência ainda indefinida/);
+ assert.doesNotMatch(html,/truth-individual-set-grid/);
+});
+test('três propriedades permanecem num único Venn, sem duplicar painéis',()=>{
+ const html=renderIndividualSets({
+   predicates:['q','r','s'],meanings:{q:'x é homem',r:'x é mortal',s:'x é humano'},
+   people:[{id:'p',label:'Sócrates',values:{q:'V',r:'V',s:'V'}}]
+ });
+ assert.equal((html.match(/<svg\b/g)||[]).length,1);
+ assert.equal((html.match(/class="truth-individual-person"/g)||[]).length,1);
+});
 test('escapa rótulos fornecidos pelo usuário no SVG e na descrição',()=>{
   const html=renderIndividualSets({predicates:['q'],people:[{
     id:'p',label:'<script>alert(1)</script>',values:{q:'V'},origins:{q:'informado'}
