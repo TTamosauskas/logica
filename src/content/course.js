@@ -1,5 +1,6 @@
 /** Unidades do percurso de raciocínio rigoroso e roteiro pedagógico de cada aula. */
 import { COURSE_UNIT13_LESSONS } from './course-unit13.js';
+import { ERROR_LESSONS } from './errors-course.js';
 
 export const COURSE_UNITS=[
     {title:'I — Linguagem, proposições e argumentos',note:'Conceitos básicos, conectivos, tradução e leitura crítica.',ids:['fundamentos','operadores','traducao','falacias','pressupostos']},
@@ -7,13 +8,15 @@ export const COURSE_UNITS=[
     {title:'III — Inferência e demonstração',note:'Silogismos, provas em linhas e resolução de problemas.',ids:['silogismos','provas','deducao']},
     {title:'IV — Lógica de primeira ordem',note:'Quantificadores, diagramas, relações e interpretação de modelos.',ids:['categoricos','categoricos2','predicados2']},
     {title:'V — Evidências e raciocínio sob incerteza',note:'Indução, hipóteses explicativas, taxas de base, probabilidade condicional e causalidade.',ids:['inducao','abducao','probabilidade','causalidade']},
-    {title:'VI — Fundamentos teóricos',note:'Sintaxe, semântica, consequência e limites dos sistemas.',ids:['metateoria']},
-    {title:'VII — Outras lógicas',note:'Necessidade, possibilidade e raciocínio temporal.',ids:['modais']}
+    {title:'VI — Erros Lógicos Comuns',note:'Falácias informais, vieses cognitivos, armadilhas estatísticas e investigação crítica de argumentos.',ids:['falacias_relevancia','falacias_pressupostos','vieses_julgamento','vieses_decisao','ilusoes_graficos','ilusoes_inferencia','oficina_erros']},
+    {title:'VII — Fundamentos teóricos',note:'Sintaxe, semântica, consequência e limites dos sistemas.',ids:['metateoria']},
+    {title:'VIII — Outras lógicas',note:'Necessidade, possibilidade e raciocínio temporal.',ids:['modais']}
   ];
 
 export const cq=(question,options,correct,why)=>({question,options,correct,why});
 
 export const LESSONS={
+    ...ERROR_LESSONS,
     ...COURSE_UNIT13_LESSONS,
     pressupostos:{lead:'Como distinguir o que foi observado de uma conclusão que depende de pressupostos não declarados?',
       theory:'Um argumento pode omitir uma ideia necessária para chegar à conclusão. Identifique as premissas explícitas, procure o pressuposto oculto e imagine outras explicações compatíveis com os mesmos fatos. Uma sequência temporal não demonstra sozinha uma relação causal.',
