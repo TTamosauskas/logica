@@ -38,7 +38,7 @@ test('a Unidade III distingue explosão formal, reductio clássica e fatos reais
     assert.ok(prose.includes(word),'Explicação ausente: '+word);
   }
   assert.match(reading.check.question,/redução ao absurdo/);
-  assert.match(reading.misconception,/verdadeiro no mundo/);
+  assert.match(reading.misconception,/verdadeira no mundo/);
   assert.match(LESSONS.provas.theory,/explosão/);
   assert.match(LESSONS.provas.theory,/hipótese temporária/);
 });
