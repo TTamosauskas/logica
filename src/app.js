@@ -1894,11 +1894,13 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     finalExamSession=finalExamSession||savedExam();
     if(!finalExamSession){
       let questions=[];const ids=new Set();
-      // Todas as novas competências aparecem; as outras seis unidades têm uma questão cada.
+      // Seis competências centrais continuam representadas. As seis unidades ainda
+      // não cobertas recebem uma questão cada, incluindo a nova Unidade VI.
       for(const id of ['pressupostos','categoricos2','inducao','abducao','probabilidade','causalidade']){
         ids.add(id);questions.push({...pick(LESSONS[id].quiz),id});
       }
       COURSE_UNITS.forEach(unit=>{
+        if(unit.ids.some(id=>ids.has(id)))return;
         const candidates=unit.ids.filter(id=>!ids.has(id));
         if(!candidates.length)return;
         const id=pick(candidates);
@@ -1913,7 +1915,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   function renderFinalExam(){
     updateCourseContext('exam');
     const ses=finalExamSession;
-    let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Sete áreas de estudo · 12 desafios</h2><p>Doze questões das sete unidades: as quatro competências de evidências e as duas novas aulas de argumentação estão representadas, junto aos fundamentos formais. <strong>Critério de aprovação: 10 de 12 acertos.</strong> A aprovação da prova integrada não substitui as revisões espaçadas dos temas.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section>`;
+    let html=`<section class="course-lesson-head"><span class="eyebrow">AVALIAÇÃO INTEGRADA</span><h2>Oito áreas de estudo · 12 desafios</h2><p>Doze questões das oito unidades: seis competências essenciais de evidências e argumentação são preservadas, e as demais unidades recebem uma questão cada, incluindo Erros Lógicos Comuns. <strong>Critério de aprovação: 10 de 12 acertos.</strong> A aprovação da prova integrada não substitui as revisões espaçadas dos temas.</p><button type="button" class="button small" data-caction="map" style="margin-top:12px">← Mapa das unidades</button></section>`;
     html+=`<section class="course-lesson-panel"><div class="course-assessment">${ses.questions.map((q,i)=>`<div class="course-question"><small>${escapeHTML(MODULES.find(m=>m.id===q.id).name)}</small><strong>${i+1}. ${escapeHTML(q.question)}</strong>${q.options.map((a,j)=>`<label class="course-option"><input type="radio" name="finalq-${i}" value="${j}" ${(ses.result?.answers?.[i]??ses.answers?.[i])===String(j)?'checked':''} ${ses.result?'disabled':''}><span>${escapeHTML(a)}</span></label>`).join('')}${ses.result?`<div class="course-question-explanation">${ses.result.answers[i]===String(q.correct)?'✓ Correto.':'Revisar.'} ${escapeHTML(q.why)}</div>`:''}</div>`).join('')}</div>`;
     if(ses.result){
       const weak=examWeakAreas(ses.questions,ses.result.answers),approved=ses.result.score>=10;
