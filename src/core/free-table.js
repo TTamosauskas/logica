@@ -16,6 +16,9 @@ const RESERVED=new Set(['e','ou','xor','nao','não','se','sse']);
 const validName=name=>/^[a-z][a-z0-9_]*$/.test(name)&&!RESERVED.has(name);
 const normalName=name=>String(name||'').trim().toLowerCase();
 const clean=s=>String(s||'').trim();
+// Constantes lógicas não determinam se o restante da tabela é proposicional
+// ou de predicados. São admitidas nos dois fragmentos.
+const isNeutralTruthSource=source=>/[⊤⊥]/.test(source)&&!/[a-zà-ÿ]/i.test(source);
 
 export function blankFreeTable(){
   return {version:4,variables:[{name:'p',meaning:'',kind:'predicate'},{name:'q',meaning:'',kind:'predicate'}],
@@ -25,7 +28,7 @@ export const nextFreeVariableName=state=>VARIABLE_SEQUENCE[state.variables.lengt
 export function parseFreeFormula(state,source){
   const text=clean(source);
   if(!text||text.length>240)throw Error('A fórmula precisa ter entre 1 e 240 caracteres.');
-  if(isPredicateSource(text))return parsePredicateFormula(text,
+  if(isPredicateSource(text)||(isNeutralTruthSource(text)&&freeTableKind(state)==='predicates'))return parsePredicateFormula(text,
     state.variables.filter(v=>v.kind!=='individual').map(v=>v.name),
     [...state.domain.map(d=>d.id),...state.variables.filter(v=>v.kind==='individual').map(v=>v.name)],
     {allowImplicitIndividuals:true});
@@ -156,6 +159,7 @@ export function removeFreeIndividual(state,id){
 function assertSameKind(state,source,id=null){
   const previous=state.formulas.filter(f=>f.id!==id);
   if(!previous.length)return;
+  if(isNeutralTruthSource(source)||previous.every(f=>isNeutralTruthSource(f.source)))return;
   const oldKind=freeTableKind({formulas:previous});
   if(oldKind!==(isPredicateSource(source)?'predicates':'propositional'))
     throw Error('Para alternar entre fórmulas proposicionais e predicados, remova primeiro as fórmulas anteriores.');
@@ -165,7 +169,7 @@ export function addFreeFormula(state,source){
   assertSameKind(state,source);
   if(isPredicateSource(source)&&rootHasFreeX(ast))
     throw Error('Feche x com ∀x(...) ou ∃x(...) para que cada fórmula tenha V/F na tabela.');
-  if(isPredicateSource(source)&&state.formulas.length>=MAX_PREDICATE_TABLE_FORMULAS)
+  if((isPredicateSource(source)||isNeutralTruthSource(source)&&freeTableKind(state)==='predicates')&&state.formulas.length>=MAX_PREDICATE_TABLE_FORMULAS)
     throw Error('A tabela de predicados admite até seis fórmulas (64 linhas).');
   if(state.formulas.length>=MAX_FORMULAS)throw Error('O limite é de 16 fórmulas.');
   if(state.formulas.some(f=>formulaSignature(parseFreeFormula(state,f.source))===formulaSignature(ast)))throw Error('Essa fórmula já está cadastrada.');
@@ -193,7 +197,7 @@ export const formulaSignature=ast=>ast.type==='pred'||hasQuantifier(ast)||isPred
 /** As fórmulas cadastradas são premissas; a conclusão é verificada em todos os modelos. */
 export function verifyFreeInference(state,source){
   if(freeTableKind(state)!=='predicates')throw Error('Cadastre premissas com predicados, como q(p) e ∀x(q(x) → r(x)).');
-  if(!isPredicateSource(source))throw Error('A conclusão deve usar predicados, como r(p) ou ∀x(q(x) → r(x)).');
+  if(!isPredicateSource(source)&&!isNeutralTruthSource(source))throw Error('A conclusão deve usar predicados, como r(p) ou ∀x(q(x) → r(x)), ou constantes ⊤/⊥.');
   const conclusion=parseFreeFormula(state,source);
   const premises=state.formulas.map(f=>parseFreeFormula(state,f.source));
   const report=checkSymbolicInference(premises,conclusion);
@@ -299,6 +303,8 @@ export function freeFormulaEvidence(state,node){
 }
 function semantic(node,names){
   if(node.type==='var')return names[node.name]||node.name;
+  if(node.type==='truth')return 'verdade lógica (sempre verdadeiro)';
+  if(node.type==='falsity')return 'falsidade lógica (sempre falso)';
   if(node.type==='not')return node.a.type==='var'?'não é verdade que '+semantic(node.a,names):
     'é falso que '+(node.a.type==='implies'?'': '(')+semantic(node.a,names)+(node.a.type==='implies'?'':')');
   const left=semantic(node.a,names),right=semantic(node.b,names);

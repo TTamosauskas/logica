@@ -90,7 +90,7 @@ export function createFreeTable(root){
   function renderFormulas(){
     return `<section class="free-card" aria-labelledby="freeFormulaTitle">
       <div class="free-section-heading"><h2 id="freeFormulaTitle">2. Fórmulas e tradução</h2><span class="free-hint">${state.formulas.length} cadastradas</span></div>
-      <p>Cadastre as fórmulas da tabela. Basta digitar q(p), sem declarar p antes: ele será reconhecido como indivíduo automaticamente. Para quantificadores, use x, como em ∀x(q(x) → r(x)). Com duas ou mais fórmulas, as anteriores são premissas e a última é a conclusão. Exemplo: q(p), ∀x(q(x) → r(x)) e r(p).</p>
+      <p>Cadastre as fórmulas da tabela. Basta digitar q(p), sem declarar p antes: ele será reconhecido como indivíduo automaticamente. Para quantificadores, use x, como em ∀x(q(x) → r(x)) ou ∃!x(q(x)) (exatamente um). ⊤ representa uma fórmula sempre verdadeira e ⊥ uma fórmula sempre falsa. Com duas ou mais fórmulas, as anteriores são premissas e a última é a conclusão. Exemplo: q(p), ∀x(q(x) → r(x)) e r(p).</p>
       <div class="free-entries">${!state.formulas.length?'<p class="free-empty-formulas">Nenhuma fórmula cadastrada. Use os botões abaixo para criar a primeira.</p>':''}${state.formulas.map(f=>{
         const parsed=parseFreeFormula(state,f.source),d=describeFreeFormula(parsed,state);
         return `<div class="free-formula-card">
@@ -105,9 +105,9 @@ export function createFreeTable(root){
       <div class="free-formula-new"><label>Adicionar fórmula <input id="freeNewFormula" type="text" maxlength="240" placeholder="Ex.: ¬(p → q)" spellcheck="false"></label>
         <button type="button" class="button primary" data-action="add-formula">+ Adicionar fórmula</button></div>
       <div class="free-keypad" role="group" aria-label="Inserir variáveis e símbolos lógicos">
-        ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','∀','∃','(',')'].map(sym=>`<button class="button small ${state.variables.some(v=>v.name===sym)?'free-key-variable':''}" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
+        ${[...state.variables.map(v=>v.name),'¬','∧','∨','→','↔','⊕','∀','∃','∃!','⊤','⊥','(',')'].map(sym=>`<button class="button small ${state.variables.some(v=>v.name===sym)?'free-key-variable':''}" type="button" data-symbol="${esc(sym)}" aria-label="Inserir ${esc(sym)}">${esc(sym)}</button>`).join('')}
       </div>
-      <small class="free-hint">Exemplos: q(p) e q(s) (indivíduos reconhecidos automaticamente); ∀x(q(x) → r(x)) e ∃x(q(x)) (variável x quantificada). Nenhum equivale a ¬∃.</small>
+      <small class="free-hint">Exemplos: q(p); ∀x(q(x) → r(x)); ∃x(q(x)); ∃!x(q(x)) (um único indivíduo); ⊤ e ⊥. A unicidade conta indivíduos, inclusive quando compartilham propriedades. ∴ (portanto) e ∵ (porque) são marcadores da argumentação, não conectivos: não são digitados dentro de fórmulas. Na tabela, a última fórmula é a conclusão. Nenhum equivale a ¬∃.</small>
     </section>`;
   }
   function truthButton(r,col){

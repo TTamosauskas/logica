@@ -28,7 +28,7 @@ export const UNIT4_TO_6_READINGS={
         'Se Ana e A. Silva são dois nomes da mesma pessoa, a identidade Ana = A. Silva permite substituir um nome pelo outro em uma afirmação extensional, como “entregou o documento”. Mas duas pessoas receberem certificados ou possuírem a mesma propriedade não prova que sejam idênticas. A direção da inferência e a informação sobre identidade importam.'
       ]},
       {heading:'Existir não significa existir exatamente um',paragraphs:[
-        'Considere “Algum estudante venceu” e “Exatamente um estudante venceu”. A primeira frase é satisfeita se houver pelo menos um vencedor; a segunda exige que haja um vencedor e que nenhuma outra pessoa diferente também seja vencedora. Formalmente, ∃x(V(x) ∧ ∀y(V(y) → y=x)) expressa essa existência única.',
+        'Considere “Algum estudante venceu” e “Exatamente um estudante venceu”. ∃x V(x) significa pelo menos um, enquanto ∃!x V(x) significa exatamente um. A notação ∃! é uma abreviação consagrada para existência única: ∃!x V(x) equivale a ∃x(V(x) ∧ ∀y(V(y) → y=x)) na lógica de primeira ordem com igualdade. Ela exige uma testemunha e impede que exista outra distinta. Na Tabela Livre, ∃!x(p(x)) conta exatamente um indivíduo do domínio com a propriedade p, sem exigir digitar igualdade.',
         'A palavra “o” pode esconder essas condições. Em uma análise de descrições definidas associada a Russell, “O vencedor recebeu o prêmio” exige que exista um vencedor, que ele seja único e que tenha recebido o prêmio. Se não houver nenhum vencedor, ou houver dois, a análise conjuntiva clássica torna a frase falsa, em vez de tratar o nome do suposto vencedor como se sempre apontasse para alguém.'
       ]},
       {heading:'Teste com modelos que separam as exigências',paragraphs:[
@@ -37,7 +37,7 @@ export const UNIT4_TO_6_READINGS={
       ]}
     ],
     misconception:'Não confunda verificar uma inferência com calcular V/F em um domínio listado. A validade de Sócrates é homem; todos os homens são mortais; logo Sócrates é mortal dispensa uma lista de indivíduos. Não conclua identidade a partir de uma característica comum nem existência única de um mero “algum”.',
-    summary:'Predicados representam relações e propriedades. A ordem dos quantificadores altera a conclusão. Identidade autoriza substituição em contextos extensionais; descrições definidas podem exigir existência e unicidade antes de predicar algo.',
+    summary:'Predicados representam propriedades e relações; a ordem dos quantificadores altera a conclusão. ∃x P(x) exige pelo menos uma testemunha e ∃!x P(x), exatamente uma. Em lógica com igualdade, a unicidade pode ser desenvolvida como ∃x(P(x) ∧ ∀y(P(y) → y=x)). Descrições definidas exigem atenção à existência, unicidade e predicação.',
     check:{question:'Duas pessoas venceram uma disputa. Qual afirmação é justificável?',options:['Alguma pessoa venceu, mas não houve exatamente um vencedor.','Houve exatamente um vencedor porque a frase usa “o vencedor”.','Nenhuma pessoa venceu, já que houve empate.'],correct:0,why:'Duas pessoas satisfazem o predicado venceu: a existência é verdadeira, mas a unicidade é falsa. A gramática singular não cria unicidade.'}
   },
   metateoria:{
