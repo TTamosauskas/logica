@@ -31,7 +31,7 @@
 .truth-venn-name,.truth-venn-value{fill:var(--text);font:750 17px/1.4 ui-sans-serif,system-ui,sans-serif}
 .truth-venn-name{font-size:16px}
 .truth-venn-value{font-size:16px}
-.truth-venn-legend{margin-top:14px;padding:14px;border:1px solid var(--border);background:var(--panel);border-radius:12px}
+.truth-venn-legend{margin-top:14px;padding:0}
 .truth-venn-legend h4{font-size:13px;line-height:1.4;margin:0 0 10px;color:var(--text)}
 .truth-venn-variables{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:9px 16px;margin:0}
 .truth-venn-variable{display:flex;align-items:baseline;gap:10px;min-width:0;border-bottom:1px solid var(--border);padding:5px 0}
