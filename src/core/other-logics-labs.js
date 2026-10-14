@@ -124,7 +124,7 @@ function fdeLab(level,random){
 }
 function intuitionistLab(){
  const vals=[{p:false},{p:true},{p:false}],ext=[[0,1,2],[1],[2]];
- const p=A('p'),np=N(p),lem=OR(p,np),notlem=N(lem);
+ const p=A('p'),np=N(p),lem=OR(p,np),doubleNotLem=N(N(lem));
  const at=node=>intuitionisticForce(vals,ext,node,0);
  return {
   title:'Procure um modelo construtivo do terceiro excluído',
@@ -137,7 +137,7 @@ function intuitionistLab(){
     sentence('p em w0',at(p),'p ainda não está forçada em w0; a prova aparece na extensão w1.'),
     sentence('¬p em w0',at(np),'¬p falha pois w1, uma extensão possível, força p.'),
     sentence('p ∨ ¬p em w0',at(lem),'Nenhum lado é forçado em w0: este é um contraexemplo ao terceiro excluído universal.'),
-    sentence('¬(p ∨ ¬p) em w0',at(notlem),'Esta negação também não é forçada: nas extensões terminais o terceiro excluído é forçado.')
+    sentence('¬¬(p ∨ ¬p) em w0',at(doubleNotLem),'A dupla negação do terceiro excluído é forçada: nenhuma extensão pode forçar sua negação, embora p∨¬p não seja forçada em w0.')
   ]
  };
 }
