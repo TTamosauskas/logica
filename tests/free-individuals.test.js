@@ -25,6 +25,12 @@ test('Sócrates aparece dentro do conjunto Homens quando q(p) é afirmada',()=>{
   assert.match(html,/Homens/);
   assert.match(html,/Sócrates: Homens sim/);
   assert.match(html,/truth-individual-person/);
+  assert.match(html,/<h4>Legenda<\/h4>/);
+  assert.match(html,/<code>q<\/code><\/dt><dd>x é homem<\/dd>/);
+  assert.match(html,/<code>p<\/code><\/dt><dd>Sócrates<\/dd>/);
+  const svg=html.match(/<svg\b[\s\S]*?<\/svg>/)?.[0]||'';
+  assert.match(svg,/>p<\/text>/);
+  assert.doesNotMatch(svg,/<text[^>]*>Sócrates<\/text>/);
   assert.equal((html.match(/<svg\b/g)||[]).length,1);
   assert.doesNotMatch(html,/truth-individual-set-grid|truth-individual-editor|venn-mode/);
 });
@@ -57,7 +63,8 @@ test('negação de universal não atribui falso ao indivíduo nomeado',()=>{
   assert.equal(model.people[0].values.q,'V');
   assert.equal(model.people[0].values.r,'');
   const html=renderIndividualSets(model);
-  assert.match(html,/Sobre a borda: pertinência ainda indefinida/);
+  assert.match(html,/Pontos sobre a borda têm pertinência parcialmente conhecida/);
+  assert.match(html,/posição parcial \(sobre a borda\)/);
   assert.doesNotMatch(html,/truth-individual-subset-circle/);
 });
 
@@ -89,7 +96,9 @@ test('permite inserir indivíduos extras com pertinência inicialmente indefinid
   addFreeFormula(state,'q(p)');
   const model=freeIndividualModel(state);
   assert.equal(model.people.find(p=>p.id==='s').values.q,'');
-  assert.match(renderIndividualSets(model),/Posição ainda indeterminada/);
+  const html=renderIndividualSets(model);
+  assert.match(html,/posição indefinida/);
+  assert.match(html,/<code>s<\/code><\/dt><dd>Uma pedra/);
 });
 
 test('em um único gráfico, apresenta Sócrates na borda quando outra propriedade é desconhecida',()=>{
@@ -100,8 +109,8 @@ test('em um único gráfico, apresenta Sócrates na borda quando outra proprieda
  assert.equal((html.match(/<svg\b/g)||[]).length,1);
  assert.match(html,/Homens/);
  assert.match(html,/Mortais/);
- assert.match(html,/cx="189" cy="163" r="7"/);
- assert.match(html,/Sobre a borda: pertinência ainda indefinida/);
+ assert.match(html,/cx="189" cy="163" r="11"/);
+ assert.match(html,/Pontos sobre a borda têm pertinência parcialmente conhecida/);
  assert.doesNotMatch(html,/truth-individual-set-grid/);
 });
 test('três propriedades permanecem num único Venn, sem duplicar painéis',()=>{
@@ -111,6 +120,25 @@ test('três propriedades permanecem num único Venn, sem duplicar painéis',()=>
  });
  assert.equal((html.match(/<svg\b/g)||[]).length,1);
  assert.equal((html.match(/class="truth-individual-person"/g)||[]).length,1);
+});
+test('legenda completa traduz q e r e inclui o indivíduo s sem posição determinada',()=>{
+ const html=renderIndividualSets({
+   predicates:['q','r'],meanings:{q:'Homem',r:'Mortal'},
+   people:[{id:'p',label:'Sócrates',values:{q:'V',r:'V'}},
+     {id:'s',label:'mulher',values:{q:'',r:''}}],
+   relations:[{subset:'q',superset:'r'}]
+ });
+ const svg=html.match(/<svg\b[\s\S]*?<\/svg>/)?.[0]||'';
+ assert.equal((html.match(/<svg\b/g)||[]).length,1);
+ assert.match(html,/Predicados · conjuntos/);
+ assert.match(html,/Indivíduos · pontos/);
+ assert.match(html,/<code>q<\/code><\/dt><dd>Homem<\/dd>/);
+ assert.match(html,/<code>r<\/code><\/dt><dd>Mortal<\/dd>/);
+ assert.match(html,/<code>p<\/code><\/dt><dd>Sócrates<\/dd>/);
+ assert.match(html,/<code>s<\/code><\/dt><dd>mulher.*posição indefinida/);
+ assert.match(svg,/>p<\/text>/);
+ assert.doesNotMatch(svg,/<text[^>]*>Sócrates<\/text>|<text[^>]*>mulher<\/text>/);
+ assert.doesNotMatch(svg,/>s<\/text>/);
 });
 test('escapa rótulos fornecidos pelo usuário no SVG e na descrição',()=>{
   const html=renderIndividualSets({predicates:['q'],people:[{
