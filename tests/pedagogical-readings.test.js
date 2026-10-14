@@ -8,18 +8,19 @@ import {UNIT4_TO_6_READINGS} from '../src/content/reading-units4to6.js';
 import {UNIT12_READINGS} from '../src/content/reading-unit12.js';
 import {UNIT13_READINGS} from '../src/content/reading-unit13.js';
 import {ERROR_READINGS} from '../src/content/errors-course.js';
+import {OTHER_LOGIC_READINGS} from '../src/content/other-logics-course.js';
 
-const units=[UNIT1_READINGS,UNIT2_READINGS,UNIT3_READINGS,UNIT4_TO_6_READINGS,UNIT12_READINGS,UNIT13_READINGS,ERROR_READINGS];
-const readings=Object.assign({},...units);
+const units=[UNIT1_READINGS,UNIT2_READINGS,UNIT3_READINGS,UNIT4_TO_6_READINGS,UNIT12_READINGS,UNIT13_READINGS,ERROR_READINGS,Object.fromEntries(Object.entries(OTHER_LOGIC_READINGS).filter(([id])=>id!=='modais'))];
+const readings=Object.assign({},...units,OTHER_LOGIC_READINGS);
 const expected=COURSE_UNITS.flatMap(unit=>unit.ids);
 const ids=units.flatMap(unit=>Object.keys(unit));
 
-test('todas as 30 aulas recebem leitura progressiva, sem duplicação ou omissão',()=>{
+test('todas as 36 aulas recebem leitura progressiva, sem duplicação ou omissão',()=>{
   assert.equal(COURSE_UNITS.length,8);
-  assert.equal(expected.length,30);
-  assert.equal(Object.keys(LESSONS).length,30);
-  assert.equal(ids.length,30);
-  assert.equal(new Set(ids).size,30);
+  assert.equal(expected.length,36);
+  assert.equal(Object.keys(LESSONS).length,36);
+  assert.equal(ids.length,36);
+  assert.equal(new Set(ids).size,36);
   assert.deepEqual(new Set(ids),new Set(expected));
   assert.deepEqual(Object.keys(UNIT1_READINGS),COURSE_UNITS[0].ids.filter(id=>id!=='pressupostos'));
   assert.deepEqual(Object.keys(UNIT12_READINGS),['pressupostos','categoricos2']);
@@ -28,6 +29,7 @@ test('todas as 30 aulas recebem leitura progressiva, sem duplicação ou omissã
   assert.deepEqual(Object.keys(UNIT4_TO_6_READINGS),COURSE_UNITS.slice(3).flatMap(unit=>unit.ids).filter(id=>id!=='categoricos2'&&!Object.keys(UNIT13_READINGS).includes(id)&&!Object.keys(ERROR_READINGS).includes(id)));
   assert.deepEqual(Object.keys(UNIT13_READINGS),COURSE_UNITS[4].ids);
   assert.deepEqual(Object.keys(ERROR_READINGS),COURSE_UNITS[5].ids);
+  assert.deepEqual(Object.keys(OTHER_LOGIC_READINGS),COURSE_UNITS[7].ids);
 });
 
 test('explicações têm objetivos, exemplos desenvolvidos, contraste e síntese',()=>{
