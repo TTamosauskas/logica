@@ -2,7 +2,7 @@
 import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableName,
   addFreeVariable,editFreeVariable,removeFreeVariable,addFreeFormula,editFreeFormula,
   removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
-  parseFreeFormula,describeFreeFormula,freeTableKind,MAX_INDIVIDUALS,
+  parseFreeFormula,describeFreeFormula,freeTableKind,freeArgumentAnalysis,MAX_INDIVIDUALS,
   predicateTruthAnalysis,freeRowImpossible,
   addFreeIndividual,editFreeIndividual,removeFreeIndividual,verifyFreeInference,
   analyzeFreePossibilities} from './core/free-table.js';
@@ -41,8 +41,10 @@ export function createFreeTable(root){
   }
   const has=col=>state.hidden.includes(col.key);
   const header=(col,index)=>{
-    const hidden=has(col),label=esc(col.label),name=hidden?'Mostrar':'Ocultar';
-    return `<th scope="col" data-rel-col="${index}" tabindex="0" class="free-column-head ${hidden?'truth-col-collapsed':''} ${col.kind==='var'?'free-var-head':'derived'}">
+    const hidden=has(col),conclusion=state.formulas.length>=2&&
+      (col.key==='v:'+state.formulas.at(-1).id||col.key==='f:'+state.formulas.at(-1).id);
+    const label=esc((conclusion?'∴ ':'')+col.label),name=hidden?'Mostrar':'Ocultar';
+    return `<th scope="col" data-rel-col="${index}" tabindex="0" class="free-column-head ${hidden?'truth-col-collapsed':''} ${col.kind==='var'?'free-var-head':'derived'} ${conclusion?'free-conclusion-head':''}">
       <span class="free-column-label">${label}</span>
       <span class="truth-col-short" title="${label}">${label}</span>
       <button type="button" class="truth-col-toggle" data-action="toggle-col" data-key="${esc(col.key)}" aria-pressed="${!hidden}" aria-label="${name} coluna ${label}" title="${name} coluna ${label}">
@@ -90,7 +92,7 @@ export function createFreeTable(root){
   function renderFormulas(){
     return `<section class="free-card" aria-labelledby="freeFormulaTitle">
       <div class="free-section-heading"><h2 id="freeFormulaTitle">2. Fórmulas e tradução</h2><span class="free-hint">${state.formulas.length} cadastradas</span></div>
-      <p>Cadastre as fórmulas da tabela. Basta digitar q(p), sem declarar p antes: ele será reconhecido como indivíduo automaticamente. Para quantificadores, use x, como em ∀x(q(x) → r(x)) ou ∃!x(q(x)) (exatamente um). ⊤ representa uma fórmula sempre verdadeira e ⊥ uma fórmula sempre falsa. Com duas ou mais fórmulas, as anteriores são premissas e a última é a conclusão. Exemplo: q(p), ∀x(q(x) → r(x)) e r(p).</p>
+      <p>Cadastre as fórmulas da tabela. Basta digitar q(p), sem declarar p antes: ele será reconhecido como indivíduo automaticamente. Para quantificadores, use x, como em ∀x(q(x) → r(x)) ou ∃!x(q(x)) (exatamente um). ⊤ representa uma fórmula sempre verdadeira e ⊥ uma fórmula sempre falsa. Com duas ou mais fórmulas, as anteriores são premissas e a última é a conclusão, marcada por ∴ (portanto). Após conferir as respostas, ∵ (porque) apresentará a justificativa da inferência. Exemplo: q(p), ∀x(q(x) → r(x)) e r(p).</p>
       <div class="free-entries">${!state.formulas.length?'<p class="free-empty-formulas">Nenhuma fórmula cadastrada. Use os botões abaixo para criar a primeira.</p>':''}${state.formulas.map(f=>{
         const parsed=parseFreeFormula(state,f.source),d=describeFreeFormula(parsed,state);
         return `<div class="free-formula-card">
@@ -133,6 +135,7 @@ export function createFreeTable(root){
     if(state.graded&&columns.some(col=>col.kind!=='var')){
       try{grade=gradeFreeTable(state)}catch{state.graded=false}
     }
+    const argument=grade?freeArgumentAnalysis(state):null;
     const variables=pred?report.labels:state.variables.map(item=>item.name);
     const meanings=pred?Object.fromEntries(report.labels.map((name,i)=>[name,report.expressions[i]])):
       Object.fromEntries(state.variables.map(item=>[item.name,item.meaning||'']));
@@ -165,7 +168,7 @@ export function createFreeTable(root){
       <p class="free-table-tip">${pred?
         'As letras A–F representam fórmulas completas, inclusive com quantificadores. Quando há duas ou mais, preencha a implicação das premissas (as anteriores) para a conclusão (última fórmula). Linhas impossíveis ficam desbotadas e são justificadas no rodapé.':
         'Todas as combinações V/F são geradas automaticamente. Preencha as subexpressões e fórmulas.'}
-        Use o olho do cabeçalho para recolher colunas.</p>
+        Com pelo menos duas fórmulas, ∴ identifica a conclusão (última fórmula), e ∵ explica a inferência após a correção. Use o olho do cabeçalho para recolher colunas.</p>
       ${pred&&report.labels.length?'<p class="free-table-tip">Legenda: '+
         report.labels.map((name,i)=>'<strong>'+name+'</strong> = <code>'+esc(report.expressions[i])+'</code>').join(' · ')+'</p>':''}
       <div class="table-scroll free-table-scroll" role="region" tabindex="0" aria-label="Tabela Livre de ${pred?'predicados e quantificadores':'proposições'}">
@@ -183,6 +186,11 @@ export function createFreeTable(root){
       ${columns.some(col=>col.kind!=='var')?'<div class="free-table-actions"><button type="button" class="button primary" data-action="grade">Conferir respostas</button></div>':
         '<p class="free-table-tip">Adicione uma fórmula para preencher as colunas derivadas.</p>'}
       ${grade?`<p class="free-grade" role="status"><strong>${grade.correct} de ${grade.total} respostas corretas.</strong> ${grade.missing} ${grade.missing===1?'resposta pendente':'respostas pendentes'}. A correção ignora linhas impossíveis e inclui colunas recolhidas.</p>`:''}
+      ${argument?`<div class="free-argument-explanation" role="note" aria-label="Justificativa da inferência">
+        <h3>∵ Justificativa da inferência</h3>
+        <p>${esc(argument.reason)}</p>
+        <small>A validade é avaliada pelas fórmulas, independentemente das respostas preenchidas.</small>
+      </div>`:''}
     </section>`;
   }
   function freeHighlightRelations(columns){
