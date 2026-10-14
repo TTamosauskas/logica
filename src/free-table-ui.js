@@ -4,8 +4,7 @@ import {blankFreeTable,readFreeTable,FREE_TABLE_KEY,MAX_VARS,nextFreeVariableNam
   removeFreeFormula,freeColumns,freeRows,evaluateFreeRow,gradeFreeTable,
   parseFreeFormula,describeFreeFormula,freeTableKind,freeArgumentAnalysis,
   predicateTruthAnalysis,freeRowImpossible,addFreeIndividual,removeFreeIndividual,
-  verifyFreeInference,analyzeFreePossibilities} from './core/free-table.js';
-import {freeIndividualModel} from './core/free-individuals.js';
+  freeIndividualModel,verifyFreeInference,analyzeFreePossibilities} from './core/free-table.js';
 import {escapeHTML} from './core/html.js';
 import {t} from './core/logic.js';
 import {immediateOperands,propositionalRelations,categoricalForm,categoricalRelation} from './core/table-relations.js';
