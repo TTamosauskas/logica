@@ -120,9 +120,9 @@ export function createFreeTable(root){
       <p class="free-symbol-help" id="freeSymbolHelp" role="status" aria-live="polite">${SYMBOL_HELP_DEFAULT}</p>
     </section>`;
   }
-  function truthButton(r,col){
+  function truthButton(row,r,col){
     const id=r+'|'+col.key,answer=state.answers[id]||'',graded=state.graded;
-    const want=graded?(evaluateFreeRow(freeRows(state)[r],col,state)?'V':'F'):'';
+    const want=graded?(evaluateFreeRow(row,col,state)?'V':'F'):'';
     const status=!graded?'':answer===want?' correct':' incorrect';
     return `<button type="button" class="cell${answer?' filled':''}${status}" data-action="answer" data-row="${r}" data-key="${esc(col.key)}" aria-label="Linha ${r+1}, ${esc(col.label)}: ${answer||'vazio'}">${answer||'<span class="cell-placeholder">·</span>'}</button>${graded&&answer!==want?`<small class="free-correction" title="Valor esperado">${want}</small>`:''}`;
   }
@@ -137,7 +137,7 @@ export function createFreeTable(root){
         (marker||'<span aria-hidden="true">—</span>')+'</td>';
     }
     if(col.kind==='var')return '<td class="given">'+t(row[col.node.name])+'</td>';
-    return '<td>'+truthButton(r,col)+'</td>';
+    return '<td>'+truthButton(row,r,col)+'</td>';
   }
   function renderDiagramSetControls(){
     const sets=(state.diagramSets||[]).map(item=>
