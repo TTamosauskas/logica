@@ -689,6 +689,11 @@ try{
     assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
     assert.equal(await page.locator('.free-impossible-row').count(),1);
     assert.match(await page.locator('.free-truth-table th.free-conclusion-head').innerText(),/∴ C · r\(p\)/);
+    // Alterar o domínio reinicia a correção: a justificativa volta após nova conferência.
+    assert.equal(await page.locator('.free-argument-explanation').count(),0);
+    await page.locator('[data-action="grade"]').click();
+    assert.equal(await page.locator('.free-argument-explanation').count(),1);
+    await page.reload({waitUntil:'networkidle'});
     assert.equal(await page.locator('.free-argument-explanation').count(),1);
     assert.equal(await page.locator('.free-inference,.free-possibilities').count(),0);
     assert.deepEqual(errors,[]);
