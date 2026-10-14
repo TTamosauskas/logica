@@ -1567,7 +1567,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       <div class="worked-example-head"><p class="worked-context"><strong>Exemplo concreto:</strong> ${escapeHTML(data.context)}</p><span class="worked-counter" data-worked-counter>Passo ${shown} de ${count}</span></div>
       <ol class="worked-steps">${data.steps.map((step,i)=>
         `<li data-worked-step="${i+1}" ${i>=shown?'hidden':''}><div class="worked-step-body">
-          <strong class="worked-formal" tabindex="-1" data-worked-heading>${escapeHTML(step.formal)}</strong>
+          <h4 class="worked-formal" tabindex="-1" data-worked-heading>${escapeHTML(step.formal)}</h4>
           <p class="worked-concrete"><span class="worked-example-label">Em palavras:</span> <em>${escapeHTML(step.concrete)}</em></p>
           <p class="worked-reason"><strong>Por quê?</strong> ${escapeHTML(step.reason)}</p>
           ${i<count-1?`<button type="button" class="button small worked-next" data-caction="worked-next" data-next="${i+2}" ${i+1!==shown?'hidden':''}>Próximo passo →</button>`:''}
@@ -1596,6 +1596,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     progress.workedStep=shown;saveCourseState();
     const root=$('courseLesson').querySelector('[data-worked-example]');
     if(!root)return;
+    const previously=root.querySelectorAll('[data-worked-step]:not([hidden])').length;
     root.querySelectorAll('[data-worked-step]').forEach((section,i)=>{
       section.hidden=i>=shown;
       const btn=section.querySelector('[data-caction="worked-next"]');
@@ -1605,7 +1606,10 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     root.querySelector('[data-worked-finish]').hidden=shown<count;
     root.querySelector('[data-caction="worked-show-all"]').hidden=shown===count;
     root.querySelector('[data-caction="worked-restart"]').hidden=shown!==count;
-    root.querySelector(`[data-worked-step="${shown}"] [data-worked-heading]`)?.focus({preventScroll:true});
+    const focusIndex=shown>previously?Math.min(previously+1,shown):shown;
+    const target=root.querySelector(`[data-worked-step="${focusIndex}"] [data-worked-heading]`);
+    target?.scrollIntoView({behavior:'auto',block:'nearest'});
+    target?.focus({preventScroll:true});
   }
   function renderPedagogicalReading(reading){
     const sections=reading.sections.map(section=>
@@ -1796,7 +1800,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       feedback.dataset.result=correct?'correct':'retry';
       return;
     }
-    if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="worked-next"],[data-caction="example"]')?.focus({preventScroll:true});return}
+    if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="worked-next"]:not([hidden]),[data-caction="example"]')?.focus({preventScroll:true});return}
     if(action==='worked-next'){
       const next=Number(btn.dataset.next),shown=courseProgress(courseActive).workedStep||1;
       if(Number.isInteger(next)&&next===shown+1)setWorkedStep(next);
