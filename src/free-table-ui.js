@@ -277,9 +277,9 @@ export function createFreeTable(root){
     return propositionalRelations(columns,state.variables.map(item=>item.name),correct)
       .filter(rel=>columns[rel.a].kind!=='var'||columns[rel.b].kind!=='var');
   }
-  const editableSelector='[data-var-meaning],[data-var-kind],[data-formula-source],#freeNewFormula';
+  const editableSelector='[data-var-meaning],[data-var-kind],[data-formula-source],[data-set-meaning],#freeNewFormula';
   const draftKey=element=>element.id?'id:'+element.id:
-    ['data-var-meaning','data-var-kind','data-formula-source']
+    ['data-var-meaning','data-var-kind','data-formula-source','data-set-meaning']
       .map(name=>element.hasAttribute(name)?name+':'+element.getAttribute(name):'')
       .find(Boolean)||'';
   function render({resetNewFormula=false}={}){
@@ -392,8 +392,9 @@ export function createFreeTable(root){
       refresh('Conjunto adicionado ao diagrama.');return;
     }
     if(action==='save-set'){
-      editDiagramSet(state,button.dataset.set,
-        root.querySelector('[data-set-meaning="'+CSS.escape(button.dataset.set)+'"]').value);
+      const field=root.querySelector('[data-set-meaning="'+CSS.escape(button.dataset.set)+'"]');
+      editDiagramSet(state,button.dataset.set,field.value);
+      delete field.dataset.unsaved;
       diagramSetManagerOpen=true;
       refresh('Significado do conjunto atualizado.');return;
     }
