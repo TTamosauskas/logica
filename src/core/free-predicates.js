@@ -124,7 +124,7 @@ export function evaluatePredicate(node,domain,truth,subject=null){
   switch(node.type){
     case 'pred':{
       const who=node.term==='x'?subject:node.term;
-      if(who===null||!domain.some(d=>d.id===who))throw Error('Indivíduo não encontrado.');
+      if(who===null||(!domain.some(d=>d.id===who)&&!Object.hasOwn(truth,who+'|'+node.name)))throw Error('Indivíduo não encontrado.');
       const value=truth[who+'|'+node.name];
       if(value!=='V'&&value!=='F')throw Error('Preencha os predicados do domínio antes de conferir.');
       return value==='V';
