@@ -202,7 +202,7 @@ function inclusionEuler(predicates,people,meanings,relations){
     else if(inside==='F'&&outside==='F')regions.neither.push(person);
     else regions.unknown.push(person);
   }
-  const markers=(items,x,y)=>items.slice(0,5).map((person,i)=>{
+  const markers=(items,x,y,limit=5)=>items.slice(0,limit).map((person,i)=>{
     const dx=(i%2)*43,dy=Math.floor(i/2)*43;
     return '<g class="truth-individual-person"><title>'+esc(person.label)+
       '</title><circle class="truth-individual-dot" cx="'+(x+dx)+'" cy="'+(y+dy)+'" r="8"/>'+
@@ -220,7 +220,7 @@ function inclusionEuler(predicates,people,meanings,relations){
     '<text x="211" y="55" text-anchor="middle" class="truth-individual-set-label">'+esc(outerName)+'</text>'+
     '<circle cx="180" cy="211" r="79" class="truth-individual-subset-circle"/>'+
     '<text x="180" y="159" text-anchor="middle" class="truth-individual-set-label">'+esc(innerName)+'</text>'+
-    markers(regions.both,157,204)+markers(regions.outer,264,112)+markers(regions.neither,409,170)+
+    markers(regions.both,157,204,4)+markers(regions.outer,282,112)+markers(regions.neither,409,170)+
     '</svg><p class="truth-venn-note">'+esc(innerName)+' ⊆ '+esc(outerName)+
     ': todo indivíduo do primeiro conjunto pertence também ao segundo.</p>'+pending+'</div>';
 }
