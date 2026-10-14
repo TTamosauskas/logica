@@ -489,7 +489,9 @@ export function readFreeTable(raw,{strict=false}={}){
           }
         }
       }
-      state.graded=input.graded===true&&input.rowMode!=='custom';
+      // A conjunção padrão não reutiliza respostas antigas de uma implicação.
+      state.graded=input.graded===true&&input.rowMode!=='custom'&&
+        (state.inferenceMode||input.inferenceMode===false||freeTableKind(state)!=='predicates');
     }
     if(input.version===4&&typeof input.inferenceConclusion==='string'&&input.inferenceConclusion.length<=240){
       const candidate=input.inferenceConclusion.trim();
@@ -545,9 +547,11 @@ const key=(person,predicate)=>person+'|'+predicate;
  */
 export function freeIndividualModel(state){
   const roots=state.formulas.map(f=>parseFreeFormula(state,f.source));
-  const predicates=[...predicateAtomicNames(roots)];
-  if(!predicates.length)predicates.push(...state.variables
-    .filter(v=>v.kind!=='individual').map(v=>v.name));
+  const used=predicateAtomicNames(roots);
+  // O usuário pode criar um conjunto pelo significado do predicado,
+  // sem precisar inventar uma fórmula para fazê-lo aparecer.
+  const predicates=[...new Set([...state.variables.filter(v=>
+    v.kind!=='individual'&&(clean(v.meaning)||used.has(v.name))).map(v=>v.name),...used])];
   const people=new Map();
   for(const d of state.domain||[])people.set(d.id,{id:d.id,label:d.label||d.id});
   for(const v of state.variables||[]){
