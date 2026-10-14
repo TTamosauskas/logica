@@ -80,7 +80,7 @@ test('Tabela Livre combina constantes com fórmulas nos dois modos, sem misturá
   addFreeFormula(s,'⊥');
   assert.equal(freeTableKind(s),'predicates');
   assert.equal(freeRows(s).length,8);
-  assert.match(describeFreeFormula(parseFreeFormula(s,'∃!x(p(x))'),s).literal,/existe exatamente um/);
+  assert.match(describeFreeFormula(parseFreeFormula(s,'∃!x(p(x))'),s).literal,/existe exatamente um/i);
   assert.equal(freeColumns(s).filter(c=>c.kind==='var').length,3);
   assert.throws(()=>addFreeFormula(s,'p ∧ q'),/alternar/);
   const stored=readFreeTable(JSON.parse(JSON.stringify(s)));
