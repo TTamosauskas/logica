@@ -7,19 +7,21 @@ import {UNIT3_READINGS} from '../src/content/reading-unit3.js';
 import {UNIT4_TO_6_READINGS} from '../src/content/reading-units4to6.js';
 import {UNIT12_READINGS} from '../src/content/reading-unit12.js';
 import {UNIT13_READINGS} from '../src/content/reading-unit13.js';
+import {ERROR_READINGS} from '../src/content/errors-course.js';
 import {PILOT_ASSESSMENTS} from '../src/content/assessment-pilot.js';
 import {UNIT1_ASSESSMENTS} from '../src/content/assessment-unit1.js';
 import {UNIT2_ASSESSMENTS} from '../src/content/assessment-unit2.js';
 import {UNIT3_ASSESSMENTS} from '../src/content/assessment-unit3.js';
 import {UNIT4_ASSESSMENTS} from '../src/content/assessment-unit4.js';
 import {UNIT5_TO_7_ASSESSMENTS} from '../src/content/assessment-unit5to7.js';
+import {ERROR_ASSESSMENTS} from '../src/content/errors-assessments.js';
 import {prepareBank,validateBank,composeAssessment,gradeAssessment} from '../src/core/assessment.js';
-const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS};
+const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS};
 const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
-const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS};
+const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS};
 const bank=id=>prepareBank(id,LESSONS[id],readings[id],supplements[id]||[]);
-test('todos os 23 temas possuem banco com competências distintas',()=>{
- assert.equal(ids.length,23);
+test('todos os 30 temas possuem banco com competências distintas',()=>{
+ assert.equal(ids.length,30);
  for(const id of ids){
    const items=validateBank(bank(id));
    assert.ok(items.length>=12,id+': menos de 12 questões editoriais');
