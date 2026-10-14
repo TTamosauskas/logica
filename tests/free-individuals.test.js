@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {blankFreeTable,addFreeVariable,editFreeVariable,addFreeFormula,
-  addFreeIndividual,readFreeTable,freeIndividualModel} from '../src/core/free-table.js';
+  addFreeIndividual,readFreeTable,freeIndividualModel,addDiagramSet,editDiagramSet,removeDiagramSet,freeRows} from '../src/core/free-table.js';
 import {renderIndividualSets} from '../src/truth-venn.js';
 
 const setup=()=>{
@@ -236,4 +236,49 @@ test('escapa rótulos fornecidos pelo usuário no SVG e na descrição',()=>{
   }],meanings:{q:'x é homem'}});
   assert.doesNotMatch(html,/<script>/);
   assert.match(html,/&lt;script&gt;/);
+});
+
+
+test('dez conjuntos independentes não aumentam as linhas da tabela-verdade',()=>{
+ const state=blankFreeTable();
+ for(let i=1;i<=10;i++)addDiagramSet(state,'grupo'+i,'x é do grupo '+i);
+ addFreeIndividual(state,'ana','Ana');
+ state.predicateValues['ana|grupo1']='V';
+ state.predicateValues['ana|grupo2']='F';
+ assert.equal(freeRows(state).length,4);
+ const model=freeIndividualModel(state);
+ assert.equal(model.predicates.length,10);
+ const html=renderIndividualSets(model);
+ assert.match(html,/Matriz de pertinência/);
+ assert.equal((html.match(/<th scope="col"><code>grupo/g)||[]).length,10);
+ assert.match(html,/data-set-value="V">V/);
+ assert.match(html,/data-set-value="F">F/);
+ assert.match(html,/data-set-value="\?">\?/);
+ assert.match(html,/<code>ana<\/code><\/dt><dd>Ana/);
+ const reload=readFreeTable(JSON.stringify(state),{strict:true});
+ assert.equal(reload.diagramSets.length,10);
+ assert.equal(reload.predicateValues['ana|grupo1'],'V');
+ assert.equal(freeRows(reload).length,4);
+});
+test('conjuntos extras podem aparecer em fórmulas e não são variáveis proposicionais',()=>{
+ const state=blankFreeTable();
+ addDiagramSet(state,'artista','x é artista');
+ addFreeIndividual(state,'maria','Maria');
+ addFreeFormula(state,'artista(maria)');
+ assert.equal(freeRows(state).length,2);
+ assert.equal(freeIndividualModel(state).people.find(p=>p.id==='maria').values.artista,'V');
+ assert.throws(()=>removeDiagramSet(state,'artista'),/fórmulas que usam/);
+ const restored=readFreeTable(JSON.stringify(state),{strict:true});
+ assert.equal(restored.diagramSets[0].name,'artista');
+ assert.equal(restored.formulas[0].source,'artista(maria)');
+});
+test('cadastro adicional rejeita colisões, admite edição e exclusão',()=>{
+ const state=blankFreeTable();
+ assert.throws(()=>addDiagramSet(state,'p','pessoa'),/Símbolo já utilizado/);
+ addDiagramSet(state,'profissao','x tem uma profissão');
+ assert.throws(()=>addFreeIndividual(state,'profissao','João'),/conjunto/);
+ editDiagramSet(state,'profissao','x é profissional');
+ assert.equal(state.diagramSets[0].meaning,'x é profissional');
+ removeDiagramSet(state,'profissao');
+ assert.equal(state.diagramSets.length,0);
 });
