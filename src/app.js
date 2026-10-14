@@ -20,6 +20,7 @@ import { DEDUCTION_CONTEXTS, DEDUCTION_NAMES, DEDUCTION_LEVELS } from './content
 import { CATEGORICAL_TERMS } from './content/categorical.js';
 import { THEOREM_WORKSHOPS, THEORY_CARDS } from './content/advanced.js';
 import { COURSE_UNITS, LESSONS } from './content/course.js';
+import { WORKED_EXAMPLES } from './content/example-walkthroughs.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
 import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
 import { UNIT2_ASSESSMENTS } from './content/assessment-unit2.js';
@@ -1553,6 +1554,63 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     }
     return a.draft.questions;
   }
+  function renderWorkedExample(id,progress){
+    const data=WORKED_EXAMPLES[id];
+    if(!data)throw Error('Exemplo resolvido ausente: '+id);
+    const count=data.steps.length;
+    const shown=Number.isInteger(progress.workedStep)?Math.max(1,Math.min(count,progress.workedStep)):
+      progress.example?count:1;
+    const c=data.check;
+    const options=c.options.map((label,index)=>
+      `<label class="worked-check-option"><input type="radio" name="worked-check-${escapeHTML(id)}" value="${index}"><span>${escapeHTML(label)}</span></label>`).join('');
+    return `<div class="course-example worked-example" data-worked-example>
+      <div class="worked-example-head"><p class="worked-context"><strong>Exemplo concreto:</strong> ${escapeHTML(data.context)}</p><span class="worked-counter" data-worked-counter>Passo ${shown} de ${count}</span></div>
+      <ol class="worked-steps">${data.steps.map((step,i)=>
+        `<li data-worked-step="${i+1}" ${i>=shown?'hidden':''}><div class="worked-step-body">
+          <h4 class="worked-formal" tabindex="-1" data-worked-heading>${escapeHTML(step.formal)}</h4>
+          <p class="worked-concrete"><span class="worked-example-label">Em palavras:</span> <em>${escapeHTML(step.concrete)}</em></p>
+          <p class="worked-reason"><strong>Por quê?</strong> ${escapeHTML(step.reason)}</p>
+          ${i<count-1?`<button type="button" class="button small worked-next" data-caction="worked-next" data-next="${i+2}" ${i+1!==shown?'hidden':''}>Próximo passo →</button>`:''}
+        </div></li>`).join('')}</ol>
+      <div class="worked-finish" data-worked-finish ${shown<count?'hidden':''}>
+        <fieldset class="worked-check"><legend>Confira o raciocínio</legend>
+          <p>Uma pergunta opcional para verificar o exemplo; não vale nota.</p>
+          <strong class="worked-check-question">${escapeHTML(c.question)}</strong>
+          <div class="worked-check-options">${options}</div>
+          <button type="button" class="button small" data-caction="worked-check">Conferir resposta</button>
+          <p class="worked-check-feedback" role="status" aria-live="polite" data-worked-feedback></p>
+        </fieldset>
+        <div class="course-lesson-actions"><button type="button" class="button ${progress.example?'':'primary'}" data-caction="example">${progress.example?'✓ Exemplo estudado · continuar':'Entendi a resolução →'}</button></div>
+      </div>
+      <div class="worked-utility-actions">
+        <button type="button" class="button small" data-caction="worked-show-all" ${shown===count?'hidden':''}>Mostrar tudo</button>
+        <button type="button" class="button small" data-caction="worked-restart" ${shown!==count?'hidden':''}>Rever desde o início</button>
+      </div>
+    </div>`;
+  }
+  function setWorkedStep(step){
+    const id=courseActive,data=WORKED_EXAMPLES[id],progress=courseProgress(id);
+    if(!data)return;
+    const count=data.steps.length;
+    const shown=Math.max(1,Math.min(count,step));
+    progress.workedStep=shown;saveCourseState();
+    const root=$('courseLesson').querySelector('[data-worked-example]');
+    if(!root)return;
+    const previously=root.querySelectorAll('[data-worked-step]:not([hidden])').length;
+    root.querySelectorAll('[data-worked-step]').forEach((section,i)=>{
+      section.hidden=i>=shown;
+      const btn=section.querySelector('[data-caction="worked-next"]');
+      if(btn)btn.hidden=i+1!==shown;
+    });
+    root.querySelector('[data-worked-counter]').textContent=`Passo ${shown} de ${count}`;
+    root.querySelector('[data-worked-finish]').hidden=shown<count;
+    root.querySelector('[data-caction="worked-show-all"]').hidden=shown===count;
+    root.querySelector('[data-caction="worked-restart"]').hidden=shown!==count;
+    const focusIndex=shown>previously?Math.min(previously+1,shown):shown;
+    const target=root.querySelector(`[data-worked-step="${focusIndex}"] [data-worked-heading]`);
+    target?.scrollIntoView({behavior:'auto',block:'nearest'});
+    target?.focus({preventScroll:true});
+  }
   function renderPedagogicalReading(reading){
     const sections=reading.sections.map(section=>
       `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>`
@@ -1644,7 +1702,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><nav class="course-lesson-flow" aria-label="Etapas da aula">${stageNavigation}</nav><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
     const reading=COURSE_READINGS[id];
     html+=`<section class="course-lesson-panel" id="course-stage-1"><h3 tabindex="-1">1. Compreender</h3>${reading?renderPedagogicalReading(reading):`<p>${escapeHTML(lesson.theory)}</p>`}${id==='categoricos2'?renderOppositionSquare():''}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
-    if(p.read){html+=`<section class="course-lesson-panel" id="course-stage-2"><h3 tabindex="-1">2. Observar um exemplo resolvido</h3><div class="course-example"><strong>${escapeHTML(lesson.example)}</strong><ol>${lesson.steps.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol></div><div class="course-lesson-actions"><button type="button" class="button ${p.example?'':'primary'}" data-caction="example">${p.example?'✓ Exemplo estudado':'Entendi a resolução →'}</button></div></section>`}
+    if(p.read){html+=`<section class="course-lesson-panel" id="course-stage-2"><h3 tabindex="-1">2. Observar um exemplo resolvido</h3>${renderWorkedExample(id,p)}</section>`}
     if(p.example&&THEORY_CARDS[id]){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
     if(p.example){html+=`<section class="course-lesson-panel" id="course-stage-3"><h3 tabindex="-1">3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
     if(p.guided){html+=`<section class="course-lesson-panel" id="course-stage-4"><h3 tabindex="-1">4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
@@ -1742,8 +1800,30 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       feedback.dataset.result=correct?'correct':'retry';
       return;
     }
-    if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="example"]')?.focus({preventScroll:true});return}
-    if(action==='example'){courseProgress(courseActive).example=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="guided"]')?.focus({preventScroll:true});return}
+    if(action==='read'){courseProgress(courseActive).read=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="worked-next"]:not([hidden]),[data-caction="example"]')?.focus({preventScroll:true});return}
+    if(action==='worked-next'){
+      const next=Number(btn.dataset.next),shown=courseProgress(courseActive).workedStep||1;
+      if(Number.isInteger(next)&&next===shown+1)setWorkedStep(next);
+      return;
+    }
+    if(action==='worked-show-all'){setWorkedStep(WORKED_EXAMPLES[courseActive].steps.length);return}
+    if(action==='worked-restart'){setWorkedStep(1);return}
+    if(action==='worked-check'){
+      const root=$('courseLesson').querySelector('[data-worked-example]');
+      const selected=root?.querySelector('input[name^="worked-check-"]:checked'),feedback=root?.querySelector('[data-worked-feedback]');
+      if(!feedback)return;
+      if(!selected){feedback.textContent='Escolha uma alternativa para conferir o raciocínio.';return}
+      const check=WORKED_EXAMPLES[courseActive].check,correct=Number(selected.value)===check.correct;
+      feedback.textContent=(correct?'Correto. ':'Ainda não. ')+check.why+
+        (correct?' Você pode continuar para a prática.':' Releia os passos e tente novamente.');
+      feedback.dataset.result=correct?'correct':'retry';return;
+    }
+    if(action==='example'){
+      if((courseProgress(courseActive).workedStep||1)<WORKED_EXAMPLES[courseActive].steps.length){
+        setWorkedStep(WORKED_EXAMPLES[courseActive].steps.length);return;
+      }
+      courseProgress(courseActive).example=true;saveCourseState();renderCourseLesson();$('courseLesson').querySelector('[data-caction="guided"]')?.focus({preventScroll:true});return
+    }
     if(action==='guided'||action==='independent'||action==='review'){beginCourseExercise(courseActive,action);return}
     if(action==='lesson-quiz'){
       const questions=assessmentForLesson(courseActive);
