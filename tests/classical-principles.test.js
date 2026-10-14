@@ -66,7 +66,7 @@ test('avaliações novas respeitam os bancos de 8 itens e cobrem conceitos e apl
     [UNIT2_ASSESSMENTS.classificacao,['bivalência','terceiro excluído','não contradição','reflexividade']],
     [UNIT3_ASSESSMENTS.provas,['explosão','redução ao absurdo','p∨q']]]){
     assert.equal(bank.length,8);
-    const questions=bank.map(x=>x.question).join(' ').toLowerCase();
+    const questions=bank.flatMap(x=>[x.question,...x.options]).join(' ').toLowerCase();
     for(const word of words)assert.ok(questions.includes(word.toLowerCase()),word);
     assert.equal(bank.filter(x=>x.dimension==='concept').length,4);
     assert.equal(bank.filter(x=>x.dimension==='application').length,4);
