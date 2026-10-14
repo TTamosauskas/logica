@@ -9,7 +9,7 @@ export const UNIT1_READINGS={
       ]},
       {heading:'Por que representar frases por letras?',paragraphs:[
         'Para analisar a estrutura de um raciocínio sem repetir frases longas, usamos letras. Por exemplo: p = “A biblioteca está aberta”; q = “Há estudantes na biblioteca”. Cada letra representa uma afirmação inteira, e não uma palavra isolada.',
-        'Uma proposição não precisa ser verdadeira de fato para ser uma proposição. Também não precisamos conhecer seu valor agora: importa que, na situação considerada, ela possa ser verdadeira ou falsa.'
+        'Uma proposição não precisa ser verdadeira de fato para ser uma proposição. Também não precisamos conhecer seu valor agora: importa que, na situação considerada, ela possa ser verdadeira ou falsa. Ao apresentar um argumento, ∴ lê-se “portanto” e introduz a conclusão; ∵ lê-se “porque” e pode anunciar uma justificativa. Nenhum deles é um conectivo ou um quantificador dentro de uma fórmula lógica.'
       ]},
       {heading:'O que as linhas da tabela significam?',paragraphs:[
         'Ao estudar p e q, examinamos quatro possibilidades: ambas verdadeiras (V, V); p verdadeira e q falsa (V, F); p falsa e q verdadeira (F, V); ambas falsas (F, F). Cada linha é uma atribuição possível de valores às letras.',
@@ -17,7 +17,7 @@ export const UNIT1_READINGS={
       ]}
     ],
     misconception:'Não confunda “não sei se é verdadeira” com “não é uma proposição”. A frase “A biblioteca está aberta” continua sendo uma proposição mesmo antes de verificarmos o horário de funcionamento.',
-    summary:'Uma proposição afirma algo que pode receber V ou F. Letras representam proposições inteiras; cada linha da tabela representa uma combinação possível de seus valores.',
+    summary:'Uma proposição afirma algo que pode receber V ou F. Letras representam proposições inteiras; cada linha da tabela representa uma combinação possível de seus valores. ∴ significa “portanto” e ∵ significa “porque”: indicam a organização de um argumento, não operações sobre proposições.',
     check:{question:'Qual frase é uma proposição no sentido estudado aqui?',options:['Feche a biblioteca.','A biblioteca fecha às 18 horas.','A biblioteca já fechou?'],correct:1,why:'“A biblioteca fecha às 18 horas” afirma algo que pode ser verdadeiro ou falso. As outras frases são uma ordem e uma pergunta.'}
   },
   operadores:{
