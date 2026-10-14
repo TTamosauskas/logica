@@ -1,5 +1,6 @@
 /** Análise finita completa de predicados unários sem igualdade, funções ou relações binárias.
- * Em domínios não vazios, basta considerar cada tipo presente uma vez.
+ * Para existência única, são necessárias até duas instâncias de cada tipo,
+ * incluindo a possibilidade de dois nomes designarem o mesmo indivíduo.
  */
 import {evaluatePredicate,predicateAtomicNames,rootHasFreeX} from './free-predicates.js';
 
@@ -21,6 +22,22 @@ function model(types,constants,choices,predicates){
   constants.forEach((id,i)=>register(id,choices[i],id));
   return {domain,truth};
 }
+function containsUnique(node){
+  return node.type==='existsUnique'||Boolean((node.a&&containsUnique(node.a))||(node.b&&containsUnique(node.b)));
+}
+function modelWithUniqueness(types,constants,choices,predicates){
+  const domain=[],truth={};
+  types.forEach((type,i)=>{
+    const id='_modelo'+i;
+    domain.push({id,label:'Elemento '+(i+1)});
+    predicates.forEach((name,j)=>truth[id+'|'+name]=(type&(1<<j))?'V':'F');
+  });
+  constants.forEach((id,i)=>{
+    const type=types[choices[i]];
+    predicates.forEach((name,j)=>truth[id+'|'+name]=(type&(1<<j))?'V':'F');
+  });
+  return {domain,truth};
+}
 function typeText(type,predicates){
   return predicates.map((name,j)=>name+'='+(type&(1<<j)?'V':'F')).join(', ');
 }
@@ -37,7 +54,30 @@ function visitModels(nodes,visitor,extraPredicates=[]){
   if(constants.length>INFERENCE_MAX_CONSTANTS)
     throw Error('Verifique inferências com até dois indivíduos nomeados por vez.');
   const kinds=2**predicates.length;
+  const needsCounts=nodes.some(containsUnique);
   let checked=0;
+  if(needsCounts){
+    // 0, 1 ou 2 testemunhas por tipo: contagens maiores são indistinguíveis
+    // neste fragmento unário com ∃!, sem igualdade explícita.
+    for(let code=1;code<3**kinds;code++){
+      const types=[];let value=code;
+      for(let kind=0;kind<kinds;kind++){
+        const copies=value%3;value=Math.floor(value/3);
+        for(let i=0;i<copies;i++)types.push(kind);
+      }
+      for(let n=0;n<types.length**constants.length;n++){
+        let temp=n;const choices=[];
+        for(let j=0;j<constants.length;j++){
+          choices.push(temp%types.length);temp=Math.floor(temp/types.length);
+        }
+        const candidate=modelWithUniqueness(types,constants,choices,predicates);
+        checked++;
+        const result=visitor(candidate,{types,constants,choices:choices.map(i=>types[i]),predicates});
+        if(result)return {checked,predicates,constants,result};
+      }
+    }
+    return {checked,predicates,constants,result:null};
+  }
   for(let active=1;active<(1<<kinds);active++){
     const types=Array.from({length:kinds},(_,j)=>j).filter(j=>active&(1<<j));
     const variants=types.length**constants.length;
