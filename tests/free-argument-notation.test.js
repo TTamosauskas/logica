@@ -33,7 +33,7 @@ test('∵ apresenta contraexemplo sem atribuir V ou F ao próprio símbolo',()=>
   assert.match(analysis.reason,/p=F, q=V/);
   assert.match(analysis.reason,/contraexemplo/);
   assert.equal(freeRows(fallacy).length,4);
-  assert.equal(freeColumns(fallacy).length,4); // p, q, p→q, última p (sem nova coluna)
+  assert.equal(freeColumns(fallacy).length,5); // p, q e as três fórmulas originais (sem nova coluna)
 });
 
 test('∵ distingue validade por premissas inconsistentes',()=>{
