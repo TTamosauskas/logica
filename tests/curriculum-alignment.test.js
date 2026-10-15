@@ -26,7 +26,7 @@ test('a revisão introduz dez aulas em oito unidades, sem renomear conquistas an
  assert.equal(MODULES.length,50);
  assert.deepEqual(new Set([...Object.keys(GAP_LESSONS_A),...Object.keys(GAP_LESSONS_B)]),new Set(gaps));
  for(const id of gaps){assert.ok(courseIds.includes(id),id);assert.ok(MODULES.some(x=>x.id===id),id)}
- assert.equal(MODULES.find(x=>x.id==='equivalencias').no,'10');
+ assert.equal(MODULES.find(x=>x.id==='equivalencias').no,'06');
  assert.equal(MODULES.find(x=>x.id==='modais').no,'17');
  assert.equal(MODULES.find(x=>x.id==='metateoria').no,'15');
 });
