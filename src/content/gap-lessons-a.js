@@ -440,7 +440,7 @@ export const GAP_READINGS_A={
       }
     ],
     "misconception": "Negar uma universal não cria uma universal negativa. ‘Nem todos’ significa existir pelo menos um contraexemplo; ‘nenhum’ significa não existir testemunha favorável.",
-    "summary": "¬∀xP(x)≡∃x¬P(x) e ¬∃xP(x)≡∀x¬P(x). Mantenha o mesmo domínio e respeite a posição da negação.",
+    "summary": "¬∀xP(x)≡∃x¬P(x) e ¬∃xP(x)≡∀x¬P(x). A negação troca o quantificador e nega o predicado dentro de seu escopo. Mantenha o mesmo domínio e não transforme um contraexemplo em uma universal negativa.",
     "check": {
       "question": "Como negar ‘Todos os membros participaram’?",
       "options": [
