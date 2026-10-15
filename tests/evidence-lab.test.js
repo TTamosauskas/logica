@@ -33,7 +33,7 @@ test('unidade de evidências acrescenta quatro aulas sem substituir as 19 conqui
   const overview=learningOverview(COURSE_UNITS,old);
   assert.equal(overview.total,49);
   assert.equal(overview.approved,19);
-  assert.equal(getNextLearningStep(COURSE_UNITS,old).id,'inducao');
+  assert.equal(getNextLearningStep(COURSE_UNITS,old).id,'condicionais_naturais');
 });
 test('todas as leituras ensinam com objetivos, situações, contraste e feedback',()=>{
   for(const [id,r] of Object.entries(UNIT13_READINGS)){
