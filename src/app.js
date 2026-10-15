@@ -42,6 +42,7 @@ import { UNIT5_TO_7_ASSESSMENTS } from './content/assessment-unit5to7.js';
 import { ASSESSMENT_VERSION, prepareBank, composeAssessment, gradeAssessment } from './core/assessment.js';
 import { buildIntegratedExamQuestions } from './core/integrated-exam.js';
 import { OTHER_LOGIC_LAB_IDS,createOtherLogicLab } from './core/other-logics-labs.js';
+import { syllogismTemplatesFor, translationTemplatesFor } from './core/practice-scope.js';
 import { UNIT1_READINGS } from './content/reading-unit1.js';
 import { UNIT2_READINGS } from './content/reading-unit2.js';
 import { UNIT3_READINGS } from './content/reading-unit3.js';
@@ -128,13 +129,8 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   }
   function shapeOf(node,vars){return sig(node).replace(/[a-z](?=[,)!]|$)/g,c=>String(vars.indexOf(c)))}
   function makeTranslationCandidate(level){
-    const scenario=pick(SCENARIOS),temp=pick(level==='hard'?ARGUMENT_TEMPLATES:TRANSLATION_TEMPLATES[level]),needed=level==='hard'?3:level==='easy'?2:3;
+    const scenario=pick(SCENARIOS),temp=pick(translationTemplatesFor(level,TRANSLATION_TEMPLATES)),needed=level==='easy'?2:3;
     const names=varsOf(needed),nodes=names.map(v),claimMap=Object.fromEntries(names.map((name,i)=>[name,scenario.claims[i]]));
-    if(level==='hard'){
-      const [premises,conclusion]=temp.make(nodes),roots=[...premises,conclusion];
-      const vars=relevantNames(names,roots),labels=['Premissa 1','Premissa 2','Conclusão'],sentences=roots.map(n=>cap(sentence(n,claimMap))+'.');
-      return {scenario,temp,vars,roots,labels,sentences,claimMap,valid:temp.valid,kind:'argument',key:`${level}|${scenario.id}|${temp.id}`};
-    }
     const roots=[temp.make(nodes)],vars=relevantNames(names,roots),sentenceText=temp.say(names.map((_,i)=>scenario.claims[i]));
     return {scenario,temp,vars,roots,labels:['Frase apresentada'],sentences:[sentenceText],claimMap,kind:level==='easy'?'guided':'formula',key:`${level}|${scenario.id}|${temp.id}`};
   }
@@ -169,11 +165,11 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   let syllogismHistory=loadShortHistory(SYLLOGISM_HISTORY_KEY);
   function saveShortHistory(key,h){try{localStorage.setItem(key,JSON.stringify(h.slice(-180)))}catch(e){}}
   function syllogismsMode(level){
-    const two=ARGUMENT_TEMPLATES.filter(x=>!['transitividade','cadeia','reciproca','independente','afirmasucessor','modustollens'].includes(x.id));
-    const triple=ARGUMENT_TEMPLATES.filter(x=>['transitividade','cadeia','reciproca','independente','afirmasucessor'].includes(x.id));
+    const two=syllogismTemplatesFor('easy',ARGUMENT_TEMPLATES);
+    const triple=syllogismTemplatesFor('hard',ARGUMENT_TEMPLATES);
     let chosen=null,best=Infinity;
     for(let k=0;k<90;k++){
-      const scenario=pick(SCENARIOS),template=pick(level==='easy'?two:level==='medium'?ARGUMENT_TEMPLATES.filter(x=>x.id!=='modustollens'):triple),key=`${level}|${scenario.id}|${template.id}`;
+      const scenario=pick(SCENARIOS),template=pick(level==='easy'?two:level==='medium'?syllogismTemplatesFor('medium',ARGUMENT_TEMPLATES):triple),key=`${level}|${scenario.id}|${template.id}`;
       const recent=syllogismHistory.slice(-12),times=syllogismHistory.filter(x=>x.key===key).length;
       const score=times*110+(recent.some(x=>x.scenario===scenario.id)?170:0)+(recent.slice(-5).some(x=>x.template===template.id)?110:0)+Math.random()*25;
       if(score<best){best=score;chosen={scenario,template,key}}
