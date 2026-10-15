@@ -1,6 +1,7 @@
 /** Frente 1 — os bancos e testes permanecem originais nas aulas já concluídas;
  * apenas os itens que antecipavam competências são reencaminhados. */
 import { PILOT_ASSESSMENTS } from './assessment-pilot.js';
+import { UNIT1_ASSESSMENTS } from './assessment-unit1.js';
 import { UNIT2_ASSESSMENTS } from './assessment-unit2.js';
 import { UNIT3_ASSESSMENTS } from './assessment-unit3.js';
 import { UNIT5_TO_7_ASSESSMENTS } from './assessment-unit5to7.js';
@@ -13,6 +14,15 @@ const C=(q,o,w)=>item(q,o,w,'concept');
 const A=(q,o,w)=>item(q,o,w,'application');
 
 export const ALIGNED_ASSESSMENTS={
+ falacias:[
+  ...UNIT1_ASSESSMENTS.falacias.slice(0,6),
+  A('“Se o servidor iniciar, aparecerá tela. O servidor não iniciou; logo não aparecerá tela.” Qual erro?',
+    ['Negação do antecedente.','Afirmação do consequente.','Silogismo hipotético.'],
+    'A ausência da condição suficiente não garante a ausência do efeito.'),
+  A('Em p→q; q; portanto p, qual valoração fornece contraexemplo?',
+    ['p=F e q=V.','p=V e q=V.','p=F e q=F.'],
+    'As premissas ficam verdadeiras e a conclusão p falsa.')
+ ],
  traducao:[
   ...[0,1,3,4,5].map(i=>PILOT_ASSESSMENTS.traducao[i]),
   C('O que indica a expressão “p somente se q”?',
