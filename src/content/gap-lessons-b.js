@@ -174,7 +174,7 @@ export const GAP_LESSONS_B={
           "Ausência de suporte."
         ],
         "correct": 0,
-        "why": "B é o par (1,1)."
+        "why": "B é o par (1,1), pois a afirmação tem simultaneamente suporte positivo e negativo."
       },
       {
         "question": "Qual é ¬N?",
