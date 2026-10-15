@@ -38,13 +38,13 @@ export function equivalences(level){
     const actual=ex.envs.every(e=>evalAst(left,e)===evalAst(right,e));if(actual!==intendedEqual)throw Error('Equivalência incorreta no gerador');return ex
   }
 
-export function argumentsMode(level){
+export function argumentsMode(level,scope='all'){
     const names=varsOf(level==='hard'?3:2),[p,q,r]=names.map(v);
     const valid=[()=>[[I(p,q),p],q,'Modus ponens'],()=>[[I(p,q),not(q)],not(p),'Modus tollens'],()=>[[O(p,q),not(p)],q,'Silogismo disjuntivo']];
     const invalid=[()=>[[I(p,q),q],p,'Afirmação do consequente'],()=>[[I(p,q),not(p)],not(q),'Negação do antecedente']];
     const hardValid=[()=>[[I(p,q),I(q,r)],I(p,r),'Silogismo hipotético'],()=>[[A(p,q),I(q,r)],r,'Inferência encadeada']];
     const hardInvalid=[()=>[[I(p,q),O(p,r)],q,'Conclusão indevida'],()=>[[O(p,q),I(p,r)],r,'Conclusão sem garantia']];
-    const chosenValid=rng(2)===0,pool=level==='hard'?(chosenValid?hardValid:hardInvalid):(chosenValid?valid:invalid);
+    const chosenValid=rng(2)===0,pool=scope==='intro'?(chosenValid?[valid[0]]:invalid):level==='hard'?(chosenValid?hardValid:hardInvalid):(chosenValid?valid:invalid);
     const [premises,conclusion,rule]=pick(pool)(),roots=[...premises,conclusion];
     const ex=build('argumentos',relevantNames(names,roots),roots,{showSteps:level==='hard',rootLabels:['premissa 1','premissa 2','conclusão'],title:'Este argumento é válido?',instruction:`Premissas: ${pretty(premises[0])} e ${pretty(premises[1])}. Conclusão: ${pretty(conclusion)}. Preencha os valores para testar a inferência.`,hint:'Encontre uma linha em que TODAS as premissas sejam V e a conclusão seja F. Essa linha demonstra invalidade.',resolution:`Forma do argumento: ${rule}. ${chosenValid?'Toda linha com premissas verdadeiras preserva a conclusão verdadeira.':'Existe um contraexemplo com ambas as premissas verdadeiras e a conclusão falsa.'}`,choice:{question:'O argumento é válido?',options:['Válido','Inválido'],correct:chosenValid?'Válido':'Inválido',explanation:chosenValid?'Uma conclusão falsa jamais ocorre com todas as premissas verdadeiras.':'Há uma linha com todas as premissas verdadeiras e conclusão falsa.'},metadata:{premises,conclusion}});
     const actual=ex.envs.every(e=>!premises.every(node=>evalAst(node,e))||evalAst(conclusion,e));if(actual!==chosenValid)throw Error('Validade incorreta no gerador');return ex
