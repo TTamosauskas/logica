@@ -13,10 +13,10 @@ import {learningOverview} from '../src/core/learning-feedback.js';
 
 test('duas aulas do ciclo 12 mantêm seus IDs no curso ampliado',()=>{
   const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
-  assert.equal(ids.length,39);
-  assert.equal(new Set(ids).size,39);
+  assert.equal(ids.length,49);
+  assert.equal(new Set(ids).size,49);
   assert.deepEqual(COURSE_UNITS[0].ids.slice(-2),['falacias','pressupostos']);
-  assert.deepEqual(COURSE_UNITS[3].ids,['categoricos','categoricos2','predicados2']);
+  assert.deepEqual(COURSE_UNITS[3].ids.filter(id=>id!=='negacao_quantificadores'),['categoricos','categoricos2','predicados2']);
   for(const id of ['pressupostos','categoricos2']){
     assert.ok(LESSONS[id]?.quiz?.length>=4);
     assert.ok(MODULES.some(m=>m.id===id));
@@ -25,11 +25,12 @@ test('duas aulas do ciclo 12 mantêm seus IDs no curso ampliado',()=>{
   }
 });
 test('progresso aprovado das 17 aulas antigas é preservado; só faltam os dois temas novos',()=>{
-  const notApproved=new Set(['pressupostos','categoricos2','inducao','abducao','probabilidade','causalidade',...COURSE_UNITS[5].ids,...COURSE_UNITS[6].ids.filter(id=>id!=='modais'),...COURSE_UNITS[7].ids.filter(id=>id!=='metateoria')]);
+  const newGapIds=MODULES.filter(m=>Number(m.no)>=40).map(m=>m.id);
+  const notApproved=new Set([...newGapIds,'pressupostos','categoricos2','inducao','abducao','probabilidade','causalidade',...COURSE_UNITS[5].ids,...COURSE_UNITS[6].ids.filter(id=>id!=='modais'),...COURSE_UNITS[7].ids.filter(id=>id!=='metateoria')]);
   const previousIds=COURSE_UNITS.flatMap(u=>u.ids).filter(id=>!notApproved.has(id));
   const previous=Object.fromEntries(previousIds.map(id=>[id,{mastered:true}]));
   const overview=learningOverview(COURSE_UNITS,previous);
-  assert.equal(overview.total,39);
+  assert.equal(overview.total,49);
   assert.equal(overview.approved,17);
   assert.equal(overview.consolidated,0);
   assert.equal(getNextLearningStep(COURSE_UNITS,previous).id,'pressupostos');
