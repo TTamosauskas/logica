@@ -55,10 +55,10 @@ export const GAP_LESSONS_B={
   "medias_ponderadas": {
     "lead": "Como taxas melhores em cada grupo podem produzir um total aparentemente pior?",
     "theory": "Se uma escola tem dez alunos numa turma com 90% de aprovação e noventa alunos noutra com 50%, não se pode fazer (90%+50%)/2 para obter a taxa geral. É preciso contar aprovações: 9+45=54 entre 100 estudantes, ou 54%. A média ponderada dá a cada taxa peso proporcional ao número de pessoas do grupo: (n1·r1+n2·r2)/(n1+n2). Uma taxa agregada não é média simples de percentuais quando os denominadores diferem.\n\nQuando duas categorias são exaustivas, não se sobrepõem e têm pesos não negativos, a taxa total fica entre as duas taxas componentes. Se os grupos apresentam 60% e 80%, o total não pode ser 45%, desde que o denominador agregado seja exatamente a soma dos dois grupos. Essa propriedade é uma ferramenta para detectar dados incompatíveis ou definições diferentes. Antes de suspeitar de erro, verifique se há terceiro grupo, subpopulações repetidas, períodos diferentes ou mudança do indicador medido.\n\nÉ possível que uma clínica tenha maior recuperação em cada classe de gravidade, mas menor recuperação no total se tratar proporcionalmente muito mais casos graves. As taxas por categoria e a taxa global podem ser todas calculadas corretamente e responder a perguntas distintas. A inversão do tipo Simpson não prova qual tratamento é melhor nem identifica uma causa. Para interpretar, examine tamanhos, composição dos grupos, seleção e fatores de confundimento, inclusive se a gravidade influencia a escolha da clínica.",
-    "example": "Uma clínica A atende 90 casos leves com recuperação de 90% e 10 graves com 40%; a clínica B atende 10 leves com 95% e 90 graves com 50%.",
+    "example": "Uma clínica A atende 90 casos leves com recuperação de 90% e 10 graves com 40%; a clínica B atende 20 leves com 95% e 80 graves com 50%.",
     "steps": [
       "B supera A entre leves (95% contra 90%) e graves (50% contra 40%).",
-      "A atende principalmente leves e B principalmente graves; a taxa total aproxima-se da taxa predominante em cada uma.",
+      "A recupera 81 leves e 4 graves: 85 em 100. B recupera 19 leves e 40 graves: 59 em 100. As taxas globais invertem a comparação estratificada porque os tamanhos por gravidade são muito diferentes.",
       "Uma clínica pode ter agregado melhor mesmo quando a outra lidera em cada estrato. É preciso considerar seleção e gravidade antes de inferir eficácia causal."
     ],
     "quiz": [
