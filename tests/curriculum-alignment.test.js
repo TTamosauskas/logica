@@ -11,6 +11,8 @@ import {ALIGNED_ASSESSMENTS,ALIGNED_BASIC_PRACTICE,COMPETENCY_OWNER,ASSESSMENT_S
 import {REWRITE_CHAINS,makeRewriteQuestions} from '../src/core/precision-lab.js';
 import {prepareBank,validateBank,composeAssessment,gradeAssessment} from '../src/core/assessment.js';
 import {getNextLearningStep} from '../src/core/learning-path.js';
+import {SYLLOGISM_TEMPLATE_IDS,syllogismTemplatesFor,translationTemplatesFor} from '../src/core/practice-scope.js';
+import {ARGUMENT_TEMPLATES,TRANSLATION_TEMPLATES} from '../src/content/translation.js';
 const gaps=['condicionais_naturais','equiv_algebra','equiv_condicionais','regras_inferencia','negacao_quantificadores',
  'medicao_evidencias','medias_ponderadas','temporal_composta','fde_operacoes','intuicionista_negacao'];
 const readings={...GAP_READINGS_A,...GAP_READINGS_B};
@@ -127,4 +129,17 @@ test('progresso aprovado não desaparece porque uma aula nova foi inserida',()=>
  assert.ok(courseIds.includes('equiv_algebra'));
  const allButNew=Object.fromEntries(courseIds.filter(id=>!gaps.includes(id)).map(id=>[id,{mastered:true}]));
  assert.equal(getNextLearningStep(COURSE_UNITS,allButNew).id,'condicionais_naturais');
+});
+
+test('geradores de tradução e silogismos não antecipam inferências da próxima aula',()=>{
+ for(const level of ['easy','medium','hard']){
+  const cases=translationTemplatesFor(level,TRANSLATION_TEMPLATES);
+  assert.ok(cases.length>0);
+  assert.ok(cases.every(t=>typeof t.say==='function'));
+  assert.ok(cases.every(t=>!('valid' in t)),'Tradução deve exigir tradução, não decidir argumento');
+  const syllogisms=syllogismTemplatesFor(level,ARGUMENT_TEMPLATES);
+  assert.ok(syllogisms.length>0);
+  assert.deepEqual(syllogisms.map(x=>x.id),ARGUMENT_TEMPLATES.filter(t=>SYLLOGISM_TEMPLATE_IDS[level].includes(t.id)).map(x=>x.id));
+  assert.ok(syllogisms.every(t=>!['modustollens','simplificacao','cadeia'].includes(t.id)));
+ }
 });
