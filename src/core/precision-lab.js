@@ -77,6 +77,7 @@ export const REWRITE_CHAINS=[
  {id:'negacao-conjuncao',original:'¬(p ∧ q)',middle:'¬p ∨ ¬q',final:'p → ¬q',rule1:'Lei de De Morgan',rule2:'Eliminação da condicional',wrong:'¬p ∧ ¬q'},
  {id:'negacao-disjuncao',original:'¬(p ∨ q)',middle:'¬p ∧ ¬q',final:'¬(¬p → q)',rule1:'Lei de De Morgan',rule2:'Negação da condicional e dupla negação',wrong:'¬p ∨ ¬q'},
  {id:'distribuicao',original:'p ∧ (q ∨ r)',middle:'(p ∧ q) ∨ (p ∧ r)',final:'(q ∧ p) ∨ (r ∧ p)',rule1:'Distributividade',rule2:'Comutatividade da conjunção',wrong:'(p ∨ q) ∧ r'},
+ {id:'absorcao',original:'p ∨ (p ∧ q)',middle:'p',final:'p ∧ (p ∨ q)',rule1:'Absorção',rule2:'Absorção na forma inversa',wrong:'p ∧ q'},
  {id:'bicondicional',original:'p ↔ q',middle:'(p → q) ∧ (q → p)',final:'(¬p ∨ q) ∧ (¬q ∨ p)',rule1:'Definição do bicondicional',rule2:'Eliminação das duas condicionais',wrong:'(p → q) ∨ (q → p)'}
 ];
 const vars=['p','q','r'];
