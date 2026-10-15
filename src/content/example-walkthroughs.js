@@ -1,7 +1,9 @@
-/** Exemplos resolvidos concretos e segmentados para as 39 aulas do Curso Guiado. */
+/** Exemplos resolvidos concretos e segmentados para as 49 aulas do Curso Guiado. */
 import { ERROR_WORKED_EXAMPLES } from './errors-course.js';
 import { OTHER_LOGIC_WORKED } from './other-logics-course.js';
 import { FOUNDATIONS_WORKED } from './foundations-a.js';
+import { GAP_WORKED_A } from './gap-lessons-a.js';
+import { GAP_WORKED_B } from './gap-lessons-b.js';
 export const WORKED_EXAMPLES={
   ...ERROR_WORKED_EXAMPLES,
   "fundamentos": {
@@ -695,5 +697,7 @@ export const WORKED_EXAMPLES={
     }
   },
   ...OTHER_LOGIC_WORKED,
-  ...FOUNDATIONS_WORKED
+  ...FOUNDATIONS_WORKED,
+  ...GAP_WORKED_A,
+  ...GAP_WORKED_B
 };
