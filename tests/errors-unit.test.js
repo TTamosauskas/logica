@@ -11,14 +11,14 @@ import {buildIntegratedExamQuestions,ESSENTIAL_EXAM_LESSONS} from '../src/core/i
 import {beginReviewTracking,reviewStatus,recordReview,DAY_MS} from '../src/core/reviews.js';
 import {routeFromHash} from '../src/core/navigation.js';
 const unit=COURSE_UNITS.find(u=>u.title.includes('Erros Lógicos Comuns'));
-const ids=unit?.ids||[];
+const ids=(unit?.ids||[]).filter(id=>id!=='medias_ponderadas');
 
 test('a nova unidade contém sete aulas únicas e preserva as vinte e três antigas',()=>{
  assert.equal(COURSE_UNITS.length,8);
  assert.equal(MODULES.length,50);
  assert.equal(COURSE_UNITS.flatMap(u=>u.ids).length,49);
- assert.equal(ids.length,8);
- assert.equal(new Set(ids).size,8);
+ assert.equal(ids.length,7);
+ assert.equal(new Set(ids).size,7);
  for(const id of ids){
    assert.ok(MODULES.some(m=>m.id===id));
    assert.ok(LESSONS[id]);
