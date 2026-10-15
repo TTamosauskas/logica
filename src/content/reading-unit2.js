@@ -69,7 +69,7 @@ export const UNIT2_READINGS={
       ]},
       {heading:'Resolva um problema em dois passos explícitos',paragraphs:[
         'Considere a expressão p → q. Primeiro substitua a condicional por ¬p ∨ q, usando a eliminação da implicação material. Depois aplique De Morgan na direção inversa: ¬p ∨ q ≡ ¬(p ∧ ¬q). Chegamos a uma terceira forma sem mudar o valor lógico em nenhum passo.',
-        'A sequência registra não só o resultado, mas também a justificativa de cada passagem: p → q ≡ ¬p ∨ q ≡ ¬(p ∧ ¬q). Para simplificar expressões grandes, podemos recorrer também a comutatividade, associatividade, distributividade e dupla negação, sempre respeitando os parênteses.'
+        'A sequência registra não só o resultado, mas também a justificativa de cada passagem: p → q ≡ ¬p ∨ q ≡ ¬(p ∧ ¬q). Nesta aula, utilizamos eliminação da condicional, De Morgan e dupla negação. Comutatividade, associatividade, distributividade e absorção serão apresentadas e praticadas na próxima aula, antes de integrarem novas cadeias de transformação.'
       ]},
       {heading:'Um único contraexemplo rejeita um passo errado',paragraphs:[
         'Agora imagine que alguém transformou p → q em q → p. Com p = F e q = V, a primeira fórmula é verdadeira e a segunda é falsa. Como encontramos uma interpretação em que as expressões divergem, a transformação não é válida. Inverter uma condicional não é uma regra de equivalência.',
