@@ -11,15 +11,15 @@ import {getNextLearningStep} from '../src/core/learning-path.js';
 import {buildIntegratedExamQuestions} from '../src/core/integrated-exam.js';
 
 const order=['sistemas_formais','sintaxe_formal','semantica_modelos','metateoria'];
-test('a Unidade VII contém outras lógicas e a VIII quatro fundamentos, em 39 aulas',()=>{
+test('a Unidade VII contém outras lógicas e a VIII quatro fundamentos, em 49 aulas',()=>{
  assert.equal(COURSE_UNITS.length,8);
  assert.match(COURSE_UNITS[6].title,/VII — Outras lógicas/);
  assert.match(COURSE_UNITS[7].title,/VIII — Fundamentos teóricos da lógica/);
  assert.deepEqual(COURSE_UNITS[7].ids,order);
- assert.equal(COURSE_UNITS[6].ids.length,7);
- assert.equal(COURSE_UNITS.flatMap(u=>u.ids).length,39);
- assert.equal(new Set(COURSE_UNITS.flatMap(u=>u.ids)).size,39);
- assert.equal(MODULES.length,40);
+ assert.equal(COURSE_UNITS[6].ids.length,10);
+ assert.equal(COURSE_UNITS.flatMap(u=>u.ids).length,49);
+ assert.equal(new Set(COURSE_UNITS.flatMap(u=>u.ids)).size,49);
+ assert.equal(MODULES.length,50);
  assert.equal(MODULES.find(x=>x.id==='metateoria').no,'15');
  for(const id of order)assert.ok(MODULES.find(x=>x.id===id));
 });
