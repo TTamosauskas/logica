@@ -7,8 +7,8 @@ import {truthRows,evalAst} from '../src/core/logic.js';
 
 const lessonIds=COURSE_UNITS.flatMap(unit=>unit.ids);
 
-test('todas as 39 aulas têm exemplo resolvido em três passos concretos',()=>{
-  assert.equal(lessonIds.length,39);
+test('todas as 49 aulas têm exemplo resolvido em três passos concretos',()=>{
+  assert.equal(lessonIds.length,49);
   assert.deepEqual(new Set(Object.keys(WORKED_EXAMPLES)),new Set(lessonIds));
   for(const id of lessonIds){
     const ex=WORKED_EXAMPLES[id];
