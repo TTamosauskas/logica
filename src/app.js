@@ -173,7 +173,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     const triple=ARGUMENT_TEMPLATES.filter(x=>['transitividade','cadeia','reciproca','independente','afirmasucessor'].includes(x.id));
     let chosen=null,best=Infinity;
     for(let k=0;k<90;k++){
-      const scenario=pick(SCENARIOS),template=pick(level==='easy'?two:level==='medium'?ARGUMENT_TEMPLATES:triple),key=`${level}|${scenario.id}|${template.id}`;
+      const scenario=pick(SCENARIOS),template=pick(level==='easy'?two:level==='medium'?ARGUMENT_TEMPLATES.filter(x=>x.id!=='modustollens'):triple),key=`${level}|${scenario.id}|${template.id}`;
       const recent=syllogismHistory.slice(-12),times=syllogismHistory.filter(x=>x.key===key).length;
       const score=times*110+(recent.some(x=>x.scenario===scenario.id)?170:0)+(recent.slice(-5).some(x=>x.template===template.id)?110:0)+Math.random()*25;
       if(score<best){best=score;chosen={scenario,template,key}}
