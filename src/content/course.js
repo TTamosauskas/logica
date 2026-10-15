@@ -3,15 +3,17 @@ import { COURSE_UNIT13_LESSONS } from './course-unit13.js';
 import { ERROR_LESSONS } from './errors-course.js';
 import { OTHER_LOGIC_LESSONS } from './other-logics-course.js';
 import { FOUNDATIONS_LESSONS } from './foundations-a.js';
+import { GAP_LESSONS_A } from './gap-lessons-a.js';
+import { GAP_LESSONS_B } from './gap-lessons-b.js';
 
 export const COURSE_UNITS=[
-    {title:'I — Linguagem, proposições e argumentos',note:'Conceitos básicos, conectivos, tradução e leitura crítica.',ids:['fundamentos','operadores','traducao','falacias','pressupostos']},
-    {title:'II — Semântica proposicional',note:'Expressões, equivalências, classificação, validade e árvores semânticas.',ids:['compostas','demorgan','classificacao','equivalencias','argumentos','arvores']},
-    {title:'III — Inferência e demonstração',note:'Silogismos, provas em linhas e resolução de problemas.',ids:['silogismos','provas','deducao']},
-    {title:'IV — Lógica de primeira ordem',note:'Quantificadores, diagramas, relações e interpretação de modelos.',ids:['categoricos','categoricos2','predicados2']},
-    {title:'V — Evidências e raciocínio sob incerteza',note:'Indução, hipóteses explicativas, taxas de base, probabilidade condicional e causalidade.',ids:['inducao','abducao','probabilidade','causalidade']},
-    {title:'VI — Erros Lógicos Comuns',note:'Falácias informais, vieses cognitivos, armadilhas estatísticas e investigação crítica de argumentos.',ids:['falacias_relevancia','falacias_pressupostos','vieses_julgamento','vieses_decisao','ilusoes_graficos','ilusoes_inferencia','oficina_erros']},
-    {title:'VII — Outras lógicas',note:'Modalidades, tempo, conhecimento, normas e alternativas à lógica clássica.',ids:['modais','temporal','epistemica','deontica','difusa','paraconsistente','intuicionista']},
+    {title:'I — Linguagem, proposições e argumentos',note:'Conceitos básicos, conectivos, tradução e leitura crítica.',ids:['fundamentos','operadores','traducao','condicionais_naturais','falacias','pressupostos']},
+    {title:'II — Semântica proposicional',note:'Expressões, equivalências, classificação, validade e árvores semânticas.',ids:['compostas','demorgan','classificacao','equivalencias','equiv_algebra','equiv_condicionais','argumentos','arvores']},
+    {title:'III — Inferência e demonstração',note:'Silogismos, provas em linhas e resolução de problemas.',ids:['silogismos','regras_inferencia','provas','deducao']},
+    {title:'IV — Lógica de primeira ordem',note:'Quantificadores, diagramas, relações e interpretação de modelos.',ids:['categoricos','negacao_quantificadores','categoricos2','predicados2']},
+    {title:'V — Evidências e raciocínio sob incerteza',note:'Indução, hipóteses explicativas, taxas de base, probabilidade condicional e causalidade.',ids:['inducao','medicao_evidencias','abducao','probabilidade','causalidade']},
+    {title:'VI — Erros Lógicos Comuns',note:'Falácias informais, vieses cognitivos, armadilhas estatísticas e investigação crítica de argumentos.',ids:['falacias_relevancia','falacias_pressupostos','vieses_julgamento','vieses_decisao','ilusoes_graficos','ilusoes_inferencia','medias_ponderadas','oficina_erros']},
+    {title:'VII — Outras lógicas',note:'Modalidades, tempo, conhecimento, normas e alternativas à lógica clássica.',ids:['modais','temporal','temporal_composta','epistemica','deontica','difusa','paraconsistente','fde_operacoes','intuicionista','intuicionista_negacao']},
     {title:'VIII — Fundamentos teóricos da lógica',note:'Metalinguagem, formação de fórmulas, modelos e relações entre prova e consequência.',ids:['sistemas_formais','sintaxe_formal','semantica_modelos','metateoria']}
   ];
 
@@ -89,5 +91,7 @@ export const LESSONS={
         cq('Qual condição define decidibilidade de um problema?',['Existência de algoritmo que termine para toda entrada com a resposta correta.','Possibilidade de encontrar algumas provas quando existirem.','Existência de uma execução que demora indefinidamente.'],0,'Um procedimento de busca pode não terminar nos casos negativos; decisor termina sempre.')]},
     modais:{lead:'Como expressar necessidade, possibilidade e propriedades temporais?',theory:'Na lógica modal, □φ significa “φ é necessária” e ◇φ significa “φ é possível”, com significados definidos por relações entre mundos. Na lógica temporal, Fφ pode significar “em algum momento futuro, φ”, e Gφ “em todos os momentos futuros, φ”.',example:'Compare □p, ◇p e ◇¬p.',steps:['□p exige p em todos os mundos acessíveis.','◇p exige p em pelo menos um mundo acessível.','◇¬p exige um mundo acessível onde p é falsa.'],quiz:[cq('◇p significa, na semântica modal usual:',['p é possível','p é impossível','p é necessário'],0,'Basta um mundo acessível satisfazer p.'),cq('□p significa:',['p é necessário nos mundos acessíveis','p é falso','p será verdadeiro amanhã'],0,'É quantificação universal sobre mundos acessíveis.'),cq('Em lógica temporal linear, Fp significa:',['p em algum momento futuro','p em todos os futuros','p foi falso antes'],0,'F representa eventualmente no futuro.'),cq('Na semântica de Kripke, a modalidade depende:',['Da relação de acessibilidade entre mundos','Apenas do nome da variável','Da quantidade de letras'],0,'A acessibilidade determina os mundos considerados.')]},
     ...OTHER_LOGIC_LESSONS,
-    ...FOUNDATIONS_LESSONS
+    ...FOUNDATIONS_LESSONS,
+    ...GAP_LESSONS_A,
+    ...GAP_LESSONS_B
   };
