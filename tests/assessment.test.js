@@ -19,13 +19,17 @@ import {OTHER_LOGIC_READINGS} from '../src/content/other-logics-course.js';
 import {OTHER_LOGIC_ASSESSMENTS} from '../src/content/other-logics-assessments.js';
 import {FOUNDATIONS_READINGS} from '../src/content/foundations-a.js';
 import {FOUNDATIONS_ASSESSMENTS} from '../src/content/foundations-assessments.js';
+import {GAP_READINGS_A} from '../src/content/gap-lessons-a.js';
+import {GAP_READINGS_B} from '../src/content/gap-lessons-b.js';
+import {GAP_ASSESSMENTS} from '../src/content/gap-assessments.js';
+import {ALIGNED_ASSESSMENTS} from '../src/content/curriculum-alignment.js';
 import {prepareBank,validateBank,composeAssessment,gradeAssessment} from '../src/core/assessment.js';
-const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS};
+const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS,...GAP_READINGS_A,...GAP_READINGS_B};
 const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
-const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS};
+const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS,...GAP_ASSESSMENTS,...ALIGNED_ASSESSMENTS};
 const bank=id=>prepareBank(id,LESSONS[id],readings[id],supplements[id]||[]);
-test('todos os 39 temas possuem banco com competências distintas',()=>{
- assert.equal(ids.length,39);
+test('todos os 49 temas possuem banco com competências distintas',()=>{
+ assert.equal(ids.length,49);
  for(const id of ids){
    const items=validateBank(bank(id));
    assert.ok(items.length>=12,id+': menos de 12 questões editoriais');
