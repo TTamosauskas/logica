@@ -270,7 +270,7 @@ export const GAP_ASSESSMENTS={
       "objective": "Aplicação independente de regra ensinada"
     },
     {
-      "question": "¬(p→q) equivale a:",
+      "question": "Qual condição faz ¬(p→q) ser verdadeira?",
       "options": [
         "p∧¬q.",
         "¬p∨q.",
@@ -786,7 +786,7 @@ export const GAP_ASSESSMENTS={
   ],
   "fde_operacoes": [
     {
-      "question": "Em FDE, B corresponde a:",
+      "question": "Qual par de suportes descreve uma informação contraditória em FDE?",
       "options": [
         "(1,1).",
         "(0,0).",
