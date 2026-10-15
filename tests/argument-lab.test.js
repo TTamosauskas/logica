@@ -33,7 +33,7 @@ test('progresso aprovado das 17 aulas antigas é preservado; só faltam os dois 
   assert.equal(overview.total,49);
   assert.equal(overview.approved,17);
   assert.equal(overview.consolidated,0);
-  assert.equal(getNextLearningStep(COURSE_UNITS,previous).id,'pressupostos');
+  assert.equal(getNextLearningStep(COURSE_UNITS,previous).id,'condicionais_naturais');
 });
 test('os 10 silogismos têm validade demonstrável por exame exaustivo de modelos',()=>{
   assert.ok(CATEGORICAL_CASES.length>=8);
