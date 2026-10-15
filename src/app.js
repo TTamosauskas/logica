@@ -31,7 +31,7 @@ import { GAP_READINGS_A } from './content/gap-lessons-a.js';
 import { GAP_READINGS_B } from './content/gap-lessons-b.js';
 import { GAP_ASSESSMENTS } from './content/gap-assessments.js';
 import { GAP_PRACTICE } from './content/gap-practice.js';
-import { ALIGNED_ASSESSMENTS } from './content/curriculum-alignment.js';
+import { ALIGNED_ASSESSMENTS, ALIGNED_BASIC_PRACTICE } from './content/curriculum-alignment.js';
 import { WORKED_EXAMPLES } from './content/example-walkthroughs.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
 import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
