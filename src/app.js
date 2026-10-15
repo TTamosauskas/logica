@@ -27,6 +27,11 @@ import { OTHER_LOGIC_ASSESSMENTS } from './content/other-logics-assessments.js';
 import { FOUNDATIONS_READINGS } from './content/foundations-a.js';
 import { FOUNDATIONS_ASSESSMENTS } from './content/foundations-assessments.js';
 import { FOUNDATIONS_PRACTICE } from './content/foundations-practice.js';
+import { GAP_READINGS_A } from './content/gap-lessons-a.js';
+import { GAP_READINGS_B } from './content/gap-lessons-b.js';
+import { GAP_ASSESSMENTS } from './content/gap-assessments.js';
+import { GAP_PRACTICE } from './content/gap-practice.js';
+import { ALIGNED_ASSESSMENTS } from './content/curriculum-alignment.js';
 import { WORKED_EXAMPLES } from './content/example-walkthroughs.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
 import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
@@ -164,7 +169,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   let syllogismHistory=loadShortHistory(SYLLOGISM_HISTORY_KEY);
   function saveShortHistory(key,h){try{localStorage.setItem(key,JSON.stringify(h.slice(-180)))}catch(e){}}
   function syllogismsMode(level){
-    const two=ARGUMENT_TEMPLATES.filter(x=>!['transitividade','cadeia','reciproca','independente','afirmasucessor'].includes(x.id));
+    const two=ARGUMENT_TEMPLATES.filter(x=>!['transitividade','cadeia','reciproca','independente','afirmasucessor','modustollens'].includes(x.id));
     const triple=ARGUMENT_TEMPLATES.filter(x=>['transitividade','cadeia','reciproca','independente','afirmasucessor'].includes(x.id));
     let chosen=null,best=Infinity;
     for(let k=0;k<90;k++){
@@ -776,7 +781,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   const R_PATTERNS=[[[1,2],[2],[]],[[0,1],[1],[2]],[[1],[2],[]],[[1,2],[0],[0]], [[],[1],[0]],[[0,1],[0,2],[1,2]]];
   function truthRow(){return {p:Math.random()<.5,q:Math.random()<.5}}
   function semanticsMode(level,id='modais'){
-    const temporal=id==='temporal';
+    const temporal=id==='temporal'||id==='temporal_composta';
     let special,ex;
     if(!temporal){
       const edges=pick(R_PATTERNS).map(row=>row.slice()),truth=Array.from({length:3},truthRow),world=rng(3),model={edges,truth};
@@ -786,16 +791,16 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       ex=makeSpecial('modais','Investigue um modelo de Kripke',`Determine V ou F para cada fórmula no mundo w${world}. Use as setas e a valoração de p e q.`,special,'Comece pelo mundo indicado; siga apenas as setas que saem dele. Para modalidades aninhadas, repita a busca a partir do novo mundo.','Cada resposta foi calculada recursivamente pela semântica de Kripke.');
       ex.metadata.signature='kripke|'+JSON.stringify({edges,truth,world,formulas:items.map(x=>x.formula)});
     }else{
-      const trace=Array.from({length:4},truthRow),start=rng(3);const formulas=level==='hard'?[M('U',MP,MQ),M('G',M('imp',MP,M('F',MQ))),M('F',M('G',MP))]:[M('F',MP),M('G',MQ),M('X',MP)];
+      const trace=Array.from({length:4},truthRow),start=rng(3);const formulas=id==='temporal_composta'?[M('G',M('imp',MP,M('F',MQ))),M('F',M('G',MP)),M('X',M('F',MP))]:[M('U',MP,MQ),M('G',MQ),M('X',MP)];
       const items=formulas.map(f=>({formula:fmtFormula(f),value:evaluateTrace(f,start,trace)?'V':'F',reason:temporalReason(f,start,trace)}));
       special={type:'semanticworld',kind:'temporal',start,model:{trace},items,questions:items.map(x=>({question:x.formula})),scope:'Traço finito: F e G incluem o instante atual; X exige um instante seguinte e é F no último; p U q exige ocorrência de q.'};
-      ex=makeSpecial('temporal','Avalie uma sequência temporal',`Determine V ou F para cada fórmula no instante t${start}. Leia a linha do tempo até o final.`,special,'Comece em t'+start+' e percorra os instantes seguintes na ordem.','Os resultados foram calculados sobre o traço finito exibido, com uma convenção explícita para X no último instante.');
+      ex=makeSpecial(id,'Avalie uma sequência temporal',`Determine V ou F para cada fórmula no instante t${start}. Leia a linha do tempo até o final.`,special,'Comece em t'+start+' e percorra os instantes seguintes na ordem.','Os resultados foram calculados sobre o traço finito exibido, com uma convenção explícita para X no último instante.');
       ex.metadata.signature='trace|'+JSON.stringify({trace,start,formulas:items.map(x=>x.formula)});
     }
     return ex;
   }
-  function otherLogicMode(level,id){
-    const model=createOtherLogicLab(id,level);
+  function otherLogicMode(level,id,source=id){
+    const model=createOtherLogicLab(source,level);
     const special={type:'otherlogic',...model,questions:model.items.map(x=>({question:x.formula}))};
     const ex=makeSpecial(id,model.title,model.context,special,
       'Leia os mundos, estados ou graus apresentados e aplique as regras explícitas do modelo antes de responder.',
@@ -818,7 +823,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     return '';
   }
 
-  const GENERATORS={...Object.fromEntries(Object.keys(ERROR_PRACTICE).map(id=>[id,()=>criticalThinkingMode(level,id)])),inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,...Object.fromEntries(Object.keys(FOUNDATIONS_PRACTICE).map(id=>[id,l=>foundationsPracticeMode(l,id)])),falacias:advancedConceptMode,modais:l=>semanticsMode(l,'modais'),temporal:l=>semanticsMode(l,'temporal'),...Object.fromEntries(OTHER_LOGIC_LAB_IDS.map(id=>[id,l=>otherLogicMode(l,id)])),categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:equivalencePrecisionMode,argumentos:argumentsMode};
+  const GENERATORS={...Object.fromEntries(Object.keys(ERROR_PRACTICE).map(id=>[id,()=>criticalThinkingMode(level,id)])),...Object.fromEntries(Object.keys(GAP_PRACTICE).map(id=>[id,l=>gapPracticeMode(l,id)])),inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,...Object.fromEntries(Object.keys(FOUNDATIONS_PRACTICE).map(id=>[id,l=>foundationsPracticeMode(l,id)])),falacias:advancedConceptMode,modais:l=>semanticsMode(l,'modais'),temporal:l=>semanticsMode(l,'temporal'),temporal_composta:l=>semanticsMode(l,'temporal_composta'),...Object.fromEntries(OTHER_LOGIC_LAB_IDS.map(id=>[id,l=>otherLogicMode(l,id)])),fde_operacoes:l=>otherLogicMode(l,'fde_operacoes','paraconsistente'),intuicionista_negacao:l=>otherLogicMode(l,'intuicionista_negacao','intuicionista'),paraconsistente:l=>alignedBasicMode(l,'paraconsistente',ALIGNED_BASIC_PRACTICE.paraconsistente),intuicionista:l=>alignedBasicMode(l,'intuicionista',ALIGNED_BASIC_PRACTICE.intuicionista),categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:l=>equivalencePrecisionMode(l,'equivalencias'),equiv_algebra:l=>equivalencePrecisionMode(l,'equiv_algebra'),equiv_condicionais:l=>equivalencePrecisionMode(l,'equiv_condicionais'),argumentos:l=>argumentsMode(l,'intro')};
   const STORE_KEY='logiclab_progress_v1',THEME_KEY='logiclab_theme_v1';
   function blankStats(){return {tries:0,perfect:0,correct:0,total:0,byMode:{},translationTypes:{},deductionLevels:{}}}
   function loadStats(){try{const saved=JSON.parse(localStorage.getItem(STORE_KEY));if(saved&&typeof saved.tries==='number'&&saved.byMode)return saved}catch(e){}return blankStats()}
@@ -1454,10 +1459,27 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       'Pergunte qual sistema está envolvido. Correção: ⊢ implica ⊨. A parada de um programa específico não é o mesmo que um decisor para todos os programas.',
       'Completude da lógica de primeira ordem não contradiz incompletude de teorias aritméticas. Busca de provas e decisão geral são noções distintas.');
   }
-  function equivalencePrecisionMode(level){
-    if(level==='easy')return equivalences(level);
-    const chain=pick(REWRITE_CHAINS);
-    return makeSpecial('equivalencias','Transforme uma fórmula justificando cada passo',
+  function gapPracticeMode(level,id){
+    const lesson=LESSONS[id],pool=GAP_PRACTICE[id];
+    if(!lesson||!pool)throw Error('Aula sem prática prevista: '+id);
+    return makeSpecial(id,'Pratique a competência: '+lesson.lead,
+      'Analise o caso e escolha a aplicação justificada da regra ensinada na leitura e no exemplo.',
+      {type:'concept',questions:shuffle(pool).slice(0,level==='easy'?3:5)},
+      'Retorne à definição, identifique os elementos e aplique o mesmo procedimento do exemplo.',
+      'A conclusão deve decorrer da regra efetivamente ensinada, não de uma intuição sobre um assunto futuro.');
+  }
+  function alignedBasicMode(level,id,pool){
+    return makeSpecial(id,'Consolide a competência introdutória',
+      'Aplique a definição e a interpretação do exemplo sem introduzir técnicas avançadas.',
+      {type:'concept',questions:shuffle(pool).slice(0,level==='easy'?3:5)},
+      'Separe a afirmação e o que a evidência autoriza concluir.',
+      'Uma resposta adequada respeita apenas as competências apresentadas na aula.');
+  }
+  function equivalencePrecisionMode(level,id='equivalencias'){
+    if(level==='easy'&&id!=='equivalencias')return gapPracticeMode(level,id);
+    const groups={equivalencias:['implicacao','negacao-conjuncao'],equiv_algebra:['distribuicao','absorcao'],equiv_condicionais:['contrapositiva','negacao-disjuncao','bicondicional']};
+    const chain=pick(REWRITE_CHAINS.filter(x=>groups[id]?.includes(x.id)));
+    return makeSpecial(id,'Transforme uma fórmula justificando cada passo',
       'Verifique duas transformações equivalentes, identifique a lei aplicada e escolha um contraexemplo para uma transformação errada.',
       {type:'concept',questions:makeRewriteQuestions(chain)},
       'Em cada etapa, compare as condições de verdade e identifique a regra usada. Uma única interpretação divergente refuta a equivalência.',
@@ -1598,8 +1620,8 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('courseLocation').textContent=context.location;
     $('courseDescription').textContent=context.description;
   }
-  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS};
-  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS};
+  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS,...GAP_READINGS_A,...GAP_READINGS_B};
+  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS,...GAP_ASSESSMENTS,...ALIGNED_ASSESSMENTS};
   function assessmentForLesson(id){
     const p=courseProgress(id);
     p.assessmentV2=p.assessmentV2||{version:ASSESSMENT_VERSION,history:[]};
