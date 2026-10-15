@@ -129,3 +129,23 @@ export function validateCompetencyOrder(units,owners=COMPETENCY_OWNER,scope=ASSE
  }
  return errors;
 }
+
+/** Prática própria das introduções: não exige as operações da aula posterior. */
+export const ALIGNED_BASIC_PRACTICE={
+ paraconsistente:[
+  {question:'Duas fontes afirmam p e ¬p. Como classificar a informação sobre p?',options:['B: suporte em ambos os sentidos.','N: nenhuma informação.','T: só suporte positivo.'],correct:0,why:'No sistema FDE, B registra suporte positivo e negativo simultaneamente.'},
+  {question:'Nenhuma fonte informa p ou ¬p. Que estado representa p?',options:['N: ausência dos dois suportes.','B: informação contraditória.','F: suporte negativo presente.'],correct:0,why:'N distingue informação ausente de informação conflitante.'},
+  {question:'Uma fonte confirma p, sem suporte contrário. Qual estado?',options:['T: apenas suporte verdadeiro.','B: suporte duplo.','N: informação ausente.'],correct:0,why:'O estado T corresponde a informação favorável sem evidência contrária.'},
+  {question:'Uma fonte apoia apenas ¬p. Qual estado representa p?',options:['F: suporte apenas negativo.','T: suporte somente positivo.','B: suporte para ambos.'],correct:0,why:'F registra a evidência contrária sem suporte positivo.'},
+  {question:'O conflito em p permite concluir qualquer q sem evidência?',options:['Não, a consequência paraconsistente evita explosão.','Sim, toda lógica aceita explosão.','Sim, o estado B significa certeza universal.'],correct:0,why:'Uma contradição localizada não fornece automaticamente informação sobre outra afirmação.'},
+  {question:'Qual diferença existe entre B e N?',options:['B possui ambos os suportes; N não possui nenhum.','B e N são sinônimos.','B e N medem probabilidades iguais.'],correct:0,why:'A semântica distingue conflito informacional de desconhecimento.'}
+ ],
+ intuicionista:[
+  {question:'Em w0 p ainda não foi demonstrada, mas w1 estende w0 e demonstra p. Em w0, ¬p é:',options:['Não forçada, pela extensão w1.','Forçada automaticamente.','Uma probabilidade de 50%.'],correct:0,why:'A negação construtiva precisa excluir provas de p em todas as extensões.'},
+  {question:'O que significa demonstrar p∨q de modo construtivo?',options:['Produzir prova de p ou prova de q.','Não encontrar contraexemplo numa amostra.','Afirmar uma probabilidade favorável.'],correct:0,why:'Uma disjunção exige que pelo menos um lado seja estabelecido.'},
+  {question:'A informação já demonstrada num mundo de Kripke:',options:['Persiste nas extensões permitidas.','Desaparece por definição.','Torna-se automaticamente falsa.'],correct:0,why:'Monotonicidade é uma condição do forçamento intuicionista.'},
+  {question:'Uma fórmula p não forçada significa necessariamente ¬p forçada?',options:['Não; uma extensão pode vir a provar p.','Sim, por bivalência intuicionista.','Sim, sempre que há dois mundos.'],correct:0,why:'A ausência de prova é diferente de uma demonstração da negação.'},
+  {question:'Uma prova construtiva de p→q representa:',options:['Um método que transforma provas de p em provas de q.','A simples lembrança de que q é plausível.','Uma frequência de q em dados reais.'],correct:0,why:'A implicação possui conteúdo de transformação de justificativas.'},
+  {question:'O terceiro excluído p∨¬p é teorema geral intuicionista?',options:['Não; há modelos que não o forçam.','Sim, por adoção irrestrita clássica.','É uma fórmula malformada.'],correct:0,why:'A lógica intuicionista não assume universalmente prova de p ou de sua negação.'}
+ ]
+};
