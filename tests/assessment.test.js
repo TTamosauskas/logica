@@ -23,13 +23,17 @@ import {GAP_READINGS_A} from '../src/content/gap-lessons-a.js';
 import {GAP_READINGS_B} from '../src/content/gap-lessons-b.js';
 import {GAP_ASSESSMENTS} from '../src/content/gap-assessments.js';
 import {ALIGNED_ASSESSMENTS} from '../src/content/curriculum-alignment.js';
+import {MICRO_READINGS_A,MICRO_ASSESSMENTS_A} from '../src/content/micro-lessons-a.js';
+import {MICRO_READINGS_B,MICRO_ASSESSMENTS_B} from '../src/content/micro-lessons-b.js';
+import {FOCUSED_READINGS_A,FOCUSED_ASSESSMENTS_A} from '../src/content/focused-lessons-a.js';
+import {FOCUSED_READINGS_B,FOCUSED_ASSESSMENTS_B} from '../src/content/focused-lessons-b.js';
 import {prepareBank,validateBank,composeAssessment,gradeAssessment} from '../src/core/assessment.js';
-const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS,...GAP_READINGS_A,...GAP_READINGS_B};
+const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS,...GAP_READINGS_A,...GAP_READINGS_B,...MICRO_READINGS_A,...MICRO_READINGS_B,...FOCUSED_READINGS_A,...FOCUSED_READINGS_B};
 const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
-const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS,...GAP_ASSESSMENTS,...ALIGNED_ASSESSMENTS};
+const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS,...GAP_ASSESSMENTS,...ALIGNED_ASSESSMENTS,...MICRO_ASSESSMENTS_A,...MICRO_ASSESSMENTS_B,...FOCUSED_ASSESSMENTS_A,...FOCUSED_ASSESSMENTS_B};
 const bank=id=>prepareBank(id,LESSONS[id],readings[id],supplements[id]||[]);
-test('todos os 49 temas possuem banco com competências distintas',()=>{
- assert.equal(ids.length,49);
+test('todos os 61 temas possuem banco com competências distintas',()=>{
+ assert.equal(ids.length,61);
  for(const id of ids){
    const items=validateBank(bank(id));
    assert.ok(items.length>=12,id+': menos de 12 questões editoriais');
