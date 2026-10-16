@@ -1,4 +1,5 @@
-import { MODULES } from './content/modules.js';
+import { MODULES as HISTORICAL_MODULES } from './content/modules.js';
+import { numberCourseModules } from './core/course-numbering.js';
 import { LEARNING_STAGES, getPracticeGroups, getNextLearningStep } from './core/learning-path.js';
 import { routeFromHash } from './core/navigation.js';
 import { reviewStatus,beginReviewTracking,recordReview,reviewQueue,consolidatedCount,studyRecommendation } from './core/reviews.js';
@@ -19,6 +20,7 @@ import { DEDUCTION_CONTEXTS, DEDUCTION_NAMES, DEDUCTION_LEVELS } from './content
 import { CATEGORICAL_TERMS } from './content/categorical.js';
 import { THEOREM_WORKSHOPS, THEORY_CARDS } from './content/advanced.js';
 import { COURSE_UNITS, LESSONS } from './content/course.js';
+const MODULES=numberCourseModules(COURSE_UNITS,HISTORICAL_MODULES);
 import { ERROR_READINGS } from './content/errors-course.js';
 import { ERROR_ASSESSMENTS } from './content/errors-assessments.js';
 import { ERROR_PRACTICE } from './content/errors-practice.js';
