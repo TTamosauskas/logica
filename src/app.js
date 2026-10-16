@@ -33,6 +33,8 @@ import { GAP_READINGS_A } from './content/gap-lessons-a.js';
 import { GAP_READINGS_B } from './content/gap-lessons-b.js';
 import { GAP_ASSESSMENTS } from './content/gap-assessments.js';
 import { GAP_PRACTICE } from './content/gap-practice.js';
+import { MICRO_READINGS_A,MICRO_ASSESSMENTS_A,MICRO_PRACTICE_A } from './content/micro-lessons-a.js';
+import { MICRO_READINGS_B,MICRO_ASSESSMENTS_B,MICRO_PRACTICE_B } from './content/micro-lessons-b.js';
 import { ALIGNED_ASSESSMENTS, ALIGNED_BASIC_PRACTICE } from './content/curriculum-alignment.js';
 import { WORKED_EXAMPLES } from './content/example-walkthroughs.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
@@ -821,7 +823,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     return '';
   }
 
-  const GENERATORS={...Object.fromEntries(Object.keys(ERROR_PRACTICE).map(id=>[id,()=>criticalThinkingMode(level,id)])),...Object.fromEntries(Object.keys(GAP_PRACTICE).map(id=>[id,l=>gapPracticeMode(l,id)])),inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,...Object.fromEntries(Object.keys(FOUNDATIONS_PRACTICE).map(id=>[id,l=>foundationsPracticeMode(l,id)])),falacias:advancedConceptMode,modais:l=>semanticsMode(l,'modais'),temporal:l=>semanticsMode(l,'temporal'),temporal_composta:l=>semanticsMode(l,'temporal_composta'),...Object.fromEntries(OTHER_LOGIC_LAB_IDS.map(id=>[id,l=>otherLogicMode(l,id)])),fde_operacoes:l=>otherLogicMode(l,'fde_operacoes','paraconsistente'),intuicionista_negacao:l=>otherLogicMode(l,'intuicionista_negacao','intuicionista'),paraconsistente:l=>alignedBasicMode(l,'paraconsistente',ALIGNED_BASIC_PRACTICE.paraconsistente),intuicionista:l=>alignedBasicMode(l,'intuicionista',ALIGNED_BASIC_PRACTICE.intuicionista),categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:l=>equivalencePrecisionMode(l,'equivalencias'),equiv_algebra:l=>equivalencePrecisionMode(l,'equiv_algebra'),equiv_condicionais:l=>equivalencePrecisionMode(l,'equiv_condicionais'),argumentos:l=>argumentsMode(l,'intro')};
+  const GENERATORS={...Object.fromEntries(Object.keys(ERROR_PRACTICE).map(id=>[id,()=>criticalThinkingMode(level,id)])),...Object.fromEntries(Object.keys({...GAP_PRACTICE,...MICRO_PRACTICE_A,...MICRO_PRACTICE_B}).map(id=>[id,l=>gapPracticeMode(l,id)])),inducao:()=>evidenceMode('inducao'),abducao:()=>evidenceMode('abducao'),probabilidade:()=>evidenceMode('probabilidade'),causalidade:()=>evidenceMode('causalidade'),pressupostos:assumptionsMode,categoricos2:categoricalReasoningMode,provas:proofMode,predicados2:predicatePrecisionMode,arvores:advancedConceptMode,...Object.fromEntries(Object.keys(FOUNDATIONS_PRACTICE).map(id=>[id,l=>foundationsPracticeMode(l,id)])),falacias:advancedConceptMode,modais:l=>semanticsMode(l,'modais'),temporal:l=>semanticsMode(l,'temporal'),temporal_composta:l=>semanticsMode(l,'temporal_composta'),...Object.fromEntries(OTHER_LOGIC_LAB_IDS.map(id=>[id,l=>otherLogicMode(l,id)])),fde_operacoes:l=>otherLogicMode(l,'fde_operacoes','paraconsistente'),intuicionista_negacao:l=>otherLogicMode(l,'intuicionista_negacao','intuicionista'),paraconsistente:l=>alignedBasicMode(l,'paraconsistente',ALIGNED_BASIC_PRACTICE.paraconsistente),intuicionista:l=>alignedBasicMode(l,'intuicionista',ALIGNED_BASIC_PRACTICE.intuicionista),categoricos:categoricalMode,silogismos:syllogismsMode,deducao:deductionMode,traducao:translationMode,fundamentos:fundamentals,operadores:operators,compostas:composed,demorgan:demorgan,classificacao:classification,equivalencias:l=>equivalencePrecisionMode(l,'equivalencias'),equiv_algebra:l=>equivalencePrecisionMode(l,'equiv_algebra'),equiv_condicionais:l=>equivalencePrecisionMode(l,'equiv_condicionais'),argumentos:l=>argumentsMode(l,'intro')};
   const STORE_KEY='logiclab_progress_v1',THEME_KEY='logiclab_theme_v1';
   function blankStats(){return {tries:0,perfect:0,correct:0,total:0,byMode:{},translationTypes:{},deductionLevels:{}}}
   function loadStats(){try{const saved=JSON.parse(localStorage.getItem(STORE_KEY));if(saved&&typeof saved.tries==='number'&&saved.byMode)return saved}catch(e){}return blankStats()}
@@ -1458,7 +1460,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       'Completude da lógica de primeira ordem não contradiz incompletude de teorias aritméticas. Busca de provas e decisão geral são noções distintas.');
   }
   function gapPracticeMode(level,id){
-    const lesson=LESSONS[id],pool=GAP_PRACTICE[id];
+    const lesson=LESSONS[id],pool={...GAP_PRACTICE,...MICRO_PRACTICE_A,...MICRO_PRACTICE_B}[id];
     if(!lesson||!pool)throw Error('Aula sem prática prevista: '+id);
     return makeSpecial(id,'Pratique a competência: '+lesson.lead,
       'Analise o caso e escolha a aplicação justificada da regra ensinada na leitura e no exemplo.',
@@ -1618,8 +1620,8 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('courseLocation').textContent=context.location;
     $('courseDescription').textContent=context.description;
   }
-  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS,...GAP_READINGS_A,...GAP_READINGS_B};
-  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS,...GAP_ASSESSMENTS,...ALIGNED_ASSESSMENTS};
+  const COURSE_READINGS={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS,...GAP_READINGS_A,...GAP_READINGS_B,...MICRO_READINGS_A,...MICRO_READINGS_B};
+  const EXTENDED_ASSESSMENTS={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS,...GAP_ASSESSMENTS,...ALIGNED_ASSESSMENTS,...MICRO_ASSESSMENTS_A,...MICRO_ASSESSMENTS_B};
   function assessmentForLesson(id){
     const p=courseProgress(id);
     p.assessmentV2=p.assessmentV2||{version:ASSESSMENT_VERSION,history:[]};
