@@ -54,7 +54,7 @@ export const FOCUSED_LESSONS_B={
   },
   "temporal_composta": {
     "lead": "O que acontece quando F e G aparecem aninhados?",
-    "theory": "A fórmula F(Gp) pede que exista algum instante a partir do qual p permaneça verdadeira em todo o restante do traço. O operador externo F procura esse ponto. Se p for verdadeira somente nos dois últimos instantes, F(Gp) ainda pode valer, porque o início do período permanente não precisa coincidir com o instante inicial.\n\nA fórmula G(Fp) pede que, em cada instante, exista alguma ocorrência de p naquele instante ou em algum instante posterior. Isso inclui verificar o último instante. Num traço finito com semântica inclusiva, G(Fp) exige p verdadeira no instante final, pois não haverá instante posterior para satisfazer Fp.\n\nA ordem de F e G muda a pergunta: encontrar um ponto estável não é o mesmo que procurar uma ocorrência futura a partir de cada instante. Para calcular, anote Gp e Fp em cada posição antes de aplicar o operador externo. Fórmulas com condicionais dentro desses operadores serão estudadas separadamente.",
+    "theory": "A fórmula F(Gp) pede que exista algum instante a partir do qual p permaneça verdadeira em todo o restante do traço. O operador externo F procura esse ponto. Se p for verdadeira somente nos dois últimos instantes, F(Gp) ainda pode valer, porque o início do período permanente não precisa coincidir com o instante inicial.\n\nA fórmula G(Fp) pede que, em cada instante, exista alguma ocorrência de p naquele instante ou em algum instante posterior. Isso inclui verificar o último instante. Num traço finito com semântica inclusiva, G(Fp) exige p verdadeira no instante final, pois não haverá instante posterior para satisfazer Fp.\n\nNo traço finito inclusivo adotado, há uma coincidência matemática importante: F(Gp) e G(Fp) são verdadeiras exatamente quando p é verdadeira no último instante. Suas leituras são distintas, mas aqui ambas levam ao mesmo critério de verdade. Em linhas do tempo infinitas essa equivalência deixa de ser geral: p pode ocorrer repetidamente sem nunca permanecer para sempre. Por isso, a semântica e o horizonte temporal devem estar explícitos antes de comparar as fórmulas.",
     "example": "Traço t0,t1,t2 com valores de p: F,V,V. Avalie F(Gp).",
     "steps": [
       "Gp é V em t1 e t2 porque p permanece V até o fim a partir desses instantes.",
@@ -268,13 +268,13 @@ export const FOCUSED_READINGS_B={
       {
         "heading": "Compare com cuidado",
         "paragraphs": [
-          "A ordem de F e G muda a pergunta: encontrar um ponto estável não é o mesmo que procurar uma ocorrência futura a partir de cada instante.",
-          "Para calcular, anote Gp e Fp em cada posição antes de aplicar o operador externo. Fórmulas com condicionais dentro desses operadores serão estudadas separadamente."
+          "No traço finito inclusivo adotado, há uma coincidência matemática importante: F(Gp) e G(Fp) são verdadeiras exatamente quando p é verdadeira no último instante. Suas leituras são distintas, mas aqui ambas levam ao mesmo critério de verdade.",
+          "Em linhas do tempo infinitas essa equivalência deixa de ser geral: p pode ocorrer repetidamente sem nunca permanecer para sempre. Por isso, a semântica e o horizonte temporal devem estar explícitos antes de comparar as fórmulas."
         ]
       }
     ],
-    "misconception": "Não troque F(Gp) por G(Fp) apenas por semelhança visual. Cada ordem exige uma verificação diferente sobre o traço.",
-    "summary": "F(Gp) procura um instante a partir do qual p permanece; G(Fp) exige uma ocorrência de p desde cada instante até o fim.",
+    "misconception": "Não afirme que F(Gp) e G(Fp) sempre produzem valores distintos. Em traços finitos inclusivos ambas equivalem a p no último estado; a diferença de validade entre elas surge em modelos como sequências infinitas.",
+    "summary": "F(Gp) procura um ponto a partir do qual p permanece; G(Fp) exige ocorrência futura a partir de cada instante. Em traços finitos inclusivos, ambas valem exatamente quando p é verdadeira no último instante.",
     "check": {
       "question": "Em p=F,V,V, F(Gp) vale em t0?",
       "options": [
