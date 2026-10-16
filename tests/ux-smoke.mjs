@@ -299,19 +299,20 @@ try{
   const indicatorErrors=[];
   indicatorPage.on('pageerror',error=>indicatorErrors.push(error.message));
   await indicatorPage.goto(root,{waitUntil:'networkidle'});
-  await indicatorPage.evaluate(()=>{
-    const ids=['fundamentos','operadores','traducao','falacias','pressupostos','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','categoricos2','predicados2','inducao','abducao','probabilidade','causalidade','metateoria','modais'];
+  await indicatorPage.evaluate(async ()=>{
+    const {COURSE_UNITS}=await import('./src/content/course.js');
+    const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
     const dueAt=Date.now()+86400000;
     const lessons=Object.fromEntries(ids.map(id=>[id,{read:true,example:true,guided:true,independent:true,mastered:true,best:1,review:{completed:0,dueAt,consolidated:false}}]));
     localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({lessons,final:{}}));
   });
   await indicatorPage.reload({waitUntil:'networkidle'});
-  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'23');
+  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'61');
   assert.equal(await indicatorPage.locator('#courseHomeConsolidatedBar').getAttribute('aria-valuenow'),'0');
   assert.match(await indicatorPage.locator('#continueTitle').innerText(),/Consolidação em andamento/);
   assert.match(await indicatorPage.locator('#continueDescription').innerText(),/Próxima revisão/);
   await indicatorPage.locator('#continueButton').click();
-  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),23);
+  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),61);
   assert.match(await indicatorPage.locator('.course-review-schedule-item').first().innerText(),/\d\d:\d\d/);
   await indicatorPage.locator('#courseMap [data-caction="exam-open"]').click();
   const examDraft=await indicatorPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
