@@ -304,7 +304,7 @@ export const FOCUSED_READINGS_A={
     "objective": "Aplicar somente comutatividade e associatividade à conjunção e disjunção, respeitando conectivos iguais e identificando o que permanece invariável.",
     "sections": [
       {
-        "heading": "Comutatividade",
+        "heading": "Comutatividade de E e OU",
         "paragraphs": [
           "Trocar a ordem de dois termos ligados por E não altera seu valor: p∧q≡q∧p. A mesma propriedade vale para OU: p∨q≡q∨p.",
           "Essa lei não diz que qualquer conectivo pode ser invertido. Em particular, a condicional p→q não pode ter seus termos trocados apenas porque E e OU são comutativos."
@@ -326,7 +326,7 @@ export const FOCUSED_READINGS_A={
       }
     ],
     "misconception": "Comutatividade troca a ordem e associatividade troca o agrupamento; nenhuma permite misturar ∧ com ∨ nem inverter uma condicional.",
-    "summary": "Comutatividade: p∧q≡q∧p e p∨q≡q∨p. Associatividade: (p∧q)∧r≡p∧(q∧r) e forma semelhante para ∨.",
+    "summary": "Comutatividade: p∧q≡q∧p e p∨q≡q∨p. Associatividade: (p∧q)∧r≡p∧(q∧r) e forma semelhante para ∨. Nenhuma das duas leis permite trocar conectivos diferentes.",
     "check": {
       "question": "Qual lei permite (p∨q)∨r ≡ p∨(q∨r)?",
       "options": [
@@ -363,7 +363,7 @@ export const FOCUSED_READINGS_A={
         ]
       }
     ],
-    "misconception": "A contrapositiva é ¬q→¬p; a recíproca q→p não é, em geral, equivalente à condicional original.",
+    "misconception": "A contrapositiva é ¬q→¬p; a recíproca q→p não é, em geral, equivalente à condicional original. Apenas trocar os lados produz uma afirmação nova.",
     "summary": "Para transformar p→q por contraposição, inverta e negue ambos os lados, obtendo ¬q→¬p. Não confunda com a recíproca q→p.",
     "check": {
       "question": "Qual é a contrapositiva de p→q?",
@@ -373,21 +373,21 @@ export const FOCUSED_READINGS_A={
         "¬p→¬q."
       ],
       "correct": 0,
-      "why": "A contraposição inverte os termos e nega os dois."
+      "why": "A contraposição inverte os termos e nega os dois. Negar as duas partes e inverter sua ordem conserva a tabela da condicional; apenas inverter produz a recíproca."
     }
   },
   "regras_inferencia": {
     "objective": "Distinguir modus ponens e modus tollens em condicionais simples, identificando qual premissa adicional autoriza cada conclusão.",
     "sections": [
       {
-        "heading": "Modus ponens",
+        "heading": "Aplicando modus ponens",
         "paragraphs": [
           "Se sabemos p→q e também p, podemos concluir q. Essa é a regra modus ponens: a condição suficiente foi satisfeita.",
           "Exemplo: se há matrícula, há acesso; há matrícula; logo há acesso. A conclusão depende das duas premissas e não apenas de uma expectativa sobre o resultado."
         ]
       },
       {
-        "heading": "Modus tollens",
+        "heading": "Aplicando modus tollens",
         "paragraphs": [
           "Se sabemos p→q e também ¬q, concluímos ¬p. A regra modus tollens elimina o antecedente quando o consequente necessário falhou.",
           "Exemplo: se há matrícula, há acesso; não há acesso; logo não há matrícula, sob a validade das duas premissas. Trata-se da mesma relação condicional aplicada de modo negativo."
@@ -435,7 +435,7 @@ export const FOCUSED_READINGS_A={
         "heading": "Fixar o domínio",
         "paragraphs": [
           "Se falamos de funcionários, os quantificadores percorrem funcionários. A negação não amplia automaticamente o domínio para todos os habitantes da cidade.",
-          "Nesta aula, negamos uma propriedade simples de uma variável. Escopos com condicionais e quantificadores aninhados serão estudados numa aula independente."
+          "Nesta aula, negamos uma propriedade simples de uma variável. Escopos com condicionais e quantificadores aninhados serão estudados numa aula independente. Essas duas transformações simples serão o pré-requisito para lidar posteriormente com quantificadores e conectivos aninhados, em que o alcance da negação muda a tradução."
         ]
       }
     ],
@@ -449,7 +449,7 @@ export const FOCUSED_READINGS_A={
         "Todos passaram."
       ],
       "correct": 0,
-      "why": "A universal é negada por ao menos um contraexemplo."
+      "why": "A universal é negada por ao menos um contraexemplo. É suficiente encontrar uma exceção para refutar todos, mas é necessário excluir todas as testemunhas para negar existe."
     }
   }
 };
