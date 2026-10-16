@@ -255,7 +255,7 @@ try{
     }));
   });
   await progressPage.reload({waitUntil:'networkidle'});
-  assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 23 avaliações aprovadas · 0 consolidados/);
+  assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 61 avaliações aprovadas · 0 consolidados/);
   assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO DISPONÍVEL/);
   await progressPage.locator('#continueButton').click();
   assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
@@ -306,12 +306,12 @@ try{
     localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({lessons,final:{}}));
   });
   await indicatorPage.reload({waitUntil:'networkidle'});
-  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'23');
+  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'61');
   assert.equal(await indicatorPage.locator('#courseHomeConsolidatedBar').getAttribute('aria-valuenow'),'0');
   assert.match(await indicatorPage.locator('#continueTitle').innerText(),/Consolidação em andamento/);
   assert.match(await indicatorPage.locator('#continueDescription').innerText(),/Próxima revisão/);
   await indicatorPage.locator('#continueButton').click();
-  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),23);
+  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),61);
   assert.match(await indicatorPage.locator('.course-review-schedule-item').first().innerText(),/\d\d:\d\d/);
   await indicatorPage.locator('#courseMap [data-caction="exam-open"]').click();
   const examDraft=await indicatorPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
@@ -1097,9 +1097,9 @@ try{
     const errors12=[];
     applied.on('pageerror',error=>errors12.push(error.message));
     await applied.goto(root,{waitUntil:'networkidle'});
-    assert.match(await applied.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
+    assert.match(await applied.locator('#courseHomeApprovedLabel').innerText(),/0 de 61/);
     await applied.goto(root+'#curso',{waitUntil:'networkidle'});
-    assert.equal(await applied.locator('#courseMap .course-unit-item').count(),23);
+    assert.equal(await applied.locator('#courseMap .course-unit-item').count(),61);
     for(const id of ['pressupostos','categoricos2']){
       await applied.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await applied.locator('#courseLesson .reading-section').count(),3);
@@ -1176,7 +1176,7 @@ try{
     const applied13=await newContext.newPage(),pageErrors=[];
     applied13.on('pageerror',err=>pageErrors.push(err.message));
     await applied13.goto(root,{waitUntil:'networkidle'});
-    assert.match(await applied13.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
+    assert.match(await applied13.locator('#courseHomeApprovedLabel').innerText(),/0 de 61/);
     await applied13.goto(root+'#curso',{waitUntil:'networkidle'});
     assert.equal(await applied13.locator('#courseMap .course-unit').count()>=7,true);
     for(const id of ['inducao','abducao','probabilidade','causalidade']){
@@ -1220,7 +1220,7 @@ try{
     });
     await applied13.goto(root,{waitUntil:'networkidle'});
     await applied13.reload({waitUntil:'networkidle'});
-    assert.match(await applied13.locator('#courseHomeSummary').innerText(),/19 de 23 avaliações aprovadas/);
+    assert.match(await applied13.locator('#courseHomeSummary').innerText(),/19 de 61 avaliações aprovadas/);
     await applied13.goto(root+'#avaliacao-final',{waitUntil:'networkidle'});
     const exam=await applied13.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
     assert.equal(exam.questions.length,12);
@@ -1333,7 +1333,7 @@ try{
     assert.equal(await app14.evaluate(()=>document.activeElement?.textContent),'1. Compreender');
     assert.equal(app14.url(),lessonRoute);
     await app14.goto(root,{waitUntil:'networkidle'});
-    assert.match(await app14.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
+    assert.match(await app14.locator('#courseHomeApprovedLabel').innerText(),/0 de 61/);
     for(const id of ['predicados2','metateoria']){
       await app14.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await app14.locator('#courseLesson .reading-section').count(),3);
