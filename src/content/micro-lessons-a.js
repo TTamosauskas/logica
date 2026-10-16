@@ -474,14 +474,14 @@ export const MICRO_WORKED_A={
       }
     ],
     "check": {
-      "question": "Se houver manutenção, a frase obriga a biblioteca a fechar?",
+      "question": "Sem manutenção, o que a regra afirma sobre a abertura?",
       "options": [
-        "Não; com a exceção presente, o resultado não foi fixado.",
-        "Sim; ‘a menos que’ sempre proíbe o funcionamento.",
-        "Sim; o antecedente é necessariamente verdadeiro."
+        "A biblioteca abrirá.",
+        "A biblioteca necessariamente fechará.",
+        "Não existe nenhuma garantia."
       ],
       "correct": 0,
-      "why": "A expressão define apenas o caso em que a ausência da exceção garante a abertura."
+      "why": "Sem a exceção, a abertura é garantida pela frase."
     }
   },
   "equiv_distributividade": {
@@ -504,14 +504,14 @@ export const MICRO_WORKED_A={
       }
     ],
     "check": {
-      "question": "Qual expansão preserva p∧(q∨r)?",
+      "question": "No exemplo com p=V,q=F,r=V, quanto valem as duas fórmulas equivalentes?",
       "options": [
-        "(p∧q)∨(p∧r).",
-        "(p∧q)∨r.",
-        "p∨(q∧r)."
+        "Ambas são V.",
+        "Uma V e a outra F.",
+        "Ambas são F."
       ],
       "correct": 0,
-      "why": "A parcela p deve aparecer em ambos os ramos."
+      "why": "O ramo p∧r é verdadeiro, garantindo também o valor da fórmula inicial."
     }
   },
   "equiv_absorcao": {
@@ -534,14 +534,14 @@ export const MICRO_WORKED_A={
       }
     ],
     "check": {
-      "question": "Por absorção, q∨(q∧r) simplifica para:",
+      "question": "Qual expressão resta ao reduzir q∧(q∨r) no exemplo?",
       "options": [
         "q.",
         "r.",
-        "q∧r."
+        "q∨r."
       ],
       "correct": 0,
-      "why": "A alternativa isolada q já cobre os casos do ramo mais restritivo."
+      "why": "A parcela q já satisfaz toda a conjunção quando é verdadeira."
     }
   },
   "equiv_bicondicional": {
@@ -564,14 +564,14 @@ export const MICRO_WORKED_A={
       }
     ],
     "check": {
-      "question": "Qual expansão representa p↔q?",
+      "question": "No exemplo da chave, qual segunda direção é necessária além de p→q?",
       "options": [
-        "(p→q)∧(q→p).",
-        "(p→q)∨(q→p).",
-        "p→q apenas."
+        "q→p.",
+        "¬p→¬q.",
+        "p→¬q."
       ],
       "correct": 0,
-      "why": "O bicondicional exige as duas direções juntas."
+      "why": "O reconhecimento também deve ser suficiente para validade no bicondicional proposto."
     }
   },
   "equiv_negacao_condicional": {
@@ -594,14 +594,14 @@ export const MICRO_WORKED_A={
       }
     ],
     "check": {
-      "question": "Qual fórmula é a negação de p→q?",
+      "question": "No exemplo da senha, quando a condicional original falharia?",
       "options": [
-        "p∧¬q.",
-        "¬p→¬q.",
-        "¬p∧q."
+        "Senha correta e porta fechada.",
+        "Senha incorreta e porta fechada.",
+        "Senha correta e porta aberta."
       ],
       "correct": 0,
-      "why": "A condicional falha apenas com p verdadeiro e q falso."
+      "why": "A promessa é desmentida somente se a condição ocorre e seu resultado falha."
     }
   }
 };
@@ -847,7 +847,7 @@ export const MICRO_ASSESSMENTS_A={
         "t∨u."
       ],
       "correct": 0,
-      "why": "A forma A∧(A∨B) equivale a A.",
+      "why": "A forma A∧(A∨B) equivale a A. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "application",
       "objective": "Aplicar a única regra ensinada nesta aula"
     },
@@ -1281,7 +1281,7 @@ export const MICRO_PRACTICE_A={
         "t∨u."
       ],
       "correct": 0,
-      "why": "A forma A∧(A∨B) equivale a A."
+      "why": "A forma A∧(A∨B) equivale a A. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
     }
   ],
   "equiv_bicondicional": [
