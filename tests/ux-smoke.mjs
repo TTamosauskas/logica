@@ -577,9 +577,8 @@ try{
     assert.equal(await free.locator('.free-formula-card').count(),3);
     // A última fórmula só é uma conclusão quando o aluno ativa explicitamente o modo de inferência.
     assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),0);
-    await free.locator('[data-inference-mode]').check();
-    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),1);
-    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head .free-column-label').innerText(),'∴ r ∧ p');
+    assert.equal(await free.locator('[data-inference-mode]').count(),0);
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),0);
     assert.equal(await free.locator('.free-argument-explanation').count(),0);
     // Entradas em edição sobrevivem ao preenchimento de células sem serem aplicadas prematuramente.
     await free.locator('[data-var-meaning="1"]').fill('descrição ainda não salva');
@@ -606,8 +605,7 @@ try{
     await answer.click();
     await free.locator('[data-action="grade"]').click();
     assert.match(await free.locator('.free-grade').innerText(),/respostas corretas/);
-    assert.match(await free.locator('.free-argument-explanation').innerText(),/∵ Justificativa da inferência/);
-    assert.match(await free.locator('.free-argument-explanation').innerText(),/contraexemplo|argumento é válido|vacuidade/);
+    assert.equal(await free.locator('.free-argument-explanation').count(),0);
     const stored=await free.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
     assert.equal(stored.version,4);
     assert.equal('rowMode' in stored,false);
@@ -617,8 +615,8 @@ try{
     assert.equal(stored.formulas.length,3);
     await free.reload({waitUntil:'networkidle'});
     assert.equal(await free.locator('.free-grade').count(),1);
-    assert.equal(await free.locator('.free-argument-explanation').count(),1);
-    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),1);
+    assert.equal(await free.locator('.free-argument-explanation').count(),0);
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),0);
     await free.locator('#freeNewFormula').fill('¬(q →)');
     await free.locator('[data-action="add-formula"]').click();
     assert.equal(await free.locator('.free-formula-card').count(),3);
