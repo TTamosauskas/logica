@@ -546,7 +546,7 @@ export const MICRO_READINGS_B={
     "misconception": "Em FDE, B∧N=F, não N: o conflito de B fornece suporte negativo para a conjunção, mesmo que N não forneça suporte algum.",
     "summary": "Para p∧q em FDE, positivo=positivo(p)∧positivo(q) e negativo=negativo(p)∨negativo(q). Converta o par final de volta a T,F,B ou N.",
     "check": {
-      "question": "Em FDE, B∧N vale:",
+      "question": "Na lógica informacional FDE, qual é o resultado da conjunção B∧N?",
       "options": [
         "F.",
         "B.",
@@ -584,7 +584,7 @@ export const MICRO_READINGS_B={
     "misconception": "Em FDE, B∨N=T e não B: falta suporte negativo de N, embora exista suporte positivo de B. Ter informação ausente em uma das partes impede suporte negativo conjunto para o OU.",
     "summary": "Para p∨q em FDE, positivo=positivo(p)∨positivo(q) e negativo=negativo(p)∧negativo(q). Converta os dois suportes resultantes para T,F,B ou N.",
     "check": {
-      "question": "Em FDE, B∨N vale:",
+      "question": "Na lógica informacional FDE, qual é o resultado da disjunção B∨N?",
       "options": [
         "T.",
         "F.",
