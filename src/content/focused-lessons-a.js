@@ -122,7 +122,7 @@ export const FOCUSED_LESSONS_A={
           "Apenas negar o primeiro lado."
         ],
         "correct": 0,
-        "why": "A forma geral é ¬q→¬p."
+        "why": "A forma geral é ¬q→¬p. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
       },
       {
         "question": "A recíproca de p→q é:",
@@ -132,7 +132,7 @@ export const FOCUSED_LESSONS_A={
           "¬p∧q."
         ],
         "correct": 0,
-        "why": "A recíproca troca sem negar."
+        "why": "A recíproca troca sem negar. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
       },
       {
         "question": "Qual fórmula é equivalente a p→q por contraposição?",
@@ -474,14 +474,14 @@ export const FOCUSED_WORKED_A={
       }
     ],
     "check": {
-      "question": "“p somente se q” significa:",
+      "question": "No exemplo da biblioteca, qual fórmula representa ‘abrirá se houver funcionários’?",
       "options": [
-        "p→q.",
         "q→p.",
-        "p∧q."
+        "p→q.",
+        "p↔q."
       ],
       "correct": 0,
-      "why": "q é requisito necessário para p, sem ser condição suficiente por si só."
+      "why": "Haver funcionários é a condição suficiente da abertura."
     }
   },
   "equiv_algebra": {
@@ -504,14 +504,14 @@ export const FOCUSED_WORKED_A={
       }
     ],
     "check": {
-      "question": "Qual lei permite (p∨q)∨r ≡ p∨(q∨r)?",
+      "question": "No exemplo, o que muda de (p∨q)∨r para p∨(q∨r)?",
       "options": [
-        "Associatividade.",
-        "Distributividade.",
-        "Absorção."
+        "Apenas o agrupamento.",
+        "O conectivo ∨ vira ∧.",
+        "A ordem das letras muda."
       ],
       "correct": 0,
-      "why": "O agrupamento muda entre conectivos iguais, sem alterar a ordem das parcelas."
+      "why": "A associatividade conserva o mesmo conectivo e a mesma ordem de parcelas."
     }
   },
   "equiv_condicionais": {
@@ -534,14 +534,14 @@ export const FOCUSED_WORKED_A={
       }
     ],
     "check": {
-      "question": "Qual é a contrapositiva de p→q?",
+      "question": "No exemplo sobre arquivos, qual frase seria apenas a recíproca indevida?",
       "options": [
-        "¬q→¬p.",
-        "q→p.",
-        "¬p→¬q."
+        "Se tem extensão .pdf, é PDF.",
+        "Se não tem extensão .pdf, não é PDF.",
+        "Se é PDF, tem extensão .pdf."
       ],
       "correct": 0,
-      "why": "A contraposição inverte os termos e nega os dois."
+      "why": "A recíproca troca as posições sem negar as duas partes."
     }
   },
   "regras_inferencia": {
@@ -564,14 +564,14 @@ export const FOCUSED_WORKED_A={
       }
     ],
     "check": {
-      "question": "p→q e ¬q autorizam:",
+      "question": "No exemplo p→q com ¬q, qual conclusão foi obtida?",
       "options": [
         "¬p.",
-        "p.",
-        "q."
+        "q.",
+        "p."
       ],
       "correct": 0,
-      "why": "É modus tollens: a falta do consequente exclui o antecedente."
+      "why": "Modus tollens exclui o antecedente porque o consequente falhou."
     }
   },
   "negacao_quantificadores": {
@@ -594,14 +594,14 @@ export const FOCUSED_WORKED_A={
       }
     ],
     "check": {
-      "question": "A negação de 'todos passaram' é:",
+      "question": "No exemplo, basta um estudante sem trabalho entregue para afirmar:",
       "options": [
-        "Algum não passou.",
-        "Nenhum passou.",
-        "Todos passaram."
+        "Nem todos entregaram.",
+        "Ninguém entregou.",
+        "Todos entregaram."
       ],
       "correct": 0,
-      "why": "A universal é negada por ao menos um contraexemplo."
+      "why": "A exceção encontrada refuta a afirmação universal."
     }
   }
 };
@@ -713,7 +713,7 @@ export const FOCUSED_ASSESSMENTS_A={
         "r→p."
       ],
       "correct": 0,
-      "why": "Apenas a ordem é alterada.",
+      "why": "Apenas a ordem é alterada. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "application",
       "objective": "Aplicação da competência central"
     },
@@ -859,7 +859,7 @@ export const FOCUSED_ASSESSMENTS_A={
         "Apenas negar o primeiro lado."
       ],
       "correct": 0,
-      "why": "A forma geral é ¬q→¬p.",
+      "why": "A forma geral é ¬q→¬p. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "concept",
       "objective": "Compreensão da competência central"
     },
@@ -871,7 +871,7 @@ export const FOCUSED_ASSESSMENTS_A={
         "¬p∧q."
       ],
       "correct": 0,
-      "why": "A recíproca troca sem negar.",
+      "why": "A recíproca troca sem negar. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "concept",
       "objective": "Compreensão da competência central"
     },
@@ -1189,7 +1189,7 @@ export const FOCUSED_PRACTICE_A={
         "r→p."
       ],
       "correct": 0,
-      "why": "Apenas a ordem é alterada."
+      "why": "Apenas a ordem é alterada. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
     },
     {
       "question": "Prática guiada 4: Associe (p∧q)∧s:",
