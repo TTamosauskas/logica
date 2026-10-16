@@ -15,12 +15,12 @@ const newIds=['inducao','abducao','probabilidade','causalidade'];
 test('unidade de evidências acrescenta quatro aulas sem substituir as 19 conquistas anteriores',()=>{
   const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
   assert.equal(COURSE_UNITS.length,8);
-  assert.equal(ids.length,49);
+  assert.equal(ids.length,61);
   assert.deepEqual(COURSE_UNITS[4].ids.filter(id=>newIds.includes(id)),newIds);
   assert.equal(COURSE_UNITS[7].ids.at(-1),'metateoria');
   assert.equal(COURSE_UNITS[6].ids[0],'modais');
-  assert.equal(new Set(ids).size,49);
-  assert.equal(MODULES.length,50);
+  assert.equal(new Set(ids).size,61);
+  assert.equal(MODULES.length,62);
   for(const id of newIds){
     assert.ok(MODULES.some(m=>m.id===id),id);
     assert.equal(LESSONS[id].quiz.length,4,id);
@@ -31,7 +31,7 @@ test('unidade de evidências acrescenta quatro aulas sem substituir as 19 conqui
   const newCritical=[...additionalGaps,...COURSE_UNITS[5].ids,...COURSE_UNITS[6].ids.filter(id=>id!=='modais'),...COURSE_UNITS[7].ids.filter(id=>id!=='metateoria')];
   const old=Object.fromEntries(ids.filter(id=>!newIds.includes(id)&&!newCritical.includes(id)).map(id=>[id,{mastered:true}]));
   const overview=learningOverview(COURSE_UNITS,old);
-  assert.equal(overview.total,49);
+  assert.equal(overview.total,61);
   assert.equal(overview.approved,19);
   assert.equal(getNextLearningStep(COURSE_UNITS,old).id,'condicionais_naturais');
 });
