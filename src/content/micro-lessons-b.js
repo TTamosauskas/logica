@@ -477,7 +477,7 @@ export const MICRO_READINGS_B={
         "Porque sua taxa por grupo é falsa."
       ],
       "correct": 0,
-      "why": "As taxas agregadas usam pesos de grupos diferentes."
+      "why": "As taxas agregadas usam pesos de grupos diferentes. Os denominadores por gravidade são muito diferentes, alterando o peso de cada taxa no agregado."
     }
   },
   "temporal_condicional": {
@@ -515,7 +515,7 @@ export const MICRO_READINGS_B={
         "Sim, porque G não inclui o último estado."
       ],
       "correct": 0,
-      "why": "O último pedido é um contraexemplo local suficiente."
+      "why": "O último pedido é um contraexemplo local suficiente. A resposta precisa ocorrer no presente ou no futuro de cada pedido, inclusive quando o pedido aparece no último instante."
     }
   },
   "fde_conjuncao": {
@@ -581,7 +581,7 @@ export const MICRO_READINGS_B={
         ]
       }
     ],
-    "misconception": "Em FDE, B∨N=T e não B: falta suporte negativo de N, embora exista suporte positivo de B.",
+    "misconception": "Em FDE, B∨N=T e não B: falta suporte negativo de N, embora exista suporte positivo de B. Ter informação ausente em uma das partes impede suporte negativo conjunto para o OU.",
     "summary": "Para p∨q em FDE, positivo=positivo(p)∨positivo(q) e negativo=negativo(p)∧negativo(q). Converta os dois suportes resultantes para T,F,B ou N.",
     "check": {
       "question": "Em FDE, B∨N vale:",
@@ -669,7 +669,7 @@ export const MICRO_WORKED_B={
     "steps": [
       {
         "formal": "Negue o quantificador universal",
-        "concrete": "Obtenha ∃x¬(P(x)→Q(x)).",
+        "concrete": "Obtenha ∃x¬(P(x)→Q(x)). Essa é a primeira transformação da fórmula.",
         "reason": "A negação de todos exige um contraexemplo."
       },
       {
