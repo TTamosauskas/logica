@@ -245,7 +245,7 @@ export const FOCUSED_READINGS_B={
         "75%."
       ],
       "correct": 0,
-      "why": "10+60=70 aprovados entre 100 estudantes."
+      "why": "10+60=70 aprovados entre 100 estudantes. O total usa as contagens de cada grupo, não a média simples dos percentuais com denominadores diferentes."
     }
   },
   "temporal_composta": {
@@ -283,7 +283,7 @@ export const FOCUSED_READINGS_B={
         "Não, G nunca vale no último instante."
       ],
       "correct": 0,
-      "why": "Existe um ponto no futuro no qual Gp é verdadeiro."
+      "why": "Existe um ponto no futuro no qual Gp é verdadeiro. O F externo procura uma posição com permanência; o G externo exige eventualidade a partir de cada posição."
     }
   },
   "fde_operacoes": {
@@ -299,7 +299,7 @@ export const FOCUSED_READINGS_B={
       {
         "heading": "Negar troca as posições",
         "paragraphs": [
-          "A regra de negação troca suporte positivo e negativo. Portanto ¬T=F, ¬F=T, ¬B=B e ¬N=N.",
+          "A regra de negação troca suporte positivo e negativo. Portanto ¬T=F, ¬F=T, ¬B=B e ¬N=N. Essa permutação é toda a regra necessária para resolver os exercícios desta etapa.",
           "Uma proposição com apoios contraditórios mantém os dois suportes quando é negada. Uma proposição sem informação continua sem informação."
         ]
       },
@@ -321,7 +321,7 @@ export const FOCUSED_READINGS_B={
         "N."
       ],
       "correct": 0,
-      "why": "Trocar os suportes de (1,1) mantém ambos presentes."
+      "why": "Trocar os suportes de (1,1) mantém ambos presentes. A operação apenas troca os dois suportes: B e N ficam iguais, enquanto T e F trocam de lugar."
     }
   },
   "intuicionista_negacao": {
@@ -439,7 +439,7 @@ export const FOCUSED_WORKED_B={
       },
       {
         "formal": "Converta de volta ao estado",
-        "concrete": "O resultado é B: ¬B=B.",
+        "concrete": "O resultado é B: ¬B=B., preservando os dois suportes.",
         "reason": "A negada também possui informações favoráveis e contrárias."
       }
     ],
