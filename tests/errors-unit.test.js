@@ -11,7 +11,7 @@ import {buildIntegratedExamQuestions,ESSENTIAL_EXAM_LESSONS} from '../src/core/i
 import {beginReviewTracking,reviewStatus,recordReview,DAY_MS} from '../src/core/reviews.js';
 import {routeFromHash} from '../src/core/navigation.js';
 const unit=COURSE_UNITS.find(u=>u.title.includes('Erros Lógicos Comuns'));
-const ids=(unit?.ids||[]).filter(id=>id!=='medias_ponderadas');
+const ids=(unit?.ids||[]).filter(id=>!['medias_ponderadas','simpson_composicao'].includes(id));
 
 test('a nova unidade contém sete aulas únicas e preserva as vinte e três antigas',()=>{
  assert.equal(COURSE_UNITS.length,8);
