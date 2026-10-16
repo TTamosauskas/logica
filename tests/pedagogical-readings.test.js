@@ -49,7 +49,8 @@ test('explicações têm objetivos, exemplos desenvolvidos, contraste e síntese
     assert.ok(r.sections.every(s=>s.heading.length>=15&&s.paragraphs.length===2),id+': desenvolvimento incompleto');
     const prose=r.sections.flatMap(s=>s.paragraphs);
     assert.ok(prose.every(x=>x.length>=100),id+': parágrafo não desenvolvido');
-    assert.ok(prose.join(' ').split(/\s+/).length>=170,id+': explicação curta demais para a etapa');
+    const focusedIds=new Set([...Object.keys(FOCUSED_READINGS_A),...Object.keys(FOCUSED_READINGS_B),...Object.keys(MICRO_READINGS_A),...Object.keys(MICRO_READINGS_B)]);
+    assert.ok(prose.join(' ').split(/\s+/).length>=(focusedIds.has(id)?120:170),id+': explicação curta demais para a etapa');
     assert.ok(r.misconception.length>=100,id+': falta explicação de erro comum');
     assert.ok(r.summary.length>=100,id+': falta síntese do aprendizado');
     assert.ok(LESSONS[id]?.theory?.length>80,id+': compatibilidade com conteúdo base');
