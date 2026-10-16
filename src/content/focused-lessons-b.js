@@ -314,7 +314,7 @@ export const FOCUSED_READINGS_B={
     "misconception": "Negar B não elimina o conflito e negar N não cria informação. Os estados representam suportes, não probabilidades.",
     "summary": "Na semântica FDE, ¬T=F, ¬F=T, ¬B=B e ¬N=N. Calcule a negação trocando os suportes positivo e negativo.",
     "check": {
-      "question": "Qual é ¬B em FDE?",
+      "question": "Ao aplicar a negação no sistema FDE, qual estado resulta de ¬B?",
       "options": [
         "B.",
         "T.",
