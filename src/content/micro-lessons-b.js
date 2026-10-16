@@ -288,7 +288,7 @@ export const MICRO_LESSONS_B={
           "Qualquer positivo presente."
         ],
         "correct": 0,
-        "why": "A disjunção é negada quando nenhuma alternativa é apoiada positivamente."
+        "why": "A disjunção recebe suporte negativo somente quando as duas alternativas apresentam suporte negativo."
       },
       {
         "question": "Qual par representa F em FDE?",
@@ -1405,7 +1405,7 @@ export const MICRO_ASSESSMENTS_B={
         "Qualquer positivo presente."
       ],
       "correct": 0,
-      "why": "A disjunção é negada quando nenhuma alternativa é apoiada positivamente.",
+      "why": "A disjunção recebe suporte negativo somente quando as duas alternativas apresentam suporte negativo.",
       "dimension": "concept",
       "objective": "Compreender a competência isolada"
     },
