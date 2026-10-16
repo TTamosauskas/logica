@@ -575,6 +575,9 @@ try{
     assert.equal(await free.locator('#freeNewFormula').inputValue(),'r∧p');
     await free.locator('[data-action="add-formula"]').click();
     assert.equal(await free.locator('.free-formula-card').count(),3);
+    // A última fórmula só é uma conclusão quando o aluno ativa explicitamente o modo de inferência.
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),0);
+    await free.locator('[data-inference-mode]').check();
     assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),1);
     assert.equal(await free.locator('.free-truth-table th.free-conclusion-head .free-column-label').innerText(),'∴ r ∧ p');
     assert.equal(await free.locator('.free-argument-explanation').count(),0);
