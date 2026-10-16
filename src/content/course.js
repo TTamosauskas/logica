@@ -5,15 +5,17 @@ import { OTHER_LOGIC_LESSONS } from './other-logics-course.js';
 import { FOUNDATIONS_LESSONS } from './foundations-a.js';
 import { GAP_LESSONS_A } from './gap-lessons-a.js';
 import { GAP_LESSONS_B } from './gap-lessons-b.js';
+import { MICRO_LESSONS_A } from './micro-lessons-a.js';
+import { MICRO_LESSONS_B } from './micro-lessons-b.js';
 
 export const COURSE_UNITS=[
-    {title:'I — Linguagem, proposições e argumentos',note:'Conceitos básicos, conectivos, tradução e leitura crítica.',ids:['fundamentos','operadores','traducao','condicionais_naturais','falacias','pressupostos']},
-    {title:'II — Semântica proposicional',note:'Expressões, equivalências, classificação, validade e árvores semânticas.',ids:['compostas','demorgan','classificacao','equivalencias','equiv_algebra','equiv_condicionais','argumentos','arvores']},
-    {title:'III — Inferência e demonstração',note:'Silogismos, provas em linhas e resolução de problemas.',ids:['silogismos','regras_inferencia','provas','deducao']},
-    {title:'IV — Lógica de primeira ordem',note:'Quantificadores, diagramas, relações e interpretação de modelos.',ids:['categoricos','negacao_quantificadores','categoricos2','predicados2']},
+    {title:'I — Linguagem, proposições e argumentos',note:'Conceitos básicos, conectivos, tradução e leitura crítica.',ids:['fundamentos','operadores','traducao','condicionais_naturais','condicionais_excecao','falacias','pressupostos']},
+    {title:'II — Semântica proposicional',note:'Expressões, equivalências, classificação, validade e árvores semânticas.',ids:['compostas','demorgan','classificacao','equivalencias','equiv_algebra','equiv_distributividade','equiv_absorcao','equiv_condicionais','equiv_bicondicional','equiv_negacao_condicional','argumentos','arvores']},
+    {title:'III — Inferência e demonstração',note:'Silogismos, provas em linhas e resolução de problemas.',ids:['silogismos','regras_inferencia','infer_conectivos','provas','deducao']},
+    {title:'IV — Lógica de primeira ordem',note:'Quantificadores, diagramas, relações e interpretação de modelos.',ids:['categoricos','negacao_quantificadores','quantificadores_escopo','categoricos2','predicados2']},
     {title:'V — Evidências e raciocínio sob incerteza',note:'Indução, hipóteses explicativas, taxas de base, probabilidade condicional e causalidade.',ids:['inducao','medicao_evidencias','abducao','probabilidade','causalidade']},
-    {title:'VI — Erros Lógicos Comuns',note:'Falácias informais, vieses cognitivos, armadilhas estatísticas e investigação crítica de argumentos.',ids:['falacias_relevancia','falacias_pressupostos','vieses_julgamento','vieses_decisao','ilusoes_graficos','ilusoes_inferencia','medias_ponderadas','oficina_erros']},
-    {title:'VII — Outras lógicas',note:'Modalidades, tempo, conhecimento, normas e alternativas à lógica clássica.',ids:['modais','temporal','temporal_composta','epistemica','deontica','difusa','paraconsistente','fde_operacoes','intuicionista','intuicionista_negacao']},
+    {title:'VI — Erros Lógicos Comuns',note:'Falácias informais, vieses cognitivos, armadilhas estatísticas e investigação crítica de argumentos.',ids:['falacias_relevancia','falacias_pressupostos','vieses_julgamento','vieses_decisao','ilusoes_graficos','ilusoes_inferencia','medias_ponderadas','simpson_composicao','oficina_erros']},
+    {title:'VII — Outras lógicas',note:'Modalidades, tempo, conhecimento, normas e alternativas à lógica clássica.',ids:['modais','temporal','temporal_composta','temporal_condicional','epistemica','deontica','difusa','paraconsistente','fde_operacoes','fde_conjuncao','fde_disjuncao','intuicionista','intuicionista_negacao','intuicionista_dupla_negacao']},
     {title:'VIII — Fundamentos teóricos da lógica',note:'Metalinguagem, formação de fórmulas, modelos e relações entre prova e consequência.',ids:['sistemas_formais','sintaxe_formal','semantica_modelos','metateoria']}
   ];
 
@@ -93,5 +95,7 @@ export const LESSONS={
     ...OTHER_LOGIC_LESSONS,
     ...FOUNDATIONS_LESSONS,
     ...GAP_LESSONS_A,
-    ...GAP_LESSONS_B
+    ...GAP_LESSONS_B,
+    ...MICRO_LESSONS_A,
+    ...MICRO_LESSONS_B
   };
