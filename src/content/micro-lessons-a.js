@@ -335,7 +335,7 @@ export const MICRO_READINGS_A={
         "p∨(q∧r)."
       ],
       "correct": 0,
-      "why": "A parcela p deve aparecer em ambos os ramos."
+      "why": "A parcela p deve aparecer em ambos os ramos. A mesma parcela aparece em cada ramo, de modo que a transformação preserva a verdade para qualquer valoração."
     }
   },
   "equiv_absorcao": {
@@ -411,7 +411,7 @@ export const MICRO_READINGS_A={
         "p→q apenas."
       ],
       "correct": 0,
-      "why": "O bicondicional exige as duas direções juntas."
+      "why": "O bicondicional exige as duas direções juntas. A conjunção entre as duas direções impede que uma única implicação seja tomada como equivalência completa."
     }
   },
   "equiv_negacao_condicional": {
@@ -449,7 +449,7 @@ export const MICRO_READINGS_A={
         "¬p∧q."
       ],
       "correct": 0,
-      "why": "A condicional falha apenas com p verdadeiro e q falso."
+      "why": "A condicional falha apenas com p verdadeiro e q falso. A única linha que refuta p→q tem antecedente verdadeiro e consequente falso; a negação registra exatamente essa linha."
     }
   }
 };
