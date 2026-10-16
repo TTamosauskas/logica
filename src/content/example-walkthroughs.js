@@ -6,6 +6,8 @@ import { GAP_WORKED_A } from './gap-lessons-a.js';
 import { GAP_WORKED_B } from './gap-lessons-b.js';
 import { MICRO_WORKED_A } from './micro-lessons-a.js';
 import { MICRO_WORKED_B } from './micro-lessons-b.js';
+import { FOCUSED_WORKED_A } from './focused-lessons-a.js';
+import { FOCUSED_WORKED_B } from './focused-lessons-b.js';
 export const WORKED_EXAMPLES={
   ...ERROR_WORKED_EXAMPLES,
   "fundamentos": {
@@ -703,5 +705,7 @@ export const WORKED_EXAMPLES={
   ...GAP_WORKED_A,
   ...GAP_WORKED_B,
   ...MICRO_WORKED_A,
-  ...MICRO_WORKED_B
+  ...MICRO_WORKED_B,
+  ...FOCUSED_WORKED_A,
+  ...FOCUSED_WORKED_B
 };
