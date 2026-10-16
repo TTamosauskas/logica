@@ -18,7 +18,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm test
+      - name: Validar sintaxe da aplicação
+        run: node --check src/app.js
+      - name: Executar testes unitários
+        run: npm test
+      - name: Preparar Chromium
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+      - name: Preparar Playwright para testes de interface
+        run: npm install --no-save playwright-core
+      - name: Testar navegação e UX no Chromium
+        run: node tests/ux-smoke.mjs
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
   deploy:
     needs: tests
     runs-on: ubuntu-latest
