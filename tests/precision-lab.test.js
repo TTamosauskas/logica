@@ -13,16 +13,16 @@ import {
 } from '../src/core/precision-lab.js';
 const ids=COURSE_UNITS.flatMap(u=>u.ids);
 
-test('ciclo 14 preserva IDs anteriores e progride para 49 aulas em 8 unidades',()=>{
+test('ciclo 14 preserva IDs anteriores e progride para 61 aulas em 8 unidades',()=>{
   assert.equal(COURSE_UNITS.length,8);
-  assert.equal(ids.length,49);
-  assert.equal(new Set(ids).size,49);
-  assert.equal(MODULES.length,50); // 49 aulas + treino misto
+  assert.equal(ids.length,61);
+  assert.equal(new Set(ids).size,61);
+  assert.equal(MODULES.length,62); // 61 aulas + treino misto
   for(const id of ['predicados2','equivalencias','metateoria'])assert.ok(ids.includes(id));
   const learned=Object.fromEntries(ids.map(id=>[id,{mastered:true}]));
   const overview=learningOverview(COURSE_UNITS,learned);
-  assert.equal(overview.approved,49);
-  assert.equal(overview.total,49);
+  assert.equal(overview.approved,61);
+  assert.equal(overview.total,61);
 });
 test('metateoria preserva identificador e diferencia consequência de derivação',()=>{
   const first=LESSONS.metateoria.quiz[0];
