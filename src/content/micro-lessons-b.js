@@ -654,14 +654,14 @@ export const MICRO_WORKED_B={
       }
     ],
     "check": {
-      "question": "Se conhecemos apenas p, qual fórmula podemos introduzir imediatamente?",
+      "question": "No exemplo, quais duas linhas autorizam q∧r?",
       "options": [
-        "p∨q.",
-        "p∧q.",
-        "¬p∧q."
+        "Uma linha com q e outra com r.",
+        "Apenas p.",
+        "Uma linha com ¬q."
       ],
       "correct": 0,
-      "why": "Uma alternativa adicional é permitida no OU inclusivo, mas uma nova conjunção exigiria prova de q."
+      "why": "A introdução de ∧ exige comprovar cada componente do resultado."
     }
   },
   "quantificadores_escopo": {
@@ -684,14 +684,14 @@ export const MICRO_WORKED_B={
       }
     ],
     "check": {
-      "question": "Qual fórmula nega ∀x∃yR(x,y)?",
+      "question": "No exemplo, que tipo de testemunha refuta a regra universal?",
       "options": [
-        "∃x∀y¬R(x,y).",
-        "∀y∃x¬R(x,y).",
-        "∃x∃yR(x,y)."
+        "Um P que não é Q.",
+        "Um objeto que não é P.",
+        "Um objeto que é Q sem ser P."
       ],
       "correct": 0,
-      "why": "Os quantificadores trocam na mesma ordem em que aparecem."
+      "why": "A falha da condicional universal é dada por P verdadeiro e Q falso."
     }
   },
   "simpson_composicao": {
@@ -714,14 +714,14 @@ export const MICRO_WORKED_B={
       }
     ],
     "check": {
-      "question": "Por que B pode liderar em cada grupo e ficar atrás no agregado?",
+      "question": "No exemplo das clínicas, qual é a recuperação agregada da clínica A?",
       "options": [
-        "Porque recebe proporcionalmente mais casos graves.",
-        "Porque a matemática dos percentuais é contraditória.",
-        "Porque sua taxa por grupo é falsa."
+        "85 em 100.",
+        "81 em 90 como total.",
+        "4 em 10 como total."
       ],
       "correct": 0,
-      "why": "As taxas agregadas usam pesos de grupos diferentes."
+      "why": "A recuperou 81 leves e quatro graves, somando 85 em cem pacientes."
     }
   },
   "temporal_condicional": {
@@ -744,14 +744,14 @@ export const MICRO_WORKED_B={
       }
     ],
     "check": {
-      "question": "Um pedido no último instante sem resposta faz G(p→Fq) valer?",
+      "question": "No exemplo temporal, qual instante refuta a exigência global?",
       "options": [
-        "Não, há um pedido sem q dali em diante.",
-        "Sim, porque já houve q no passado.",
-        "Sim, porque G não inclui o último estado."
+        "t2, com pedido e sem resposta restante.",
+        "t1, com resposta.",
+        "t0, com resposta posterior."
       ],
       "correct": 0,
-      "why": "O último pedido é um contraexemplo local suficiente."
+      "why": "A última solicitação fica sem ocorrência de q presente ou futura."
     }
   },
   "fde_conjuncao": {
@@ -774,14 +774,14 @@ export const MICRO_WORKED_B={
       }
     ],
     "check": {
-      "question": "Em FDE, B∧N vale:",
+      "question": "No exemplo B∧N, que par de suportes resulta?",
       "options": [
-        "F.",
-        "B.",
-        "N."
+        "(0,1).",
+        "(1,1).",
+        "(0,0)."
       ],
       "correct": 0,
-      "why": "Os suportes resultantes são (0,1), representados por F."
+      "why": "O positivo exige ambos os suportes e o negativo recebe a oposição de B."
     }
   },
   "fde_disjuncao": {
@@ -804,14 +804,14 @@ export const MICRO_WORKED_B={
       }
     ],
     "check": {
-      "question": "Em FDE, B∨N vale:",
+      "question": "No exemplo B∨N, que par de suportes resulta?",
       "options": [
-        "T.",
-        "F.",
-        "B."
+        "(1,0).",
+        "(0,1).",
+        "(1,1)."
       ],
       "correct": 0,
-      "why": "O suporte positivo vale 1 e o negativo vale 0, formando T."
+      "why": "O positivo vem de B e o negativo exige suporte contrário das duas parcelas."
     }
   },
   "intuicionista_dupla_negacao": {
@@ -834,14 +834,14 @@ export const MICRO_WORKED_B={
       }
     ],
     "check": {
-      "question": "Na lógica intuicionista, o que segue de uma prova de p?",
+      "question": "Qual direção foi efetivamente demonstrada no exemplo construtivo?",
       "options": [
-        "Uma prova de ¬¬p.",
-        "Necessariamente uma prova de ¬p.",
-        "Que p∨¬p é teorema universal."
+        "p→¬¬p.",
+        "¬¬p→p.",
+        "¬p→p."
       ],
       "correct": 0,
-      "why": "Uma prova de p impossibilita construtivamente sua negação."
+      "why": "Uma prova de p faz qualquer suposta prova de ¬p levar a contradição."
     }
   }
 };
