@@ -7,6 +7,8 @@ import { GAP_LESSONS_A } from './gap-lessons-a.js';
 import { GAP_LESSONS_B } from './gap-lessons-b.js';
 import { MICRO_LESSONS_A } from './micro-lessons-a.js';
 import { MICRO_LESSONS_B } from './micro-lessons-b.js';
+import { FOCUSED_LESSONS_A } from './focused-lessons-a.js';
+import { FOCUSED_LESSONS_B } from './focused-lessons-b.js';
 
 export const COURSE_UNITS=[
     {title:'I — Linguagem, proposições e argumentos',note:'Conceitos básicos, conectivos, tradução e leitura crítica.',ids:['fundamentos','operadores','traducao','condicionais_naturais','condicionais_excecao','falacias','pressupostos']},
@@ -97,5 +99,7 @@ export const LESSONS={
     ...GAP_LESSONS_A,
     ...GAP_LESSONS_B,
     ...MICRO_LESSONS_A,
-    ...MICRO_LESSONS_B
+    ...MICRO_LESSONS_B,
+    ...FOCUSED_LESSONS_A,
+    ...FOCUSED_LESSONS_B
   };
