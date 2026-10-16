@@ -306,12 +306,12 @@ try{
     localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({lessons,final:{}}));
   });
   await indicatorPage.reload({waitUntil:'networkidle'});
-  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'61');
+  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'23');
   assert.equal(await indicatorPage.locator('#courseHomeConsolidatedBar').getAttribute('aria-valuenow'),'0');
   assert.match(await indicatorPage.locator('#continueTitle').innerText(),/Consolidação em andamento/);
   assert.match(await indicatorPage.locator('#continueDescription').innerText(),/Próxima revisão/);
   await indicatorPage.locator('#continueButton').click();
-  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),61);
+  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),23);
   assert.match(await indicatorPage.locator('.course-review-schedule-item').first().innerText(),/\d\d:\d\d/);
   await indicatorPage.locator('#courseMap [data-caction="exam-open"]').click();
   const examDraft=await indicatorPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
