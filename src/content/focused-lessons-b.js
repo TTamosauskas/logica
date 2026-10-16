@@ -132,7 +132,7 @@ export const FOCUSED_LESSONS_B={
           "Somente positivo."
         ],
         "correct": 0,
-        "why": "B representa (1,1)."
+        "why": "B representa (1,1). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
       },
       {
         "question": "O estado N significa:",
@@ -142,7 +142,7 @@ export const FOCUSED_LESSONS_B={
           "Somente negativo."
         ],
         "correct": 0,
-        "why": "N representa (0,0)."
+        "why": "N representa (0,0). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
       },
       {
         "question": "Ao negar T, o positivo passa a:",
@@ -152,7 +152,7 @@ export const FOCUSED_LESSONS_B={
           "2."
         ],
         "correct": 0,
-        "why": "T=(1,0), que vira (0,1)."
+        "why": "T=(1,0), que vira (0,1). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
       }
     ]
   },
@@ -293,7 +293,7 @@ export const FOCUSED_READINGS_B={
         "heading": "Dois componentes informacionais",
         "paragraphs": [
           "A lógica FDE usa estados T=(1,0), F=(0,1), B=(1,1) e N=(0,0). A primeira posição indica suporte positivo; a segunda, suporte negativo.",
-          "Um conflito B informa que há apoio a favor e contra; N indica que não há apoio em nenhuma direção. Esses estados não são graus numéricos de verdade."
+          "Um conflito B informa que há apoio a favor e contra; N indica que não há apoio em nenhuma direção. Esses estados não são graus numéricos de verdade. O primeiro componente indica evidência favorável, enquanto o segundo descreve oposição à mesma proposição."
         ]
       },
       {
@@ -384,14 +384,14 @@ export const FOCUSED_WORKED_B={
       }
     ],
     "check": {
-      "question": "Grupos de 20 e 80 estudantes têm 50% e 75% de aprovação. A taxa total é:",
+      "question": "Qual foi o total de aprovados no exemplo das duas turmas?",
       "options": [
-        "70%.",
-        "62,5%.",
-        "75%."
+        "70 em 100.",
+        "60 em 80 como total.",
+        "10 em 20 como total."
       ],
       "correct": 0,
-      "why": "10+60=70 aprovados entre 100 estudantes."
+      "why": "Somam-se dez aprovados no primeiro grupo e sessenta no segundo."
     }
   },
   "temporal_composta": {
@@ -414,14 +414,14 @@ export const FOCUSED_WORKED_B={
       }
     ],
     "check": {
-      "question": "Em p=F,V,V, F(Gp) vale em t0?",
+      "question": "Qual instante testemunha F(Gp) no exemplo F,V,V?",
       "options": [
-        "Sim, porque a partir de t1 p permanece V.",
-        "Não, porque p é F em t0.",
-        "Não, G nunca vale no último instante."
+        "t1.",
+        "Somente t0.",
+        "Nenhum instante."
       ],
       "correct": 0,
-      "why": "Existe um ponto no futuro no qual Gp é verdadeiro."
+      "why": "A partir de t1, p permanece V no restante do traço."
     }
   },
   "fde_operacoes": {
@@ -444,14 +444,14 @@ export const FOCUSED_WORKED_B={
       }
     ],
     "check": {
-      "question": "Qual é ¬B em FDE?",
+      "question": "No exemplo, ao trocar os suportes de B=(1,1), obtemos:",
       "options": [
-        "B.",
-        "T.",
-        "N."
+        "(1,1).",
+        "(1,0).",
+        "(0,0)."
       ],
       "correct": 0,
-      "why": "Trocar os suportes de (1,1) mantém ambos presentes."
+      "why": "Trocar dois componentes iguais mantém o par correspondente a B."
     }
   },
   "intuicionista_negacao": {
@@ -474,14 +474,14 @@ export const FOCUSED_WORKED_B={
       }
     ],
     "check": {
-      "question": "Se w1 estende w0 e força p, então ¬p é forçada em w0?",
+      "question": "No exemplo, por que ¬p não é forçada em w0?",
       "options": [
-        "Não.",
-        "Sim, porque p ainda não era conhecida em w0.",
-        "Sim, sempre que há duas extensões."
+        "Porque w1 é extensão que força p.",
+        "Porque w0 já força p.",
+        "Porque p é uma probabilidade."
       ],
       "correct": 0,
-      "why": "A extensão com p impede afirmar sua impossibilidade construtiva."
+      "why": "A extensão com prova de p impede afirmar sua impossibilidade construtiva."
     }
   }
 };
@@ -531,7 +531,7 @@ export const FOCUSED_ASSESSMENTS_B={
         "90%."
       ],
       "correct": 0,
-      "why": "9+45=54 casos entre 100.",
+      "why": "9+45=54 casos entre 100. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "application",
       "objective": "Variação do conceito central"
     },
@@ -629,7 +629,7 @@ export const FOCUSED_ASSESSMENTS_B={
         "Somente se Xp for verdadeira."
       ],
       "correct": 0,
-      "why": "Gp já vale desde t0.",
+      "why": "Gp já vale desde t0. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "application",
       "objective": "Variação do conceito central"
     },
@@ -691,7 +691,7 @@ export const FOCUSED_ASSESSMENTS_B={
         "B."
       ],
       "correct": 0,
-      "why": "O par (1,0) passa a (0,1).",
+      "why": "O par (1,0) passa a (0,1). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "application",
       "objective": "Variação do conceito central"
     },
@@ -703,7 +703,7 @@ export const FOCUSED_ASSESSMENTS_B={
         "B."
       ],
       "correct": 0,
-      "why": "O par (0,1) passa a (1,0).",
+      "why": "O par (0,1) passa a (1,0). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "application",
       "objective": "Variação do conceito central"
     },
@@ -751,7 +751,7 @@ export const FOCUSED_ASSESSMENTS_B={
         "Somente positivo."
       ],
       "correct": 0,
-      "why": "B representa (1,1).",
+      "why": "B representa (1,1). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "concept",
       "objective": "Definição da competência central"
     },
@@ -763,7 +763,7 @@ export const FOCUSED_ASSESSMENTS_B={
         "Somente negativo."
       ],
       "correct": 0,
-      "why": "N representa (0,0).",
+      "why": "N representa (0,0). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "concept",
       "objective": "Definição da competência central"
     },
@@ -775,7 +775,7 @@ export const FOCUSED_ASSESSMENTS_B={
         "2."
       ],
       "correct": 0,
-      "why": "T=(1,0), que vira (0,1).",
+      "why": "T=(1,0), que vira (0,1). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido.",
       "dimension": "concept",
       "objective": "Definição da competência central"
     }
@@ -939,7 +939,7 @@ export const FOCUSED_PRACTICE_B={
         "90%."
       ],
       "correct": 0,
-      "why": "9+45=54 casos entre 100."
+      "why": "9+45=54 casos entre 100. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
     }
   ],
   "temporal_composta": [
@@ -1001,7 +1001,7 @@ export const FOCUSED_PRACTICE_B={
         "Somente se Xp for verdadeira."
       ],
       "correct": 0,
-      "why": "Gp já vale desde t0."
+      "why": "Gp já vale desde t0. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
     }
   ],
   "fde_operacoes": [
@@ -1013,7 +1013,7 @@ export const FOCUSED_PRACTICE_B={
         "Somente negativo."
       ],
       "correct": 0,
-      "why": "N representa (0,0)."
+      "why": "N representa (0,0). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
     },
     {
       "question": "Treine o caso 2: Ao negar T, o positivo passa a:",
@@ -1023,7 +1023,7 @@ export const FOCUSED_PRACTICE_B={
         "2."
       ],
       "correct": 0,
-      "why": "T=(1,0), que vira (0,1)."
+      "why": "T=(1,0), que vira (0,1). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
     },
     {
       "question": "Treine o caso 3: Qual é ¬T?",
@@ -1033,7 +1033,7 @@ export const FOCUSED_PRACTICE_B={
         "B."
       ],
       "correct": 0,
-      "why": "O par (1,0) passa a (0,1)."
+      "why": "O par (1,0) passa a (0,1). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
     },
     {
       "question": "Treine o caso 4: Qual é ¬F?",
@@ -1043,7 +1043,7 @@ export const FOCUSED_PRACTICE_B={
         "B."
       ],
       "correct": 0,
-      "why": "O par (0,1) passa a (1,0)."
+      "why": "O par (0,1) passa a (1,0). A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
     },
     {
       "question": "Treine o caso 5: Qual é ¬B?",
