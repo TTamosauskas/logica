@@ -404,7 +404,7 @@ export const FOCUSED_READINGS_A={
     "misconception": "Modus ponens usa p→q e p; modus tollens usa p→q e ¬q. Afirmar q ou negar p não autoriza concluir a volta.",
     "summary": "Modus ponens: p→q, p ⊢ q. Modus tollens: p→q, ¬q ⊢ ¬p. Reconheça a premissa adicional antes de escolher a regra.",
     "check": {
-      "question": "p→q e ¬q autorizam:",
+      "question": "De p→q e da premissa ¬q, qual conclusão está autorizada?",
       "options": [
         "¬p.",
         "p.",
