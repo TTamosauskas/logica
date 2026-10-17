@@ -392,3 +392,24 @@
 /* A questão-ponte declara a seção imediatamente anterior como referência. */
 .reading-bridge-section{margin:4px 0 12px!important;font-size:13px!important;line-height:1.6!important;color:var(--text)!important}
 .reading-bridge-section strong{font-weight:800;color:var(--accent)}
+
+/* Pedagogia V4: transferência guiada do texto e exemplo à prática. */
+.practice-transfer-prep{border:1px solid var(--border-hi);background:var(--panel2);border-radius:12px;padding:15px 18px;margin:14px 0 0}
+.practice-transfer-prep p{margin:0 0 10px;line-height:1.6}
+.practice-transfer-prep p:last-child{margin:10px 0 0;font-size:13px;color:var(--muted)}
+.practice-transfer-steps{margin:10px 0;padding-left:25px;display:grid;gap:9px;line-height:1.65}
+.practice-transfer-steps li{padding-left:3px}
+.practice-transfer-banner{border:1px solid var(--border-hi);border-radius:12px;background:var(--panel);padding:16px;margin:14px 0 2px}
+.practice-transfer-banner h3{font-size:17px;margin:0 0 9px}
+.practice-transfer-banner p{font-size:14px;line-height:1.65;margin:0 0 10px}
+.practice-transfer-banner .practice-transfer-steps{font-size:14px;margin:8px 0 15px}
+.practice-transfer-example{border-top:1px solid var(--border-hi);padding-top:12px}
+.practice-transfer-example summary{cursor:pointer;font-weight:750;min-height:44px;display:list-item;align-content:center;line-height:1.5}
+.practice-transfer-example summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.practice-transfer-example p{margin:10px 0}
+.practice-transfer-example ol{margin:10px 0;padding-left:23px}
+.practice-transfer-example li{padding:5px 2px 12px;line-height:1.6}
+.practice-transfer-example li p{margin:5px 0}
+.practice-transfer-example small{color:var(--muted);font-size:13px;line-height:1.6}
+.practice-transfer-example .practice-transfer-note{font-size:13px;color:var(--muted)}
+@media(max-width:520px){.practice-transfer-prep,.practice-transfer-banner{padding:13px}.practice-transfer-steps{padding-left:22px}.practice-transfer-banner h3{font-size:16px}}
