@@ -483,40 +483,40 @@ export const PEDAGOGY_BRIDGES_VI_VIII=buildBridgeLessons([
   [
     "metateoria",
     [
-      "Separe o símbolo de prova ⊢ da consequência semântica ⊨.",
-      "Diferencie completude de um cálculo de incompletude de teorias aritméticas.",
-      "Para decidibilidade, exija algoritmo que termina em todas as entradas."
+      "Identifique se a frase fala da verdade em todos os modelos de Γ (⊨).",
+      "Para afirmar que há prova (⊢), procure premissas e regras autorizadas em uma derivação.",
+      "Somente depois de distinguir ⊢ e ⊨ compare as direções de correção e completude."
     ],
     [
       [
-        "Correção (soundness) de um sistema de provas diz:",
-        "Se Γ⊢φ, então Γ⊨φ.",
-        "Se Γ⊨φ, então toda teoria aritmética prova φ.",
-        "Todo problema possui solução algorítmica.",
-        "Verifique se uma derivação autorizada preserva verdade nos modelos.",
-        "Correção conecta provabilidade com consequência semântica, evitando inferências formalmente inválidas.",
-        "A segunda frase mistura completude do cálculo com teorias aritméticas particulares.",
-        "Correção de regras não garante algoritmo decisor de todos os problemas."
+        "Qual situação refutaria a consequência semântica Γ⊨φ?",
+        "Um modelo no qual todas as premissas de Γ são verdadeiras e φ é falsa.",
+        "Uma tentativa de demonstração que não chegou ao resultado desejado.",
+        "Um modelo em que pelo menos uma premissa de Γ é falsa.",
+        "A primeira seção descreve consequência semântica examinando todas as interpretações.",
+        "Para derrubar Γ⊨φ, é preciso um contraexemplo: premissas verdadeiras no mesmo modelo e conclusão falsa.",
+        "Não encontrar uma prova é diferente de encontrar um contraexemplo nos modelos.",
+        "Quando uma premissa é falsa, o modelo não satisfaz Γ e portanto não refuta a consequência."
       ],
       [
-        "A completude do cálculo de primeira ordem contradiz a incompletude de Gödel?",
-        "Não; tratam de cálculo lógico e de teorias aritméticas sob hipóteses diferentes.",
-        "Sim; um dos teoremas precisa ser falso.",
-        "Sim; ambos afirmam que todo algoritmo termina.",
-        "Identifique o objeto ao qual cada teorema se aplica.",
-        "Completude da lógica de primeira ordem e incompletude de certas teorias aritméticas são compatíveis.",
-        "Resultados sobre objetos diferentes não se contradizem.",
-        "Nenhum dos teoremas afirma que todo programa termina."
+        "Dadas p e p→q, qual sequência mostra uma derivação de q num cálculo com modus ponens?",
+        "Escrever p e p→q como premissas e acrescentar q pela regra modus ponens.",
+        "Declarar q verdadeira porque a conclusão parece plausível.",
+        "Escolher uma valoração favorável e chamá-la de linha de prova.",
+        "A segunda seção ensina que Γ⊢φ exige uma sequência finita de regras válidas.",
+        "Uma derivação sintática identifica as premissas e usa explicitamente uma regra do cálculo, como modus ponens.",
+        "Plausibilidade não demonstra que uma linha segue das anteriores por uma regra.",
+        "Uma interpretação é informação semântica, não uma sequência sintática de inferências."
       ],
       [
-        "Uma rotina conta n de zero até três e para. A indecidibilidade geral da parada impede provar que ela termina?",
-        "Não; casos concretos simples podem ser analisados.",
-        "Sim; não se pode demonstrar a parada de nenhum programa.",
-        "Sim; toda repetição de instruções é infinita.",
-        "Distinga um decisor para todas as entradas de uma demonstração para este caso.",
-        "A ausência de algoritmo geral não impede verificar que uma rotina finita simples termina.",
-        "O resultado de Turing impede decisão uniforme universal, não provas particulares.",
-        "Um laço com condição e progresso limitados pode terminar."
+        "Qual afirmação descreve corretamente a relação entre correção e completude?",
+        "A correção liga Γ⊢φ a Γ⊨φ; a completude é a direção inversa, quando demonstrada.",
+        "A correção afirma que toda consequência semântica já possui derivação.",
+        "A completude afirma que todas as provas produzem consequências verdadeiras, sem hipóteses.",
+        "A terceira seção apresenta as duas direções e ressalva que dependem do cálculo adotado.",
+        "Correção diz que derivações preservam a consequência semântica; completude diz que consequências semânticas são deriváveis, quando a propriedade vale.",
+        "A direção da consequência semântica para a derivação é a da completude, não a da correção.",
+        "A direção da prova para a consequência pertence à correção; nenhuma das propriedades vale sem especificar o sistema."
       ]
     ]
   ]
