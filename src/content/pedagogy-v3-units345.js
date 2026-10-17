@@ -19,24 +19,24 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
         "Negar o antecedente não sustenta essa cadeia condicional."
       ],
       [
-        "De p∨q e ¬p, qual conclusão é necessária?",
-        "q.",
-        "¬q.",
-        "p.",
-        "Se uma alternativa do OU é impossível, qual precisa sustentar a disjunção?",
-        "A disjunção inclusiva precisa de ao menos uma parcela verdadeira; com p falsa, q vale.",
-        "Sem p, negar q tornaria ambas as partes falsas.",
-        "A premissa informa justamente que p não ocorre."
+        "De p→q e q→r, suponha p verdadeira. Qual caminho justifica que r também será verdadeira?",
+        "Primeiro obtemos q de p; depois obtemos r de q.",
+        "Passamos diretamente de r para p sem outras premissas.",
+        "Negamos q para garantir que r seja falsa.",
+        "A segunda seção percorre o encadeamento assumindo p como verdadeira.",
+        "Aplicar a primeira condicional produz q; aplicar a segunda a q produz r, justificando a ligação entre p e r.",
+        "A direção dada pelas premissas é p→q→r; ela não autoriza automaticamente r→p.",
+        "As premissas exigem q e r quando p vale; não autorizam negar os consequentes."
       ],
       [
-        "'Se o sistema é autenticado, dá acesso. Se dá acesso, registra a sessão.' O que segue?",
-        "Se é autenticado, registra a sessão.",
-        "Se registra, necessariamente foi autenticado.",
-        "Se não é autenticado, não registra.",
-        "Ligue a consequência da primeira regra à condição da segunda.",
-        "O encadeamento das condicionais leva autenticação→registro sem afirmar o caminho inverso.",
-        "O registro poderia ocorrer por outros mecanismos; a recíproca não segue.",
-        "A ausência de autenticação não proíbe registro por outra via."
+        "O arquivo está na pasta A ou na pasta B. Sabemos que não está na pasta A. Qual conclusão segue?",
+        "O arquivo está na pasta B, pelo silogismo disjuntivo.",
+        "O arquivo não está em nenhuma das duas pastas.",
+        "O arquivo está necessariamente na pasta A.",
+        "A terceira seção ensina que de p∨q e ¬p podemos concluir q.",
+        "Como a primeira alternativa do OU foi descartada, a segunda precisa valer para manter a premissa disjuntiva verdadeira.",
+        "Com ambas as alternativas falsas, a disjunção inicial também seria falsa.",
+        "Essa opção contradiz a informação dada de que o arquivo não está na pasta A."
       ]
     ]
   ],
@@ -269,14 +269,14 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
         "A fórmula afirma que todos têm P, o oposto de negar a existência de P."
       ],
       [
-        "'Existe um livro disponível' é falsa. O que podemos afirmar na interpretação considerada?",
-        "Nenhum livro está disponível.",
-        "Algum livro não está disponível e outro sim.",
-        "Todos os livros estão disponíveis.",
-        "A negação de uma existência exclui todas as testemunhas.",
-        "Se não existe livro disponível, todo livro considerado é indisponível.",
-        "O segundo cenário ainda teria uma testemunha disponível.",
-        "Isso exigiria livros disponíveis, em contradição com o dado."
+        "A frase 'Todos os alunos receberam o aviso' refere-se apenas à turma A. Para negá-la, qual caso é suficiente?",
+        "Encontrar pelo menos um aluno da turma A que não recebeu o aviso.",
+        "Encontrar um aluno da turma B que não recebeu o aviso.",
+        "Mostrar que todos os alunos da turma A receberam o aviso.",
+        "A última seção destaca que o domínio escolhido delimita os possíveis contraexemplos.",
+        "Uma universal sobre a turma A é refutada por ao menos um integrante da própria turma que não recebeu o aviso.",
+        "Um aluno de outra turma está fora do domínio da frase e não a contradiz.",
+        "Confirmar que todos os alunos da turma A receberam o aviso torna a universal verdadeira, não falsa."
       ]
     ]
   ],
