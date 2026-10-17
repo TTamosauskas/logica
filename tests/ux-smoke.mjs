@@ -39,6 +39,20 @@ try{
   assert.match(await page.locator('#courseLesson').innerText(),/Fundamentos/);
   assert.equal(await page.locator('#continueLearning').isVisible(),false);
   assert.equal(await page.locator('#courseNext').count(),0);
+  // Pedagogia V3: decisões entre trechos, diagnóstico do erro e pista opcional.
+  assert.equal(await page.locator('[data-reading-bridge]').count(),3);
+  assert.equal(await page.locator('.reading-handoff ol li').count(),3);
+  const firstBridge=page.locator('[data-reading-bridge="0"]');
+  await firstBridge.locator('input[value="0"]').check();
+  await firstBridge.locator('[data-caction="bridge-check"]').click();
+  assert.equal(await firstBridge.locator('[data-bridge-feedback]').getAttribute('data-result'),'retry');
+  await firstBridge.locator('[data-caction="bridge-hint"]').click();
+  assert.equal(await firstBridge.locator('[data-bridge-hint]').isVisible(),true);
+  await firstBridge.locator('input[value="1"]').check();
+  await firstBridge.locator('[data-caction="bridge-check"]').click();
+  assert.equal(await firstBridge.locator('[data-bridge-feedback]').getAttribute('data-result'),'correct');
+  const bridgeProgress=await page.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')||'{}').lessons?.fundamentos?.mastered||false);
+  assert.equal(bridgeProgress,false,'Uma questão formativa não registra domínio');
   await page.locator('[data-caction="read"]').click();
   assert.equal(await page.locator('#courseLesson [data-caction="worked-next"]:visible').isVisible(),true);
   assert.equal(await page.locator('#courseNext').count(),0);
@@ -1411,6 +1425,24 @@ try{
     assert.deepEqual(errors14,[]);
     await context14.close();
   }
+
+  // Pilotos de tradução e equivalências: aplicação em contexto novo, sem prejuízo do progresso.
+  const bridgeContext=await browser.newContext({viewport:{width:375,height:812},isMobile:true,hasTouch:true});
+  const bridgePage=await bridgeContext.newPage(),bridgeErrors=[];
+  bridgePage.on('pageerror',error=>bridgeErrors.push(error.message));
+  for(const id of ['traducao','equivalencias']){
+    await bridgePage.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
+    assert.equal(await bridgePage.locator('[data-reading-bridge]').count(),3);
+    const transfer=bridgePage.locator('[data-reading-bridge="2"]');
+    await transfer.locator('input[value="'+(id==='traducao'?1:2)+'"]').check();
+    await transfer.locator('[data-caction="bridge-check"]').click();
+    assert.equal(await transfer.locator('[data-bridge-feedback]').getAttribute('data-result'),'correct');
+    assert.equal(await bridgePage.locator('.reading-handoff ol li').count(),3);
+    const bridgeOverflow=await bridgePage.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(bridgeOverflow<=2,'Questão-ponte excede viewport móvel na aula '+id);
+  }
+  assert.deepEqual(bridgeErrors,[]);
+  await bridgeContext.close();
 
   console.log('Smoke test de UX aprovado: progresso, grupos, histórico, células e viewport móvel.');
   await context.close();
