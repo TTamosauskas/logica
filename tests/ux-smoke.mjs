@@ -605,7 +605,7 @@ try{
     await answer.click();
     await free.locator('[data-action="grade"]').click();
     assert.match(await free.locator('.free-grade').innerText(),/respostas corretas/);
-    assert.equal(await free.locator('.free-argument-explanation').count(),0);
+    assert.equal(await free.locator('.free-argument-explanation').count(),1);
     const stored=await free.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
     assert.equal(stored.version,4);
     assert.equal('rowMode' in stored,false);
@@ -615,7 +615,7 @@ try{
     assert.equal(stored.formulas.length,3);
     await free.reload({waitUntil:'networkidle'});
     assert.equal(await free.locator('.free-grade').count(),1);
-    assert.equal(await free.locator('.free-argument-explanation').count(),0);
+    assert.equal(await free.locator('.free-argument-explanation').count(),1);
     assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),0);
     await free.locator('#freeNewFormula').fill('¬(q →)');
     await free.locator('[data-action="add-formula"]').click();
