@@ -97,3 +97,19 @@ test('a amostra de avaliações permanece aplicável após a prática assistida'
     assert.ok(bank.every(q=>q.dimension==='concept'||q.dimension==='application'),id);
   }
 });
+
+test('audita a versão efetiva de leituras com identificadores duplicados',()=>{
+  // Essas fontes históricas continuam existindo: o curso utiliza a última
+  // variante no agregador da interface e NÃO uma versão anterior.
+  assert.equal(readings.metateoria,FOUNDATIONS_READINGS.metateoria);
+  assert.equal(readings.modais,OTHER_LOGIC_READINGS.modais);
+  for(const id of ['condicionais_naturais','equiv_algebra','equiv_condicionais',
+    'regras_inferencia','negacao_quantificadores']){
+    assert.equal(readings[id],FOCUSED_READINGS_A[id]);
+    assert.notEqual(readings[id],GAP_READINGS_A[id]);
+  }
+  for(const id of ['medias_ponderadas','temporal_composta','fde_operacoes','intuicionista_negacao']){
+    assert.equal(readings[id],FOCUSED_READINGS_B[id]);
+    assert.notEqual(readings[id],GAP_READINGS_B[id]);
+  }
+});
