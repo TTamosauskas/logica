@@ -88,10 +88,10 @@ test('questões de conceitos sensíveis respeitam a seção em que foram ensinad
     ['silogismos',2,/silogismo disjuntivo/i,/pasta A/i],
     ['provas',0,/prova formal/i,/prova formal/i],
     ['provas',1,/modus ponens/i,/modus ponens/i],
-    ['categoricos2',0,/particular/i,/forma/i],
+    ['categoricos2',0,/I e O/i,/forma/i],
     ['categoricos2',1,/contradição/i,/contradiz/i],
     ['predicados2',0,/relação/i,/Ajuda/i],
-    ['probabilidade',0,/falsos positivos/i,/99/i],
+    ['probabilidade',0,/positivos falsos/i,/99/i],
     ['vieses_julgamento',1,/ancoragem/i,/bicicleta/i],
     ['vieses_julgamento',2,/enquadramento/i,/sobrevivência/i],
     ['vieses_decisao',1,/calibrad/i,/previsões/i],
@@ -116,7 +116,7 @@ test('questões de conceitos sensíveis respeitam a seção em que foram ensinad
     const available=reading.sections.slice(0,positions[stage]+1)
       .flatMap(section=>section.paragraphs).join(' ');
     assert.match(available,taught,id+' precisa apresentar o conceito antes da questão '+(stage+1));
-    assert.match(bridge.question,asked,id+' precisa perguntar sobre o conceito da seção');
+    assert.match(bridge.question+' '+bridge.options[bridge.correct],asked,id+' precisa perguntar sobre o conceito da seção');
   }
   assert.doesNotMatch(PEDAGOGY_BRIDGES.condicionais_naturais.bridges[0].question,
     /somente se|condição necessária|modus tollens/i,
