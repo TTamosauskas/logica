@@ -1712,9 +1712,13 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   }
   function renderPedagogicalReading(reading,id){
     const support=PEDAGOGY_BRIDGES[id];
-    const sections=reading.sections.map((section,i)=>
-      `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>${support?.bridges[i]?renderPedagogyBridge(support.bridges[i],i):''}`
-    ).join('');
+    // Algumas aulas têm mais de três seções: distribua as três decisões
+    // após a primeira, uma seção intermediária e a última, sem omitir a etapa de transferência.
+    const positions=[0,Math.floor((reading.sections.length-1)/2),reading.sections.length-1];
+    const sections=reading.sections.map((section,i)=>{
+      const slot=positions.indexOf(i);
+      return `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>${support&&slot>=0?renderPedagogyBridge(support.bridges[slot],slot):''}`;
+    }).join('');
     const choices=reading.check.options.map((label,i)=>
       `<label class="reading-check-option"><input type="radio" name="reading-check" value="${i}"><span>${escapeHTML(label)}</span></label>`
     ).join('');
