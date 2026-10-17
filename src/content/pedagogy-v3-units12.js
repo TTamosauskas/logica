@@ -99,14 +99,14 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
         "É precisamente sem a exceção que a frase fornece uma garantia."
       ],
       [
-        "Com p='haverá aula' e q='falta energia', qual é a forma mínima?",
-        "¬q→p.",
-        "q→¬p.",
-        "p→¬q.",
-        "O antecedente é a ausência da exceção, não a exceção.",
-        "A forma ¬q→p traduz a garantia de aula no caso sem falta de energia.",
-        "Essa opção afirma cancelamento obrigatório quando falta energia, o que não foi dito.",
-        "Essa opção proíbe aula com falta de energia, restrição não afirmada."
+        "Uma regra diz 'a entrega ocorrerá, a menos que haja greve'. Se realmente houver greve, o que a regra permite concluir?",
+        "Não é possível determinar só com essa frase se a entrega ocorrerá.",
+        "Que a entrega obrigatoriamente será cancelada.",
+        "Que a entrega obrigatoriamente acontecerá.",
+        "A segunda seção explica o que acontece quando a exceção está presente.",
+        "A greve suspende a garantia do cenário sem exceção, mas não decide sozinha se a entrega será feita.",
+        "A frase não proíbe explicitamente uma entrega em caso de greve.",
+        "A ocorrência da exceção não fornece uma nova promessa de entrega."
       ],
       [
         "'A entrega ocorre, a menos que haja greve.' Houve greve e a entrega ocorreu. A regra foi violada?",
@@ -379,14 +379,14 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
         "Distribuir não exige negar a parcela externa."
       ],
       [
-        "Qual é a forma distribuída correta de A∧(B∨C)?",
-        "(A∧B)∨(A∧C).",
-        "(A∧B)∨C.",
-        "A∨(B∧C).",
-        "Confirme a presença de A junto tanto a B quanto a C.",
-        "A conjunção externa distribui para os dois ramos da disjunção.",
-        "O segundo ramo perde A e torna-se menos restrito.",
-        "Essa troca de conectivos não é uma aplicação de distributividade."
+        "Qual é a distribuição de p∨(q∧r), com o OU por fora e o E por dentro?",
+        "(p∨q)∧(p∨r).",
+        "(p∨q)∨r.",
+        "(p∧q)∨(p∧r).",
+        "A segunda seção ensina que a disjunção também distribui sobre a conjunção.",
+        "Na distribuição do OU sobre o E, p é repetida em ambos os ramos: (p∨q)∧(p∨r).",
+        "Deixar a segunda parcela sem p altera as condições de verdade da expressão original.",
+        "Essa forma distribui E sobre OU e não corresponde à operação apresentada."
       ],
       [
         "Uma oferta vale quando há cupom E (pagamento por Pix OU cartão). Qual leitura é equivalente?",
