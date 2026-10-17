@@ -667,6 +667,8 @@ try{
     }
     assert.match(await page.locator('#freeTableTitle').innerText(),/^3\. Preencher a tabela-verdade/);
     assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
+    assert.equal(await page.locator('.free-truth-table th.free-conclusion-head').count(),0);
+    await page.locator('[data-inference-mode]').check();
     const heads=await page.locator('.free-truth-table th[data-rel-col] .free-column-label').allTextContents();
     assert.equal(heads.length,4);
     assert.match(heads[0],/A · q\(p\)/);
