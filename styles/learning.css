@@ -362,3 +362,21 @@
 .worked-check-feedback[data-result="retry"]{color:var(--text)!important}
 .worked-utility-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}
 @media(max-width:480px){.worked-example{padding:13px}.worked-steps>li{padding-left:31px!important}.worked-example-head{flex-direction:column;gap:4px}}
+
+/* Pedagogia V3 — pontos de decisão entre a explicação e a prática. */
+.reading-bridge{min-width:0;border:1px solid var(--border-hi);border-radius:13px;padding:14px 16px 16px;margin:0 0 24px;background:var(--panel2)}
+.reading-bridge legend{font-size:14px;font-weight:800;padding:0 7px;color:var(--text)}
+.reading-bridge-intro{margin:2px 0 12px!important;color:var(--muted)!important;font-size:13px!important;line-height:1.6!important}
+.reading-bridge .reading-check-option{background:var(--panel)}
+.reading-bridge-actions{display:flex;flex-wrap:wrap;gap:9px}
+.reading-bridge-actions .button{min-height:44px;white-space:normal}
+.reading-bridge-hint{margin:13px 0 0!important;padding:10px 12px;border-left:3px solid var(--accent);background:var(--accent-bg);border-radius:5px;font-size:13px!important;line-height:1.7!important;color:var(--text)!important}
+.reading-bridge [hidden]{display:none!important}
+.reading-bridge [data-bridge-feedback][data-result="correct"]{color:var(--teal);font-weight:650}
+.reading-bridge [data-bridge-feedback][data-result="retry"]{color:var(--text)}
+.reading-handoff{border:1px solid var(--border-hi);border-radius:13px;padding:16px 18px;margin:0 0 24px}
+.reading-handoff h4{font-size:16px;margin:0 0 12px}
+.reading-handoff ol{margin:0;padding-left:22px;display:grid;gap:9px}
+.reading-handoff li{line-height:1.7;font-size:14px;padding-left:2px}
+.reading-handoff p{font-size:13px!important;line-height:1.7!important;color:var(--muted)!important;margin:14px 0 0!important}
+@media(max-width:520px){.reading-bridge,.reading-handoff{padding:13px}.reading-bridge-actions{flex-direction:column}.reading-bridge-actions .button{width:100%}}

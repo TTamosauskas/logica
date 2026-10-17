@@ -39,6 +39,7 @@ import { FOCUSED_READINGS_A,FOCUSED_ASSESSMENTS_A,FOCUSED_PRACTICE_A } from './c
 import { FOCUSED_READINGS_B,FOCUSED_ASSESSMENTS_B,FOCUSED_PRACTICE_B } from './content/focused-lessons-b.js';
 import { ALIGNED_ASSESSMENTS, ALIGNED_BASIC_PRACTICE } from './content/curriculum-alignment.js';
 import { WORKED_EXAMPLES } from './content/example-walkthroughs.js';
+import { PEDAGOGY_BRIDGES } from './content/pedagogy-bridges.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
 import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
 import { UNIT2_ASSESSMENTS } from './content/assessment-unit2.js';
@@ -1693,14 +1694,32 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     target?.scrollIntoView({behavior:'auto',block:'nearest'});
     target?.focus({preventScroll:true});
   }
-  function renderPedagogicalReading(reading){
-    const sections=reading.sections.map(section=>
-      `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>`
+  function renderPedagogyBridge(bridge,index){
+    const labels=['Reconheça a ideia','Complete o raciocínio','Tente em outro contexto'];
+    const choices=bridge.options.map((label,i)=>
+      `<label class="reading-check-option"><input type="radio" name="reading-bridge-${index}" value="${i}"><span>${escapeHTML(label)}</span></label>`
+    ).join('');
+    return `<fieldset class="reading-bridge" data-reading-bridge="${index}">
+      <legend>Questão-ponte ${index+1}/3 · ${labels[index]}</legend>
+      <p class="reading-bridge-intro">Faça uma pequena decisão antes de avançar. Não vale nota; a pista é opcional.</p>
+      <strong class="reading-check-question">${escapeHTML(bridge.question)}</strong>
+      <div class="reading-check-options">${choices}</div>
+      <div class="reading-bridge-actions"><button type="button" class="button small" data-caction="bridge-check">Conferir meu raciocínio</button>
+      <button type="button" class="button small" data-caction="bridge-hint" aria-expanded="false">Mostrar uma pista</button></div>
+      <p class="reading-bridge-hint" data-bridge-hint hidden>${escapeHTML(bridge.hint)}</p>
+      <p class="reading-check-feedback" data-bridge-feedback role="status" aria-live="polite"></p>
+    </fieldset>`;
+  }
+  function renderPedagogicalReading(reading,id){
+    const support=PEDAGOGY_BRIDGES[id];
+    const sections=reading.sections.map((section,i)=>
+      `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>${support?.bridges[i]?renderPedagogyBridge(support.bridges[i],i):''}`
     ).join('');
     const choices=reading.check.options.map((label,i)=>
       `<label class="reading-check-option"><input type="radio" name="reading-check" value="${i}"><span>${escapeHTML(label)}</span></label>`
     ).join('');
-    return `<div class="pedagogical-reading"><p class="reading-objective"><strong>Ao final desta explicação, você será capaz de:</strong> ${escapeHTML(reading.objective)}</p>${sections}<div class="reading-distinction"><strong>Uma confusão comum</strong><p>${escapeHTML(reading.misconception)}</p></div><p class="reading-summary"><strong>Em resumo:</strong> ${escapeHTML(reading.summary)}</p><fieldset class="reading-check" data-reading-check><legend>Confira o essencial</legend><p>Uma pergunta para refletir sobre o conceito. Não vale nota e você pode tentar novamente.</p><strong class="reading-check-question">${escapeHTML(reading.check.question)}</strong><div class="reading-check-options">${choices}</div><button type="button" class="button small" data-caction="reading-check">Conferir resposta</button><p class="reading-check-feedback" data-reading-feedback role="status" aria-live="polite"></p></fieldset></div>`;
+    const handoff=support?`<aside class="reading-handoff" aria-label="Roteiro de aplicação"><h4>${escapeHTML(support.handoff.title)}</h4><ol>${support.handoff.steps.map(step=>`<li>${escapeHTML(step)}</li>`).join('')}</ol><p>${escapeHTML(support.handoff.next)}</p></aside>`:'';
+    return `<div class="pedagogical-reading"><p class="reading-objective"><strong>Ao final desta explicação, você será capaz de:</strong> ${escapeHTML(reading.objective)}</p>${sections}${handoff}<div class="reading-distinction"><strong>Uma confusão comum</strong><p>${escapeHTML(reading.misconception)}</p></div><p class="reading-summary"><strong>Em resumo:</strong> ${escapeHTML(reading.summary)}</p><fieldset class="reading-check" data-reading-check><legend>Confira o essencial</legend><p>Uma pergunta para refletir sobre o conceito. Não vale nota e você pode tentar novamente.</p><strong class="reading-check-question">${escapeHTML(reading.check.question)}</strong><div class="reading-check-options">${choices}</div><button type="button" class="button small" data-caction="reading-check">Conferir resposta</button><p class="reading-check-feedback" data-reading-feedback role="status" aria-live="polite"></p></fieldset></div>`;
   }
   function renderOppositionSquare(){
     const nodes=[['A',58,66],['E',482,66],['I',58,322],['O',482,322]];
@@ -1783,7 +1802,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       :`<span class="course-stage locked" aria-label="${escapeHTML(stage.label)} — indisponível" title="Conclua a etapa anterior para desbloquear">${lockIcon}${escapeHTML(stage.label)}</span>`).join('');
     let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><nav class="course-lesson-flow" aria-label="Etapas da aula">${stageNavigation}</nav><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
     const reading=COURSE_READINGS[id];
-    html+=`<section class="course-lesson-panel" id="course-stage-1"><h3 tabindex="-1">1. Compreender</h3>${reading?renderPedagogicalReading(reading):`<p>${escapeHTML(lesson.theory)}</p>`}${id==='categoricos2'?renderOppositionSquare():''}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
+    html+=`<section class="course-lesson-panel" id="course-stage-1"><h3 tabindex="-1">1. Compreender</h3>${reading?renderPedagogicalReading(reading,id):`<p>${escapeHTML(lesson.theory)}</p>`}${id==='categoricos2'?renderOppositionSquare():''}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
     if(p.read){html+=`<section class="course-lesson-panel" id="course-stage-2"><h3 tabindex="-1">2. Observar um exemplo resolvido</h3>${renderWorkedExample(id,p)}</section>`}
     if(p.example&&THEORY_CARDS[id]&&id!=='metateoria'){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
     if(p.example){html+=`<section class="course-lesson-panel" id="course-stage-3"><h3 tabindex="-1">3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
@@ -1871,6 +1890,23 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       courseAttempt=null;openMode(courseActive,true,!!previous?.courseAttempt);return
     }
     if(action==='square-check'){const lab=$('courseLesson').querySelector('[data-square-lab]');if(lab)checkSquareLab(lab);return}
+    if(action==='bridge-check'||action==='bridge-hint'){
+      const group=btn.closest('[data-reading-bridge]');
+      const index=Number(group?.dataset.readingBridge),bridge=PEDAGOGY_BRIDGES[courseActive]?.bridges[index];
+      if(!group||!bridge)return;
+      if(action==='bridge-hint'){
+        const hint=group.querySelector('[data-bridge-hint]'),expanded=hint.hidden;
+        hint.hidden=!expanded;btn.setAttribute('aria-expanded',String(expanded));
+        btn.textContent=expanded?'Ocultar pista':'Mostrar uma pista';return;
+      }
+      const selected=group.querySelector('input[name="reading-bridge-'+index+'"]:checked');
+      const feedback=group.querySelector('[data-bridge-feedback]');
+      if(!selected){feedback.textContent='Selecione uma alternativa para conferir sua decisão.';return}
+      const option=Number(selected.value),correct=option===bridge.correct;
+      feedback.textContent=(correct?'Você identificou o caminho. ':'Revise esta decisão. ')+bridge.feedback[option]+
+        (correct?' '+bridge.explanation:' Você pode tentar novamente ou abrir a pista.');
+      feedback.dataset.result=correct?'correct':'retry';return;
+    }
     if(action==='reading-check'){
       const reading=COURSE_READINGS[courseActive],group=$('courseLesson').querySelector('[data-reading-check]');
       if(!reading||!group)return;
