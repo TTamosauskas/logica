@@ -16,7 +16,7 @@ Aprovações anteriores à V2 são preservadas e aparecem separadas dos novos re
 
 ## Pedagogia V3 — transição entre teoria e exercícios em todas as aulas
 
-As **61 aulas das oito unidades** incluem três **questões-ponte formativas**, intercaladas com suas três seções explicativas: **183 decisões orientadas** ao longo do currículo. O modelo foi testado inicialmente em Fundamentos, Tradução e Equivalências e estendido às outras 58 aulas.
+As **61 aulas das oito unidades** incluem três **questões-ponte formativas**, distribuídas ao longo das seções explicativas: **183 decisões orientadas** ao longo do currículo. O modelo foi testado inicialmente em Fundamentos, Tradução e Equivalências e estendido às outras 58 aulas.
 
 1. **Identificar:** reconhecer a ideia que acabou de ser apresentada em uma situação clara.
 2. **Completar:** aplicar parte do procedimento, com pista opcional e feedback individual para cada escolha.
