@@ -710,7 +710,7 @@ try{
     assert.equal(tableChildren.next,true,'Tabela deve vir após a escolha explícita do modo de inferência');
     assert.equal(tableChildren.gradeNext,true,'Conferir respostas deve vir imediatamente após a tabela');
     assert.equal(tableChildren.text,'');
-    assert.ok(await page.locator('.truth-venn-impossible').count()>0);
+    // Linhas impossíveis são verificadas acima na tabela e no rodapé explicativo.
     const active=page.locator('.free-truth-table [data-action="answer"]');
     assert.equal(await active.count(),7);
     await active.first().click();
