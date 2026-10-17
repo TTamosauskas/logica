@@ -224,7 +224,7 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
         "F e V.",
         "V e F.",
         "Calcule primeiro a disjunção; depois inverta o valor de p.",
-        "Com F∨V temos V; como p é F, a negação ¬p vale V.",
+        "Com F∨V temos V; como p é F, a negação ¬p vale V nesta valoração.",
         "O OU inclusivo é verdadeiro quando q é V.",
         "Negar p=F produz V, e não F."
       ],
@@ -234,7 +234,7 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
         "V, porque p∨q é verdadeira.",
         "V, porque a porta está fechada.",
         "A expressão externa é um E entre p∨q e ¬p.",
-        "Temos p∨q=V e ¬p=F; a conjunção V∧F é falsa.",
+        "Temos p∨q=V e ¬p=F; a conjunção V∧F é falsa na situação proposta.",
         "Uma metade verdadeira não basta para uma conjunção.",
         "O valor da porta entra pelo OU, mas o E depende também de ¬p."
       ]
@@ -264,7 +264,7 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
         "¬p∨¬q.",
         "p∧¬q.",
         "O OU inclusivo só é falso quando ambas as partes são falsas.",
-        "A negação de p∨q exige ¬p E ¬q simultaneamente.",
+        "A negação de p∨q exige ¬p E ¬q simultaneamente, sem nenhuma exceção.",
         "Isso é a negação de p∧q, e não da disjunção.",
         "A alternativa mantém p verdadeira, o que tornaria p∨q verdadeira."
       ],
@@ -489,7 +489,7 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
     ],
     [
       [
-        "A expressão p↔q requer:",
+        "Na lógica clássica, a expressão p↔q requer:",
         "p→q e q→p.",
         "Apenas p→q.",
         "Apenas p∨q.",
@@ -624,7 +624,7 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
         "Aberto e consistente.",
         "Considerado prova de p apenas.",
         "Duas fórmulas opostas no mesmo ramo não podem valer juntas classicamente.",
-        "p e ¬p contradizem-se e tornam o ramo inviável.",
+        "p e ¬p contradizem-se e tornam o ramo inviável em qualquer valoração clássica.",
         "Um ramo aberto não pode conter contradição desse tipo.",
         "O fechamento trata da consistência do ramo, não prova p isoladamente."
       ],
