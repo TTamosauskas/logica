@@ -469,14 +469,14 @@ export const PEDAGOGY_BRIDGES_VI_VIII=buildBridgeLessons([
         "O tamanho sintático não define validade universal."
       ],
       [
-        "Uma regra 'todos os funcionários chegaram' é verdadeira num modelo com S vazio. Isso prova que há funcionários?",
-        "Não; verdade universal vacuosa não garante existência.",
-        "Sim; universais sempre exigem testemunha.",
-        "Não; por isso toda sentença universal é falsa.",
-        "Confira a diferença entre ausência de contraexemplo e existência de alguém.",
-        "Um modelo com grupo vazio satisfaz uma universal sem oferecer testemunha existencial.",
-        "É possível ter verdade da universal sem nenhum funcionário.",
-        "Existem universais verdadeiras e falsas, a depender do modelo."
+        "Há um modelo com p=V e q=V e outro com p=V e q=F. Como classificar p∧q na lógica clássica?",
+        "Satisfatível, mas não válida: há um modelo verdadeiro e outro falso.",
+        "Insatisfatível: nenhum modelo torna a fórmula verdadeira.",
+        "Válida: a fórmula é verdadeira em qualquer modelo.",
+        "A última seção distingue existência de um modelo de verdade em todos os modelos.",
+        "Como p∧q é verdadeira com p e q verdadeiros, é satisfatível; como é falsa com q falso, não é universalmente válida.",
+        "O primeiro modelo informado torna p∧q verdadeira, refutando a insatisfatibilidade.",
+        "O segundo modelo informado torna p∧q falsa, refutando a validade universal."
       ]
     ]
   ],
