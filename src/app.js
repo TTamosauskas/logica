@@ -40,6 +40,7 @@ import { FOCUSED_READINGS_B,FOCUSED_ASSESSMENTS_B,FOCUSED_PRACTICE_B } from './c
 import { ALIGNED_ASSESSMENTS, ALIGNED_BASIC_PRACTICE } from './content/curriculum-alignment.js';
 import { WORKED_EXAMPLES } from './content/example-walkthroughs.js';
 import { PEDAGOGY_BRIDGES } from './content/pedagogy-bridges.js';
+import { sectionBridgePositions, practiceTransferGuide } from './core/pedagogy-continuity.js';
 import { PILOT_ASSESSMENTS } from './content/assessment-pilot.js';
 import { UNIT1_ASSESSMENTS } from './content/assessment-unit1.js';
 import { UNIT2_ASSESSMENTS } from './content/assessment-unit2.js';
@@ -1727,7 +1728,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     const support=PEDAGOGY_BRIDGES[id];
     // Algumas aulas têm mais de três seções: distribua as três decisões
     // após a primeira, uma seção intermediária e a última, sem omitir a etapa de transferência.
-    const positions=[0,Math.floor((reading.sections.length-1)/2),reading.sections.length-1];
+    const positions=sectionBridgePositions(reading.sections.length);
     const sections=reading.sections.map((section,i)=>{
       const slot=positions.indexOf(i);
       return `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>${support&&slot>=0?renderPedagogyBridge(support.bridges[slot],slot,section.heading):''}`;
@@ -1804,6 +1805,23 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     feedback.dataset.result=correct===selected.length?'correct':'retry';
     feedback.textContent=correct+' de '+selected.length+' inferências corretas. '+explanation.join('; ')+'. '+(mode==='modern'?'Experimente S vazio e depois S com integrantes dentro e fora de P.':'Neste regime sabemos que S tem ao menos um integrante.')+(correct===selected.length?' Você pode prosseguir.':' Compare com o diagrama e tente outra combinação.');
   }
+  function renderTransferSteps(guide){
+    return `<ol class="practice-transfer-steps">${guide.steps.map(step=>`<li>${escapeHTML(step)}</li>`).join('')}</ol>`;
+  }
+  function renderWorkedReminder(guide){
+    return `<details class="practice-transfer-example"><summary>Rever a resolução do exemplo anterior</summary>
+      <p><strong>Situação estudada:</strong> ${escapeHTML(guide.worked.context)}</p>
+      <ol>${guide.worked.steps.map(step=>`<li><strong>${escapeHTML(step.formal)}</strong>
+        <p>${escapeHTML(step.concrete)}</p><small>Por quê? ${escapeHTML(step.reason)}</small></li>`).join('')}</ol>
+      <p class="practice-transfer-note">O exemplo explica o procedimento; o desafio aberto usa dados próprios.</p>
+    </details>`;
+  }
+  function renderTransferPrep(id){
+    const guide=practiceTransferGuide(id,COURSE_READINGS,PEDAGOGY_BRIDGES,WORKED_EXAMPLES,'guided');
+    return `<div class="practice-transfer-prep"><p><strong>Do exemplo ao seu exercício:</strong> você vai aplicar o procedimento a dados novos. Antes de começar, lembre-se destas decisões:</p>
+      ${renderTransferSteps(guide)}
+      <p>Se não souber começar, abra a orientação dentro do exercício e consulte o exemplo resolvido. Essas ajudas não valem nota.</p></div>`;
+  }
   function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
     const stages=[
       {label:'1. Compreender',done:p.read,available:true},
@@ -1822,7 +1840,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     html+=`<section class="course-lesson-panel" id="course-stage-1"><h3 tabindex="-1">1. Compreender</h3>${reading?renderPedagogicalReading(reading,id):`<p>${escapeHTML(lesson.theory)}</p>`}${id==='categoricos2'?renderOppositionSquare():''}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
     if(p.read){html+=`<section class="course-lesson-panel" id="course-stage-2"><h3 tabindex="-1">2. Observar um exemplo resolvido</h3>${renderWorkedExample(id,p)}</section>`}
     if(p.example&&THEORY_CARDS[id]&&id!=='metateoria'){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
-    if(p.example){html+=`<section class="course-lesson-panel" id="course-stage-3"><h3 tabindex="-1">3. Praticar com ajuda</h3><p>Abra um exercício do tema. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p><div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
+    if(p.example){html+=`<section class="course-lesson-panel" id="course-stage-3"><h3 tabindex="-1">3. Praticar com ajuda</h3><p>Aplique o método do exemplo a uma tarefa nova. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p>${renderTransferPrep(id)}<div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
     if(p.guided){html+=`<section class="course-lesson-panel" id="course-stage-4"><h3 tabindex="-1">4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
     if(p.independent){
       const questions=assessmentForLesson(id),last=p.assessmentV2?.last;
@@ -1856,7 +1874,14 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
         :isReview?'Revisão espaçada: resolva um novo desafio com ao menos 80% na primeira correção, sem campos pendentes nem dicas.'
         :'Meta: ao menos 80% na primeira correção, sem campos pendentes e sem consultar dicas. Se abrir uma dica, esta tentativa se torna prática assistida.'
       :'Prática assistida: consulte as dicas e corrija para registrar esta etapa.';
-    banner.innerHTML=`<strong>Curso Guiado · ${used?'Treino com ajuda':isReview?'Revisão independente':independent?'Prática independente':'Prática com ajuda'}</strong><div>${instructions}</div><button type="button" class="button small" data-course-back="1">← Voltar à aula</button>`;
+    const guide=practiceTransferGuide(courseAttempt.id,COURSE_READINGS,PEDAGOGY_BRIDGES,WORKED_EXAMPLES,stage);
+    const transfer=guide?`<section class="practice-transfer-banner" aria-label="Como aplicar a explicação a este exercício">
+      <h3>Como começar este exercício</h3>
+      <p>O enunciado será diferente do exemplo, mas o raciocínio é o mesmo. Comece pelo primeiro passo antes de preencher a resposta.</p>
+      ${renderTransferSteps(guide)}
+      ${renderWorkedReminder(guide)}
+    </section>`:'';
+    banner.innerHTML=`<strong>Curso Guiado · ${used?'Treino com ajuda':isReview?'Revisão independente':independent?'Prática independente':'Prática com ajuda'}</strong><div>${instructions}</div>${transfer}<button type="button" class="button small" data-course-back="1">← Voltar à aula</button>`;
   }
   function recordGuidedAttempt(){
     if(!courseAttempt||courseAttempt.recorded||!exercise?.grade||exercise.mode!==courseAttempt.id)return;

@@ -122,3 +122,15 @@ test('questões de conceitos sensíveis respeitam a seção em que foram ensinad
     /somente se|condição necessária|modus tollens/i,
     'A primeira questão de Condição suficiente não pode antecipar a seção seguinte');
 });
+
+test('Metateoria não antecipa Gödel nem problema da parada nas questões-ponte',()=>{
+  const reading=readings.metateoria,questions=PEDAGOGY_BRIDGES.metateoria.bridges;
+  assert.match(reading.sections[0].paragraphs.join(' '),/Γ⊨φ/);
+  assert.match(questions[0].question,/Γ⊨φ/);
+  assert.match(reading.sections[1].paragraphs.join(' '),/Γ⊢φ/);
+  assert.match(questions[1].question,/derivação/);
+  assert.match(reading.sections[2].paragraphs.join(' '),/correção/);
+  assert.match(questions[2].question,/correção e completude/);
+  assert.ok(questions.every(q=>!/Gödel|Turing|parada|indecidibilidade|aritméticas/i.test(
+    [q.question,q.explanation,q.hint,...q.options].join(' '))));
+});
