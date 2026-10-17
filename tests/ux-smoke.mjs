@@ -703,11 +703,11 @@ try{
     const tableChildren=await page.locator('#freeTableTitle').evaluate(title=>{
       const card=title.closest('.free-card'),table=card.querySelector('.free-table-scroll'),
         grade=card.querySelector('.free-table-actions');
-      return {next:card.querySelector('.free-section-heading')?.nextElementSibling===table,
+      return {next:card.querySelector('.free-section-heading')?.nextElementSibling===card.querySelector('.free-inference-toggle') && card.querySelector('.free-inference-toggle')?.nextElementSibling===table,
         gradeNext:table.nextElementSibling===grade,
         text:card.querySelector('.free-table-tip')?.textContent||''};
     });
-    assert.equal(tableChildren.next,true,'Tabela deve vir imediatamente após o título');
+    assert.equal(tableChildren.next,true,'Tabela deve vir após a escolha explícita do modo de inferência');
     assert.equal(tableChildren.gradeNext,true,'Conferir respostas deve vir imediatamente após a tabela');
     assert.equal(tableChildren.text,'');
     assert.ok(await page.locator('.truth-venn-impossible').count()>0);
