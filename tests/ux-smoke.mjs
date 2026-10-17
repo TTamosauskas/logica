@@ -1059,7 +1059,7 @@ try{
       await pedagogy.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await pedagogy.locator('#courseLesson').isVisible(),true);
       assert.equal(await pedagogy.locator('#courseLesson .reading-section').count(),3);
-      assert.equal(await pedagogy.locator('#courseLesson .reading-check-option').count(),3);
+      assert.equal(await pedagogy.locator('#courseLesson [data-reading-check] .reading-check-option').count(),3);
       assert.equal(await pedagogy.locator('#courseLesson .reading-objective').isVisible(),true);
       assert.equal(await pedagogy.locator('#courseLesson .reading-summary').isVisible(),true);
       assert.equal(await pedagogy.locator('#courseLesson .reading-distinction').isVisible(),true);
