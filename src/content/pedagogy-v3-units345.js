@@ -89,7 +89,7 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
     ],
     [
       [
-        "De p∧q podemos inferir:",
+        "A partir da premissa lógica p∧q podemos inferir:",
         "p.",
         "¬p.",
         "p→¬q.",
@@ -259,7 +259,7 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
         "Essa alternativa repete a afirmação original em vez de negá-la."
       ],
       [
-        "Como negar ∃x P(x)?",
+        "Como negar a afirmação existencial ∃x P(x)?",
         "∀x ¬P(x).",
         "∃x ¬P(x).",
         "∀x P(x).",
@@ -289,7 +289,7 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
     ],
     [
       [
-        "¬∀x(P(x)→Q(x)) significa:",
+        "Na lógica de predicados, ¬∀x(P(x)→Q(x)) significa:",
         "Existe P que não é Q.",
         "Nenhum P é Q.",
         "Todos os P são Q.",
@@ -369,7 +369,7 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
     ],
     [
       [
-        "A fórmula ∃!x F(x) afirma:",
+        "Na lógica de predicados, a fórmula ∃!x F(x) afirma:",
         "Exatamente um indivíduo satisfaz F.",
         "Ao menos dois indivíduos satisfazem F.",
         "Todo indivíduo satisfaz F.",
