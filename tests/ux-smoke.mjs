@@ -1405,11 +1405,9 @@ try{
     });
     await app14.reload({waitUntil:'networkidle'});
     await app14.locator('[data-caction="independent"]').click();
-    assert.equal(await app14.locator('#specialArea [data-special-field]').count(),4);
-    assert.match(await app14.locator('#specialArea').innerText(),/transformação|equivalência|interpretação/);
-    for(let i=0;i<4;i++)await app14.locator(`#specialArea [data-special-field="${i}"]`).selectOption({index:1});
-    await app14.locator('#checkButton').click();
-    assert.equal(await app14.locator('#specialArea .course-question-explanation').count(),4);
+    // A aula de equivalências agora pratica pela interface de exercícios compartilhada.
+    assert.equal(await app14.locator('#workView').isVisible(),true);
+    assert.equal(await app14.locator('#checkButton').isVisible(),true);
     assert.deepEqual(errors14,[]);
     await context14.close();
   }
