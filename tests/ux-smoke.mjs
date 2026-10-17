@@ -271,6 +271,10 @@ try{
   await progressPage.reload({waitUntil:'networkidle'});
   assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 61 avaliações aprovadas · 0 consolidados/);
   assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO DISPONÍVEL/);
+  await progressPage.locator('#heroNextStepButton').click();
+  assert.match(progressPage.url(),/#aula-fundamentos$/);
+  assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
+  await progressPage.goto(root,{waitUntil:'networkidle'});
   await progressPage.locator('#continueButton').click();
   assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
   await progressPage.locator('[data-caction="review"]').click();
@@ -398,6 +402,11 @@ try{
     assert.match(await journey.locator('#homeView .hero .eyebrow').innerText(),/INÍCIO/);
     assert.match(await journey.locator('#homeView .hero p').innerText(),/Escolha a próxima etapa/);
     assert.equal(await journey.locator('#continueButton').isVisible(),true);
+    assert.equal(await journey.locator('#heroNextStepButton').innerText(),'Próximo Passo');
+    assert.equal(await journey.locator('#heroNextStepButton').isVisible(),true);
+    await journey.locator('#heroNextStepButton').click();
+    assert.match(journey.url(),/#aula-fundamentos$/,'Próximo Passo abre a primeira aula do currículo');
+    assert.equal(await journey.locator('#courseLesson').isVisible(),true);
 
     await journey.goto(root+'#curso',{waitUntil:'networkidle'});
     assert.match(await journey.locator('#courseLocation').innerText(),/MAPA DAS UNIDADES/);
@@ -418,6 +427,8 @@ try{
     assert.match(await journey.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
     assert.match(await journey.locator('#workDescription').innerText(),/Corrigir/);
     assert.match(await journey.locator('#backButton').innerText(),/Voltar à aula/);
+    assert.equal(await journey.locator('#exerciseLessonLink').getAttribute('href'),'#aula-fundamentos');
+    assert.equal(await journey.locator('#exerciseLessonLink').isVisible(),true);
     await journey.locator('#checkButton').click();
     assert.match(await journey.locator('#workDescription').innerText(),/Confira a correção/);
     assert.equal(await journey.locator('#feedbackNextActions button').count()>0,true);
@@ -429,6 +440,19 @@ try{
     assert.match(await journey.locator('#workLocation').innerText(),/PRÁTICA LIVRE/);
     assert.match(await journey.locator('#workDescription').innerText(),/módulos/);
     assert.match(await journey.locator('#backButton').innerText(),/Voltar aos módulos/);
+    const lessonLink=journey.locator('#exerciseLessonLink');
+    assert.equal(await lessonLink.isVisible(),true);
+    assert.equal(await lessonLink.getAttribute('href'),'#aula-operadores');
+    assert.match(await lessonLink.innerText(),/Operadores/i);
+    await journey.reload({waitUntil:'networkidle'});
+    assert.equal(await journey.locator('#exerciseLessonLink').getAttribute('href'),'#aula-operadores');
+    await journey.locator('#exerciseLessonLink').click();
+    assert.match(journey.url(),/#aula-operadores$/);
+    assert.equal(await journey.locator('#courseLesson').isVisible(),true);
+    await journey.goto(root+'#misto',{waitUntil:'networkidle'});
+    assert.match(await journey.locator('#exerciseLessonLink').getAttribute('href'),/^#aula-[a-z0-9_]+$/);
+    assert.equal(await journey.locator('#exerciseLessonLink').isVisible(),true);
+    assert.ok(await journey.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2);
 
     await journey.goto(root+'#avaliacao-final',{waitUntil:'networkidle'});
     assert.match(await journey.locator('#courseLocation').innerText(),/AVALIAÇÃO FINAL/);

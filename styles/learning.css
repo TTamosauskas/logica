@@ -380,3 +380,11 @@
 .reading-handoff li{line-height:1.7;font-size:14px;padding-left:2px}
 .reading-handoff p{font-size:13px!important;line-height:1.7!important;color:var(--muted)!important;margin:14px 0 0!important}
 @media(max-width:520px){.reading-bridge,.reading-handoff{padding:13px}.reading-bridge-actions{flex-direction:column}.reading-bridge-actions .button{width:100%}}
+
+/* Navegação entre a prática e a aula correspondente. */
+.work-return-links{display:flex;align-items:center;flex-wrap:wrap;gap:10px 24px;margin:0 0 4px}
+.work-return-links .back,.work-return-links .exercise-lesson-link{min-height:44px;max-width:100%;white-space:normal;text-align:left}
+.exercise-lesson-link{display:inline-flex;align-items:center;padding:9px 0;color:var(--accent);font-size:13px;font-weight:750;line-height:1.5;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.exercise-lesson-link:hover{color:var(--text)}
+.exercise-lesson-link:focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:4px}
+@media(max-width:520px){.work-return-links{align-items:stretch;flex-direction:column;gap:0}}

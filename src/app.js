@@ -1072,7 +1072,19 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     }
     area.innerHTML='<button type="button" class="button primary" data-feedback-action="next">Próximo desafio →</button>';
   }
+  function updateExerciseLessonLink(ex){
+    const target=$('exerciseLessonLink');
+    // Treinos mistos utilizam o tema real da questão; uma tentativa do curso
+    // mantém o vínculo da aula mesmo depois de uma restauração do rascunho.
+    const id=LESSONS[ex.mode]?ex.mode:courseAttempt?.id;
+    const lesson=id&&LESSONS[id]?MODULES.find(item=>item.id===id):null;
+    target.hidden=!lesson;
+    if(!lesson){target.removeAttribute('href');return}
+    target.href='#aula-'+encodeURIComponent(id);
+    target.textContent='← Voltar à aula: '+lesson.name;
+  }
   function renderExercise(){if(!exercise)return;const ex=exercise;
+    updateExerciseLessonLink(ex);
     const orientation=exerciseScreenContext({moduleName:currentMode().name,stage:courseAttempt?.stage,graded:!!ex.grade,revealed:!!ex.revealed});
     $('workLocation').textContent=orientation.location;
     $('workDescription').textContent=orientation.description;
@@ -2027,6 +2039,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   $('importProgressFile').addEventListener('change',importProgressFile);
   $('continueButton').addEventListener('click',resumeLearning);
   $('nextLessonButton').addEventListener('click',openRecommendedLesson);
+  $('heroNextStepButton').addEventListener('click',openRecommendedLesson);
   $('heroStartButton').addEventListener('click',()=>openCourse());
   $('heroPracticeButton').addEventListener('click',()=>{const section=$('practiceSection');section.scrollIntoView({behavior:'smooth',block:'start'});section.focus({preventScroll:true})});
   $('topFreeTable').addEventListener('click',()=>openFreeTable());$('freeHomeBack').addEventListener('click',()=>goHome());
