@@ -442,6 +442,12 @@ try{
     assert.match(await journey.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
     assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-steps li').count(),3);
     assert.match(await journey.locator('#courseExerciseBanner').innerText(),/Como começar este exercício/);
+    const planPrecedesResponse=await journey.evaluate(()=>{
+      const guide=document.getElementById('courseExerciseBanner');
+      const help=document.getElementById('exerciseHelp');
+      return Boolean(guide.compareDocumentPosition(help)&Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    assert.equal(planPrecedesResponse,true,'O roteiro precisa aparecer antes dos campos e dicas da questão');
     assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-example').getAttribute('open'),null);
     await journey.locator('#courseExerciseBanner .practice-transfer-example summary').click();
     assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-example li').count(),3);
