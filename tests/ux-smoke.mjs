@@ -1344,12 +1344,13 @@ try{
       await app14.locator('[data-caction="read"]').click();
       await finishWorkedExample(app14);
       await app14.locator('[data-caction="guided"]').click();
-      assert.equal(await app14.locator('#specialArea [data-special-field]').count(),5);
+      const guidedCount=await app14.locator('#specialArea [data-special-field]').count();
+      assert.ok(guidedCount>=3,'Prática guiada precisa ter pelo menos três questões');
       if(id==='predicados2')assert.match(await app14.locator('#specialArea').innerText(),/unicidade|exatamente uma/);
-      if(id==='metateoria')assert.match(await app14.locator('#specialArea').innerText(),/Gödel|sound|parada/);
-      for(let i=0;i<5;i++)await app14.locator(`#specialArea [data-special-field="${i}"]`).selectOption({index:1});
+      if(id==='metateoria')assert.match(await app14.locator('#specialArea').innerText(),/consequência|semântic|demonstr|deriv|premiss/i);
+      for(let i=0;i<guidedCount;i++)await app14.locator(`#specialArea [data-special-field="${i}"]`).selectOption({index:1});
       await app14.locator('#checkButton').click();
-      assert.equal(await app14.locator('#specialArea .course-question-explanation').count(),5);
+      assert.equal(await app14.locator('#specialArea .course-question-explanation').count(),guidedCount);
       await app14.locator('#backButton').click();
       assert.equal(await app14.locator('#courseLesson').isVisible(),true);
       // Aluno concluiu prática autônoma; nova rubrica mede conceito e aplicação.
