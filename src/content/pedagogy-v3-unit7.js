@@ -59,14 +59,14 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
         "Somente o próximo estado corresponde ao operador X."
       ],
       [
-        "Num traço t0,t1,t2, com p apenas em t2, quanto vale Fp em t0?",
-        "V, porque p aparece em t2.",
-        "F, porque p é falsa em t0.",
-        "F, porque F olha só para t1.",
-        "Procure o primeiro instante onde p é V, incluindo o presente.",
-        "F é eventualidade: a ocorrência em t2 sustenta o enunciado desde t0.",
-        "Fp não exige verdade já no ponto inicial.",
-        "Fp pode olhar além do instante imediatamente seguinte."
+        "Em um traço temporal finito, o que vale para Xp quando estamos no último instante representado?",
+        "Xp é falsa na convenção de próximo forte adotada no curso.",
+        "Xp é verdadeira independentemente do valor de p.",
+        "Xp recebe automaticamente o valor anterior de p.",
+        "A segunda seção explica que X verifica o próximo estado e o último não tem sucessor.",
+        "No último instante não há próximo estado no traço; na convenção apresentada, o operador X forte é falso.",
+        "Um próximo estado inexistente não pode oferecer a testemunha exigida para Xp.",
+        "O operador X verifica o próximo instante, não copia o anterior."
       ],
       [
         "Um monitor ficará 'sempre ligado' nos instantes restantes, mas apaga no último. G(ligado) é:",
@@ -99,14 +99,14 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
         "Uma ocorrência isolada satisfaz Fp, mas não necessariamente F(Gp)."
       ],
       [
-        "No traço p=F,V,V, avaliado em t0, quanto vale F(Gp)?",
-        "V, pois em t1 p começa a permanecer V.",
-        "F, pois p é falsa em t0.",
-        "F, pois só t0 conta para a fórmula.",
-        "Em t1 verifique Gp até o último instante.",
-        "Como p vale em t1 e t2, Gp vale a partir de t1 e satisfaz F externo.",
-        "A ocorrência de um estado inicial F não impede futura permanência.",
-        "F considera instantes futuros além do atual na semântica do curso."
+        "Qual é a diferença principal entre G(Fp) e F(Gp) ao ler uma linha do tempo?",
+        "G(Fp) exige novas possibilidades de p desde cada instante; F(Gp) exige um ponto a partir do qual p permanece.",
+        "Ambas dizem apenas que p acontece uma vez no traço.",
+        "Ambas exigem que p seja verdadeira já no primeiro instante.",
+        "A segunda seção apresenta 'sempre eventualmente'; compare com 'eventualmente para sempre' da primeira.",
+        "G(Fp) pede ocorrência de p no futuro de cada posição; F(Gp) pede um sufixo em que p nunca mais falhe.",
+        "Uma única ocorrência inicial não é suficiente para satisfazer G(Fp) em todos os instantes.",
+        "F(Gp) pode começar após o instante atual; G(Fp) também não exige p necessariamente agora."
       ],
       [
         "Um servidor falha agora, mas depois estabiliza e nunca mais falha no traço. Qual frase descreve isso?",
@@ -229,14 +229,14 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
         "A ausência de p não comprova sua execução nem sua permissão."
       ],
       [
-        "Uma placa diz 'é proibido estacionar'. Um carro está estacionado. A placa deixa de expressar proibição?",
-        "Não; o fato pode contrariar a norma que continua valendo.",
-        "Sim; toda proibição falha automaticamente quando descumprida.",
-        "Sim; estacionar e proibição se anulam logicamente.",
-        "A existência da regra é independente do cumprimento observado.",
-        "Uma violação não torna a norma inexistente; é preciso distinguir dever e fato.",
-        "Normas podem ser descumpridas sem desaparecer.",
-        "A ação e a obrigação não são proposições que se anulam mutuamente."
+        "Um regulamento impõe O(p) e outro impõe O(¬p) ao mesmo tempo. Qual é a primeira atitude rigorosa?",
+        "Explicitar o sistema normativo e como ele trata obrigações conflitantes.",
+        "Concluir automaticamente que qualquer comportamento está permitido.",
+        "Ignorar uma das normas sem informar o critério.",
+        "A última seção aborda conflitos de normas e exige indicar as regras do sistema adotado.",
+        "Uma contradição entre deveres exige identificar o sistema e seus critérios; não devemos presumir um tratamento universal.",
+        "Uma obrigação conflitante não autoriza concluir sem justificação que tudo é permitido.",
+        "Desconsiderar uma regra sem critério oculta o conflito em vez de analisá-lo."
       ]
     ]
   ],
@@ -349,14 +349,14 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
         "Negação de informação ausente não cria suportes nos dois sentidos."
       ],
       [
-        "Um relatório tem testemunhos pró e contra o mesmo fato. Qual estado FDE descreve a evidência?",
-        "B=(1,1).",
-        "T=(1,0).",
-        "N=(0,0).",
-        "Registre se há suporte a favor e contra antes de combinar conclusões.",
-        "A presença simultânea das duas evidências corresponde ao estado B de ambas.",
-        "T descartaria o suporte negativo que está presente.",
-        "N diria que não há informação em nenhum sentido."
+        "Um banco de dados possui suporte positivo e negativo para p, de modo que p=B=(1,1). Qual é o valor de ¬p em FDE?",
+        "B=(1,1), pois trocar os componentes preserva o par (1,1).",
+        "T=(1,0), porque a negação elimina o suporte negativo.",
+        "N=(0,0), porque as evidências se cancelam.",
+        "A operação de negação em FDE troca as duas posições do par, sem apagar informações.",
+        "O estado B contém os dois tipos de suporte; sob negação, a troca de 1 e 1 continua produzindo B=(1,1).",
+        "Negar não descarta um dos suportes registrados no estado B.",
+        "A negação em FDE não faz evidências conflitantes desaparecerem automaticamente."
       ]
     ]
   ],
