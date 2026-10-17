@@ -436,8 +436,18 @@ try{
 
     await journey.locator('#courseLesson [data-caction="read"]').click();
     await finishWorkedExample(journey);
+    assert.equal(await journey.locator('#courseLesson .practice-transfer-prep li').count(),3);
+    assert.match(await journey.locator('#courseLesson .practice-transfer-prep').innerText(),/Do exemplo ao seu exercício/);
     await journey.locator('#courseLesson [data-caction="guided"]').click();
     assert.match(await journey.locator('#workLocation').innerText(),/PRÁTICA COM AJUDA/);
+    assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-steps li').count(),3);
+    assert.match(await journey.locator('#courseExerciseBanner').innerText(),/Como começar este exercício/);
+    assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-example').getAttribute('open'),null);
+    await journey.locator('#courseExerciseBanner .practice-transfer-example summary').click();
+    assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-example li').count(),3);
+    assert.match(await journey.locator('#courseExerciseBanner .practice-transfer-example').innerText(),/Por quê/);
+    assert.ok(await journey.evaluate(()=>document.documentElement.scrollWidth-innerWidth)<=2,
+      'Orientação no exercício não pode ampliar a largura no celular');
     assert.match(await journey.locator('#workDescription').innerText(),/Corrigir/);
     assert.match(await journey.locator('#backButton').innerText(),/Voltar à aula/);
     assert.equal(await journey.locator('#exerciseLessonLink').getAttribute('href'),'#aula-fundamentos');
@@ -447,6 +457,11 @@ try{
     assert.equal(await journey.locator('#feedbackNextActions button').count()>0,true);
     await journey.locator('#backButton').click();
     assert.match(await journey.locator('#courseLocation').innerText(),/AULA/);
+    assert.equal(await journey.locator('#courseLesson [data-caction="independent"]').isVisible(),true);
+    await journey.locator('#courseLesson [data-caction="independent"]').click();
+    assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-banner').count(),0,
+      'A avaliação independente não deve revelar o roteiro de resposta');
+    assert.match(await journey.locator('#courseExerciseBanner').innerText(),/Meta: ao menos 80%/);
 
     // Outro tema evita confundir a tentativa guiada salva com uma prática livre.
     await journey.goto(root+'#operadores',{waitUntil:'networkidle'});
