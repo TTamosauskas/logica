@@ -35,3 +35,16 @@ Essas atividades são **formativas e opcionais**: não atribuem nota, não desbl
 - `tests/ux-smoke.mjs`: verifica no Chromium a interação e a legibilidade móvel em aulas de todas as unidades.
 
 A cobertura de conteúdo e a aprovação de testes não demonstram eficácia pedagógica. O próximo passo é testar com estudantes iniciantes a **taxa de acerto sem pista**, a **transferência para enunciados novos**, a **clareza percebida**, o **tempo de resolução** e a **retenção** em uma revisão posterior. Ajustes de linguagem e de distratores devem considerar essas evidências, não somente estatísticas de aprovação.
+
+### Regra de alinhamento imediato — correção de outubro de 2026
+
+**Uma questão-ponte não pode exigir um conceito apresentado apenas em seção posterior.** A unidade de revisão editorial é o par *seção recém-lida → questão imediata*, e não o tema geral da aula. Mesmo quando duas competências são relacionadas (como condição suficiente e necessária), elas não são intercambiáveis antes de ambas terem sido ensinadas.
+
+Para editar uma aula:
+1. Leia o trecho exato que aparece imediatamente antes de cada questão-ponte, considerando os casos com quatro seções (questões após a primeira, uma intermediária e a última seção).
+2. Nomeie a única operação cognitiva ensinada naquele trecho e confira se a pergunta verifica essa operação. A primeira questão deve reconhecer uma regra já vista; a segunda a aplica; a terceira pode transferi-la para um contexto diferente, mas sem acrescentar uma regra inédita.
+3. Se uma pergunta exige conteúdo futuro, **mova-a para depois da explicação pertinente ou reescreva-a**. Uma pista não corrige a ausência de ensino prévio.
+4. Confira também alternativas, resposta correta e explicações: não basta modificar o enunciado deixando feedback incongruente.
+5. Valide manualmente a relação entre texto e questão, complementando os testes de regressão de alinhamento em `tests/pedagogy-bridges.test.js`.
+
+A interface passa a exibir o título da seção recém-lida antes da questão correspondente, tornando esse vínculo auditável pelo estudante. Os testes verificam regressões concretas de introdução prematura em vários tópicos, mas **não substituem uma revisão pedagógica humana**.
