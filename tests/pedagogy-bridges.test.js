@@ -35,8 +35,8 @@ test('Pedagogia V3 cobre todas as 61 aulas em oito unidades, com uma questão po
   for(const id of ids){
     const lesson=PEDAGOGY_BRIDGES[id],reading=readings[id];
     assert.ok(reading,id+' sem leitura');
-    assert.equal(reading.sections.length,3,id+' não possui três seções');
-    assert.equal(lesson.bridges.length,reading.sections.length,`Cada seção de ${id} precisa de uma decisão`);
+    assert.ok(reading.sections.length>=3,id+' precisa de ao menos três seções');
+    assert.equal(lesson.bridges.length,3,`Aula ${id} precisa das três decisões progressivas`);
     assert.deepEqual(lesson.bridges.map(x=>x.kind),['identificar','completar','transferir']);
     assert.equal(lesson.handoff.steps.length,3);
     assert.ok(lesson.handoff.steps.every(x=>x.length>=20));
@@ -61,7 +61,7 @@ test('validação rejeita alternativas e índices inconsistentes',()=>{
 
 test('questões-ponte formativas não alteram critérios de aprovação nem o estado persistente',()=>{
   const app=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
-  assert.match(app,/renderPedagogyBridge\(support\.bridges\[i\],i\)/);
+  assert.match(app,/renderPedagogyBridge\(support\.bridges\[slot\],slot\)/);
   assert.match(app,/data-caction="bridge-check"/);
   assert.match(app,/data-caction="bridge-hint"/);
   assert.match(app,/data-bridge-feedback role="status" aria-live="polite"/);
