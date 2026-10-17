@@ -1426,20 +1426,34 @@ try{
     await context14.close();
   }
 
-  // Pilotos de tradução e equivalências: aplicação em contexto novo, sem prejuízo do progresso.
+  // Amostra transversal de oito unidades: três decisões respondidas no celular,
+  // sem escrita de progresso em nenhuma das questões-ponte.
   const bridgeContext=await browser.newContext({viewport:{width:375,height:812},isMobile:true,hasTouch:true});
   const bridgePage=await bridgeContext.newPage(),bridgeErrors=[];
   bridgePage.on('pageerror',error=>bridgeErrors.push(error.message));
-  for(const id of ['traducao','equivalencias']){
+  for(const id of ['traducao','operadores','condicionais_excecao','demorgan','equiv_bicondicional',
+    'silogismos','categoricos','probabilidade','oficina_erros','modais','fde_disjuncao',
+    'intuicionista_dupla_negacao','metateoria']){
     await bridgePage.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
     assert.equal(await bridgePage.locator('[data-reading-bridge]').count(),3);
-    const transfer=bridgePage.locator('[data-reading-bridge="2"]');
-    await transfer.locator('input[value="'+(id==='traducao'?1:2)+'"]').check();
-    await transfer.locator('[data-caction="bridge-check"]').click();
-    assert.equal(await transfer.locator('[data-bridge-feedback]').getAttribute('data-result'),'correct');
+    const keys=await bridgePage.evaluate(async lessonId=>{
+      const {PEDAGOGY_BRIDGES}=await import('./src/content/pedagogy-bridges.js');
+      return PEDAGOGY_BRIDGES[lessonId].bridges.map(item=>item.correct);
+    },id);
+    for(let i=0;i<3;i++){
+      const group=bridgePage.locator('[data-reading-bridge="'+i+'"]');
+      await group.locator('input[value="'+keys[i]+'"]').check();
+      await group.locator('[data-caction="bridge-check"]').click();
+      assert.equal(await group.locator('[data-bridge-feedback]').getAttribute('data-result'),'correct');
+    }
     assert.equal(await bridgePage.locator('.reading-handoff ol li').count(),3);
-    const bridgeOverflow=await bridgePage.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
-    assert.ok(bridgeOverflow<=2,'Questão-ponte excede viewport móvel na aula '+id);
+    const progress=await bridgePage.evaluate(lessonId=>{
+      const raw=localStorage.getItem('logiclab_curso_formal_v2');
+      return raw?JSON.parse(raw).lessons?.[lessonId]?.mastered||false:false;
+    },id);
+    assert.equal(progress,false,'Questões-ponte não equivalem a aprovação: '+id);
+    const overflow=await bridgePage.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    assert.ok(overflow<=2,'Questão-ponte excede viewport móvel na aula '+id);
   }
   assert.deepEqual(bridgeErrors,[]);
   await bridgeContext.close();
