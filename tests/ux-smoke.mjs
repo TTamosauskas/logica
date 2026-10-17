@@ -457,7 +457,17 @@ try{
     assert.equal(await journey.locator('#feedbackNextActions button').count()>0,true);
     await journey.locator('#backButton').click();
     assert.match(await journey.locator('#courseLocation').innerText(),/AULA/);
+    // O exercício anterior foi corrigido sem todas as respostas; não assumimos
+    // domínio. Avançamos somente a etapa guiada nesta fixture de teste.
+    await journey.evaluate(()=>{
+      const key='logiclab_curso_formal_v2',state=JSON.parse(localStorage.getItem(key));
+      state.lessons.fundamentos.guided=true;
+      localStorage.setItem(key,JSON.stringify(state));
+    });
+    await journey.reload({waitUntil:'networkidle'});
+    await journey.goto(root+'#aula-fundamentos',{waitUntil:'networkidle'});
     assert.equal(await journey.locator('#courseLesson [data-caction="independent"]').isVisible(),true);
+    journey.once('dialog',dialog=>dialog.accept());
     await journey.locator('#courseLesson [data-caction="independent"]').click();
     assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-banner').count(),0,
       'A avaliação independente não deve revelar o roteiro de resposta');
