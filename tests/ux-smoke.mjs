@@ -51,6 +51,19 @@ try{
   await firstBridge.locator('input[value="1"]').check();
   await firstBridge.locator('[data-caction="bridge-check"]').click();
   assert.equal(await firstBridge.locator('[data-bridge-feedback]').getAttribute('data-result'),'correct');
+  // A questão mostrada depois de uma seção identifica explicitamente a ideia recém-estudada.
+  assert.match(await firstBridge.locator('.reading-bridge-section').innerText(),/proposiç|frases/i);
+  await page.goto(root+'#aula-condicionais_naturais',{waitUntil:'networkidle'});
+  const sufficientBridge=page.locator('[data-reading-bridge="0"]');
+  assert.match(await sufficientBridge.locator('.reading-bridge-section').innerText(),/Condição suficiente/);
+  assert.match(await sufficientBridge.locator('.reading-check-question').innerText(),/inscrição/i);
+  assert.doesNotMatch(await sufficientBridge.locator('.reading-check-question').innerText(),/somente se|necessária/i);
+  await sufficientBridge.locator('input[value="1"]').check();
+  await sufficientBridge.locator('[data-caction="bridge-check"]').click();
+  assert.equal(await sufficientBridge.locator('[data-bridge-feedback]').getAttribute('data-result'),'correct');
+  assert.match(await page.locator('[data-reading-bridge="1"] .reading-bridge-section').innerText(),/Condição necessária/);
+  assert.match(await page.locator('[data-reading-bridge="1"] .reading-check-question').innerText(),/somente se/i);
+  await page.goto(root+'#aula-fundamentos',{waitUntil:'networkidle'});
   const bridgeProgress=await page.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')||'{}').lessons?.fundamentos?.mastered||false);
   assert.equal(bridgeProgress,false,'Uma questão formativa não registra domínio');
   await page.locator('[data-caction="read"]').click();
