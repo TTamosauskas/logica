@@ -89,7 +89,7 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
     ],
     [
       [
-        "A fórmula F(Gp) exige:",
+        "Na interpretação temporal do curso, a fórmula F(Gp) exige:",
         "Algum instante a partir do qual p permaneça verdadeira.",
         "p verdadeira só no instante inicial.",
         "p verdadeira em qualquer instante isolado, mesmo se depois falhar.",
@@ -129,7 +129,7 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
     ],
     [
       [
-        "A fórmula G(p→Fq) expressa:",
+        "Numa linha temporal de pedidos e respostas, G(p→Fq) expressa:",
         "Toda ocorrência de p tem q em algum instante desde aquela ocorrência.",
         "Existe apenas um pedido p em algum momento.",
         "q acontece antes de qualquer p, sem exceção.",
@@ -329,7 +329,7 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
     ],
     [
       [
-        "Em FDE, B=(1,1) representa:",
+        "Num sistema de suporte informacional FDE, B=(1,1) representa:",
         "Suporte tanto positivo quanto negativo.",
         "Ausência de qualquer informação.",
         "Somente informação falsa sem suporte positivo.",
