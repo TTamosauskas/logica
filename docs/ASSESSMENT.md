@@ -12,6 +12,8 @@ O progresso utiliza o campo aditivo `lessons[id].assessmentV2`, com `history`, `
 
 ## Escopo editorial
 
-O banco base reutiliza as questões anteriores, mas não reutiliza a autoverificação da leitura, que permanece exclusivamente formativa. Os quatro temas-piloto — tradução, validade de argumentos, probabilidade e causalidade — receberam oito novos itens editoriais cada, assim como os outros dezenove temas. Há 277 itens somativos ao todo, com pelo menos 12 por aula: cinco ou mais questões conceituais e sete ou mais de aplicação.
+O currículo atual possui **61 aulas em oito unidades**. Todas possuem pelo menos 12 itens somativos, com cinco ou mais questões conceituais e sete ou mais de aplicação. Os **277 itens** documentados na versão inicial se referiam somente aos 23 bancos originais; não representam o total do currículo atual. Os bancos adicionais estão distribuídos em `src/content/` por unidade e expansão curricular.
+
+A autoverificação da leitura e as perguntas do exemplo resolvido são formativas e não devem ser reutilizadas como itens somativos.
 
 O patamar de 4/5 com 2/2 não foi validado experimentalmente. Deverá ser aferido em estudo com estudantes, comparando desempenho com justificativas abertas e tarefas de transferência.

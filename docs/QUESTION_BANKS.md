@@ -10,4 +10,4 @@ Os itens `concept` verificam o princípio central mesmo quando o estudante recon
 
 ## Cobertura
 
-Cada uma das 23 aulas possui pelo menos doze itens: quatro questões legadas (cinco em metateoria) mais oito questões editoriais novas, totalizando 277. A autoverificação da leitura não é reutilizada nas avaliações somativas. A suíte `tests/assessment.test.js` verifica cobertura, integridade, composição e desempenho; a revisão substantiva de distratores exige avaliação humana.
+Cada uma das **61 aulas em oito unidades** possui pelo menos doze itens somativos, sendo cinco ou mais conceituais e sete ou mais de aplicação. Os **277 itens** eram o subtotal dos 23 bancos históricos; não constituem o total atual. Novos bancos de unidades e microaulas mantêm cobertura própria. A autoverificação da leitura não é reutilizada nas avaliações somativas. A suíte `tests/assessment.test.js` verifica cobertura, integridade, composição e desempenho; a revisão substantiva de distratores exige avaliação humana.

@@ -1478,8 +1478,8 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       'Uma resposta adequada respeita apenas as competências apresentadas na aula.');
   }
   function equivalencePrecisionMode(level,id='equivalencias'){
-    if((level==='easy'&&id!=='equivalencias')||!groups[id])return gapPracticeMode(level,id);
     const groups={equivalencias:['implicacao','negacao-conjuncao'],equiv_condicionais:['contrapositiva'],equiv_distributividade:['distribuicao'],equiv_absorcao:['absorcao'],equiv_bicondicional:['bicondicional']};
+    if((level==='easy'&&id!=='equivalencias')||!groups[id])return gapPracticeMode(level,id);
     const chain=pick(REWRITE_CHAINS.filter(x=>groups[id]?.includes(x.id)));
     return makeSpecial(id,'Transforme uma fórmula justificando cada passo',
       'Verifique duas transformações equivalentes, identifique a lei aplicada e escolha um contraexemplo para uma transformação errada.',

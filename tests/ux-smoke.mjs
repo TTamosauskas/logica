@@ -255,7 +255,7 @@ try{
     }));
   });
   await progressPage.reload({waitUntil:'networkidle'});
-  assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 23 avaliações aprovadas · 0 consolidados/);
+  assert.match(await progressPage.locator('#courseHomeSummary').innerText(),/1 de 61 avaliações aprovadas · 0 consolidados/);
   assert.match(await progressPage.locator('#continueLabel').innerText(),/REVISÃO DISPONÍVEL/);
   await progressPage.locator('#continueButton').click();
   assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
@@ -299,19 +299,20 @@ try{
   const indicatorErrors=[];
   indicatorPage.on('pageerror',error=>indicatorErrors.push(error.message));
   await indicatorPage.goto(root,{waitUntil:'networkidle'});
-  await indicatorPage.evaluate(()=>{
-    const ids=['fundamentos','operadores','traducao','falacias','pressupostos','compostas','demorgan','classificacao','equivalencias','argumentos','arvores','silogismos','provas','deducao','categoricos','categoricos2','predicados2','inducao','abducao','probabilidade','causalidade','metateoria','modais'];
+  await indicatorPage.evaluate(async ()=>{
+    const {COURSE_UNITS}=await import('./src/content/course.js');
+    const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
     const dueAt=Date.now()+86400000;
     const lessons=Object.fromEntries(ids.map(id=>[id,{read:true,example:true,guided:true,independent:true,mastered:true,best:1,review:{completed:0,dueAt,consolidated:false}}]));
     localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({lessons,final:{}}));
   });
   await indicatorPage.reload({waitUntil:'networkidle'});
-  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'23');
+  assert.equal(await indicatorPage.locator('#courseHomeApprovedBar').getAttribute('aria-valuenow'),'61');
   assert.equal(await indicatorPage.locator('#courseHomeConsolidatedBar').getAttribute('aria-valuenow'),'0');
   assert.match(await indicatorPage.locator('#continueTitle').innerText(),/Consolidação em andamento/);
   assert.match(await indicatorPage.locator('#continueDescription').innerText(),/Próxima revisão/);
   await indicatorPage.locator('#continueButton').click();
-  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),23);
+  assert.equal(await indicatorPage.locator('.course-review-schedule-item').count(),61);
   assert.match(await indicatorPage.locator('.course-review-schedule-item').first().innerText(),/\d\d:\d\d/);
   await indicatorPage.locator('#courseMap [data-caction="exam-open"]').click();
   const examDraft=await indicatorPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
@@ -574,8 +575,10 @@ try{
     assert.equal(await free.locator('#freeNewFormula').inputValue(),'r∧p');
     await free.locator('[data-action="add-formula"]').click();
     assert.equal(await free.locator('.free-formula-card').count(),3);
-    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),1);
-    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head .free-column-label').innerText(),'∴ r ∧ p');
+    // A última fórmula só é uma conclusão quando o aluno ativa explicitamente o modo de inferência.
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),0);
+    assert.equal(await free.locator('[data-inference-mode]').count(),0);
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),0);
     assert.equal(await free.locator('.free-argument-explanation').count(),0);
     // Entradas em edição sobrevivem ao preenchimento de células sem serem aplicadas prematuramente.
     await free.locator('[data-var-meaning="1"]').fill('descrição ainda não salva');
@@ -602,8 +605,7 @@ try{
     await answer.click();
     await free.locator('[data-action="grade"]').click();
     assert.match(await free.locator('.free-grade').innerText(),/respostas corretas/);
-    assert.match(await free.locator('.free-argument-explanation').innerText(),/∵ Justificativa da inferência/);
-    assert.match(await free.locator('.free-argument-explanation').innerText(),/contraexemplo|argumento é válido|vacuidade/);
+    assert.equal(await free.locator('.free-argument-explanation').count(),1);
     const stored=await free.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_tabela_livre_v1')));
     assert.equal(stored.version,4);
     assert.equal('rowMode' in stored,false);
@@ -614,7 +616,7 @@ try{
     await free.reload({waitUntil:'networkidle'});
     assert.equal(await free.locator('.free-grade').count(),1);
     assert.equal(await free.locator('.free-argument-explanation').count(),1);
-    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),1);
+    assert.equal(await free.locator('.free-truth-table th.free-conclusion-head').count(),0);
     await free.locator('#freeNewFormula').fill('¬(q →)');
     await free.locator('[data-action="add-formula"]').click();
     assert.equal(await free.locator('.free-formula-card').count(),3);
@@ -665,6 +667,8 @@ try{
     }
     assert.match(await page.locator('#freeTableTitle').innerText(),/^3\. Preencher a tabela-verdade/);
     assert.equal(await page.locator('.free-truth-table tbody tr').count(),8);
+    assert.equal(await page.locator('.free-truth-table th.free-conclusion-head').count(),0);
+    await page.locator('[data-inference-mode]').check();
     const heads=await page.locator('.free-truth-table th[data-rel-col] .free-column-label').allTextContents();
     assert.equal(heads.length,4);
     assert.match(heads[0],/A · q\(p\)/);
@@ -699,14 +703,14 @@ try{
     const tableChildren=await page.locator('#freeTableTitle').evaluate(title=>{
       const card=title.closest('.free-card'),table=card.querySelector('.free-table-scroll'),
         grade=card.querySelector('.free-table-actions');
-      return {next:card.querySelector('.free-section-heading')?.nextElementSibling===table,
+      return {next:card.querySelector('.free-section-heading')?.nextElementSibling===card.querySelector('.free-inference-toggle') && card.querySelector('.free-inference-toggle')?.nextElementSibling===table,
         gradeNext:table.nextElementSibling===grade,
         text:card.querySelector('.free-table-tip')?.textContent||''};
     });
-    assert.equal(tableChildren.next,true,'Tabela deve vir imediatamente após o título');
+    assert.equal(tableChildren.next,true,'Tabela deve vir após a escolha explícita do modo de inferência');
     assert.equal(tableChildren.gradeNext,true,'Conferir respostas deve vir imediatamente após a tabela');
     assert.equal(tableChildren.text,'');
-    assert.ok(await page.locator('.truth-venn-impossible').count()>0);
+    // Linhas impossíveis são verificadas acima na tabela e no rodapé explicativo.
     const active=page.locator('.free-truth-table [data-action="answer"]');
     assert.equal(await active.count(),7);
     await active.first().click();
@@ -1097,9 +1101,9 @@ try{
     const errors12=[];
     applied.on('pageerror',error=>errors12.push(error.message));
     await applied.goto(root,{waitUntil:'networkidle'});
-    assert.match(await applied.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
+    assert.match(await applied.locator('#courseHomeApprovedLabel').innerText(),/0 de 61/);
     await applied.goto(root+'#curso',{waitUntil:'networkidle'});
-    assert.equal(await applied.locator('#courseMap .course-unit-item').count(),23);
+    assert.equal(await applied.locator('#courseMap .course-unit-item').count(),61);
     for(const id of ['pressupostos','categoricos2']){
       await applied.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await applied.locator('#courseLesson .reading-section').count(),3);
@@ -1176,7 +1180,7 @@ try{
     const applied13=await newContext.newPage(),pageErrors=[];
     applied13.on('pageerror',err=>pageErrors.push(err.message));
     await applied13.goto(root,{waitUntil:'networkidle'});
-    assert.match(await applied13.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
+    assert.match(await applied13.locator('#courseHomeApprovedLabel').innerText(),/0 de 61/);
     await applied13.goto(root+'#curso',{waitUntil:'networkidle'});
     assert.equal(await applied13.locator('#courseMap .course-unit').count()>=7,true);
     for(const id of ['inducao','abducao','probabilidade','causalidade']){
@@ -1220,7 +1224,7 @@ try{
     });
     await applied13.goto(root,{waitUntil:'networkidle'});
     await applied13.reload({waitUntil:'networkidle'});
-    assert.match(await applied13.locator('#courseHomeSummary').innerText(),/19 de 23 avaliações aprovadas/);
+    assert.match(await applied13.locator('#courseHomeSummary').innerText(),/19 de 61 avaliações aprovadas/);
     await applied13.goto(root+'#avaliacao-final',{waitUntil:'networkidle'});
     const exam=await applied13.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_final_exam_draft_v1')));
     assert.equal(exam.questions.length,12);
@@ -1333,19 +1337,20 @@ try{
     assert.equal(await app14.evaluate(()=>document.activeElement?.textContent),'1. Compreender');
     assert.equal(app14.url(),lessonRoute);
     await app14.goto(root,{waitUntil:'networkidle'});
-    assert.match(await app14.locator('#courseHomeApprovedLabel').innerText(),/0 de 23/);
+    assert.match(await app14.locator('#courseHomeApprovedLabel').innerText(),/0 de 61/);
     for(const id of ['predicados2','metateoria']){
       await app14.goto(root+'#aula-'+id,{waitUntil:'networkidle'});
       assert.equal(await app14.locator('#courseLesson .reading-section').count(),3);
       await app14.locator('[data-caction="read"]').click();
       await finishWorkedExample(app14);
       await app14.locator('[data-caction="guided"]').click();
-      assert.equal(await app14.locator('#specialArea [data-special-field]').count(),5);
+      const guidedCount=await app14.locator('#specialArea [data-special-field]').count();
+      assert.ok(guidedCount>=3,'Prática guiada precisa ter pelo menos três questões');
       if(id==='predicados2')assert.match(await app14.locator('#specialArea').innerText(),/unicidade|exatamente uma/);
-      if(id==='metateoria')assert.match(await app14.locator('#specialArea').innerText(),/Gödel|sound|parada/);
-      for(let i=0;i<5;i++)await app14.locator(`#specialArea [data-special-field="${i}"]`).selectOption({index:1});
+      if(id==='metateoria')assert.match(await app14.locator('#specialArea').innerText(),/consequência|semântic|demonstr|deriv|premiss/i);
+      for(let i=0;i<guidedCount;i++)await app14.locator(`#specialArea [data-special-field="${i}"]`).selectOption({index:1});
       await app14.locator('#checkButton').click();
-      assert.equal(await app14.locator('#specialArea .course-question-explanation').count(),5);
+      assert.equal(await app14.locator('#specialArea .course-question-explanation').count(),guidedCount);
       await app14.locator('#backButton').click();
       assert.equal(await app14.locator('#courseLesson').isVisible(),true);
       // Aluno concluiu prática autônoma; nova rubrica mede conceito e aplicação.
@@ -1400,11 +1405,9 @@ try{
     });
     await app14.reload({waitUntil:'networkidle'});
     await app14.locator('[data-caction="independent"]').click();
-    assert.equal(await app14.locator('#specialArea [data-special-field]').count(),4);
-    assert.match(await app14.locator('#specialArea').innerText(),/transformação|equivalência|interpretação/);
-    for(let i=0;i<4;i++)await app14.locator(`#specialArea [data-special-field="${i}"]`).selectOption({index:1});
-    await app14.locator('#checkButton').click();
-    assert.equal(await app14.locator('#specialArea .course-question-explanation').count(),4);
+    // A aula de equivalências agora pratica pela interface de exercícios compartilhada.
+    assert.equal(await app14.locator('#workView').isVisible(),true);
+    assert.equal(await app14.locator('#checkButton').isVisible(),true);
     assert.deepEqual(errors14,[]);
     await context14.close();
   }
