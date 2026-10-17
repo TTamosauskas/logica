@@ -99,24 +99,24 @@ export const PEDAGOGY_BRIDGES_VI_VIII=buildBridgeLessons([
         "A notícia não apresenta dados de frequência comparável para a população."
       ],
       [
-        "Alguém só lê análises que concordam com sua posição inicial. Qual viés se agrava?",
-        "Viés de confirmação.",
-        "Amostragem aleatória representativa.",
-        "Validade dedutiva.",
-        "Pergunte se a busca de informações pode contrariar a hipótese favorita.",
-        "Selecionar apenas evidências favoráveis pode reforçar crenças sem testá-las.",
-        "A seleção dirigida de fontes não é aleatória.",
-        "Uma opinião não se torna dedutivamente válida por repetição."
+        "Uma turma vê o preço de R$ 200 e outra vê R$ 2.000 antes de estimar o valor da mesma bicicleta. O que pode influenciar a estimativa?",
+        "O valor inicial apresentado, funcionando como uma âncora.",
+        "Uma prova de que a bicicleta vale exatamente R$ 2.000.",
+        "A certeza de que as duas turmas farão estimativas iguais.",
+        "A segunda seção mostra como um número visto primeiro influencia avaliações posteriores.",
+        "O efeito de ancoragem ocorre quando a referência inicial desloca as estimativas, mesmo sem representar o valor real.",
+        "Uma referência inicial pode influenciar a resposta, mas não constitui evidência do preço correto.",
+        "Referências iniciais diferentes podem produzir estimativas diferentes entre grupos."
       ],
       [
-        "Uma pessoa acredita que o bairro ficou perigoso após um vídeo viral. Que comparação ajudaria?",
-        "Taxas por período e população, incluindo casos não noticiados.",
-        "Contar quantas vezes o vídeo foi compartilhado.",
-        "Pesquisar apenas comentários assustados no vídeo.",
-        "Procure dados que não dependam da facilidade de recordar o vídeo.",
-        "Taxas comparáveis ajudam a separar notícia marcante de variação real da frequência.",
-        "Compartilhamentos medem alcance do conteúdo, não incidência do evento.",
-        "Comentários selecionados no vídeo reforçam a disponibilidade e a seleção."
+        "Um médico apresenta o mesmo risco como '90% de sobrevivência' ou '10% de mortalidade'. O que mudou na informação?",
+        "O enquadramento da mensagem, não a porcentagem de risco.",
+        "A probabilidade real do evento, que aumentou de 10% para 90%.",
+        "O número de pacientes observado, que foi multiplicado por nove.",
+        "Compare os dois complementos: 90% sobrevivem significa que 10% não sobrevivem.",
+        "As duas apresentações descrevem os mesmos resultados, mas a moldura positiva ou negativa pode alterar a escolha.",
+        "Noventa por cento de sobrevivência e dez por cento de mortalidade são medidas complementares.",
+        "Os enunciados não informam nenhuma alteração na quantidade de pacientes."
       ]
     ]
   ],
@@ -139,24 +139,24 @@ export const PEDAGOGY_BRIDGES_VI_VIII=buildBridgeLessons([
         "Não foi feito cálculo probabilístico que justificasse a continuação."
       ],
       [
-        "Duas opções têm o mesmo resultado, mas uma é descrita como ganho e outra como perda. Se a escolha muda, o que investigar?",
-        "Efeito de enquadramento.",
-        "Uma contradição formal inevitável.",
-        "Um algoritmo que sempre acerta.",
-        "Reescreva ambas as opções com números e critérios comparáveis.",
-        "A apresentação como ganho ou perda pode alterar a preferência sem mudar os resultados.",
-        "Linguagens diferentes não criam por si só uma contradição lógica.",
-        "Não há procedimento garantido descrito pela reação à forma da frase."
+        "Uma pessoa afirmou 'tenho 90% de certeza' em 100 previsões comparáveis, mas acertou apenas 60. Qual dificuldade isso sugere?",
+        "Excesso de confiança e calibração inadequada.",
+        "Calibração perfeita, porque a maioria das previsões acertou.",
+        "Impossibilidade de avaliar confiança por resultados.",
+        "A segunda seção compara confiança declarada com frequência observada de acertos.",
+        "Uma confiança de 90% acompanhada por 60% de acertos indica que as probabilidades declaradas estão acima dos resultados observados.",
+        "Para estar calibrada em previsões de 90%, a taxa de acertos deveria se aproximar de 90%, não 60%.",
+        "Comparar previsões com seus resultados é justamente uma maneira de avaliar calibração."
       ],
       [
-        "Uma organização insiste num projeto falho porque já gastou muito. Que pergunta ajuda a decidir melhor?",
-        "Quais custos e benefícios adicionais existem daqui para frente?",
-        "Quanto dinheiro já foi gasto, para justificar gasto ainda maior?",
-        "Como evitar ouvir os indicadores ruins?",
-        "Separe investimento passado de consequências controláveis hoje.",
-        "Decisões futuras devem usar benefícios, riscos e custos marginais, não tentar recuperar o irrecuperável.",
-        "Gasto acumulado não torna vantajoso gastar mais.",
-        "Ignorar evidências contrárias dificulta corrigir a decisão."
+        "Um relatório entrevista apenas empresas que sobreviveram ao primeiro ano e conclui que uma estratégia garante sucesso. O que falta investigar?",
+        "Também as empresas que adotaram a estratégia e encerraram as atividades.",
+        "Apenas as empresas sobreviventes com maior faturamento.",
+        "Somente depoimentos dos diretores mais confiantes.",
+        "A última seção destaca os casos que desaparecem da amostra observada.",
+        "O viés de sobrevivência ocorre porque o relatório exclui os insucessos; sem eles não se pode estimar o efeito da estratégia.",
+        "Restringir ainda mais o estudo às empresas de sucesso intensifica a seleção enviesada.",
+        "Confiança dos diretores das sobreviventes não informa o destino das empresas que falharam."
       ]
     ]
   ],
@@ -169,34 +169,34 @@ export const PEDAGOGY_BRIDGES_VI_VIII=buildBridgeLessons([
     ],
     [
       [
-        "Um gráfico começa o eixo vertical em 98 e mostra 99 versus 100 como enorme diferença. Qual risco?",
-        "Eixo truncado amplifica visualmente a diferença.",
-        "Demonstração de que a mudança é cem vezes maior.",
-        "Prova de que os valores são iguais.",
-        "Observe onde o eixo começa, não apenas a altura das colunas.",
-        "Cortar a base da escala pode exagerar visualmente variações pequenas.",
-        "A escala não multiplica a diferença numérica real.",
-        "Os valores são distintos, embora visualmente possam parecer muito mais distantes."
+        "Uma notícia informa que '80% dos participantes aprovaram a proposta'. Qual dado precisamos antes de generalizar para toda a cidade?",
+        "Quantas pessoas responderam e como foram escolhidas.",
+        "Somente a cor escolhida para o gráfico.",
+        "Apenas o número de vezes que a notícia foi compartilhada.",
+        "A primeira seção pergunta qual é o denominador e quem entrou na amostra.",
+        "O percentual descreve os respondentes; tamanho e seleção da amostra determinam se podemos generalizar para outros moradores.",
+        "A cor do gráfico não estabelece representatividade nem o tamanho do grupo entrevistado.",
+        "Compartilhamentos medem repercussão da notícia, não a seleção dos participantes."
       ],
       [
-        "Um anúncio diz '80% aprovaram'. Qual informação é indispensável para interpretar essa porcentagem?",
-        "80% de quantos e como os respondentes foram selecionados?",
-        "A cor usada nas letras do anúncio.",
-        "A preferência pessoal do autor do gráfico.",
-        "Toda porcentagem possui um denominador e um processo de seleção.",
-        "Tamanho, população e método de amostragem determinam o alcance da evidência.",
-        "A cor do texto não determina representatividade nem tamanho da amostra.",
-        "O autor pode ter uma opinião, mas isso não informa quantas pessoas responderam."
+        "Um risco cai de 2 em cada 100 pessoas para 1 em cada 100. Qual comparação distingue redução absoluta e relativa?",
+        "Redução absoluta de 1 ponto percentual e relativa de 50%.",
+        "Redução absoluta de 50 pontos percentuais e relativa de 1%.",
+        "Redução absoluta de 1% e relativa de 1%, sempre iguais.",
+        "A segunda seção diferencia subtrair as taxas e calcular a proporção da queda em relação ao valor inicial.",
+        "Passar de 2% a 1% subtrai 1 ponto percentual; a diferença equivale à metade do valor inicial, ou 50%.",
+        "A diferença entre 2% e 1% é 1 ponto percentual, não 50 pontos.",
+        "As duas medidas respondem a perguntas diferentes e não coincidem automaticamente."
       ],
       [
-        "Uma cidade passou de 10 para 20 acidentes, enquanto a população dobrou. É correto anunciar que o risco individual dobrou?",
-        "Não; a taxa por habitante permaneceu igual nessa comparação.",
-        "Sim; a contagem total basta para medir risco.",
-        "Não; os acidentes necessariamente diminuíram.",
-        "Compare acidentes divididos pela população em cada período.",
-        "A contagem dobrou, mas a população também; a taxa por habitante permanece igual.",
-        "Quantidade absoluta e risco individual não são medidas idênticas.",
-        "A quantidade de acidentes aumentou, mesmo com taxa proporcional estável."
+        "Uma assinatura custava R$ 100, subiu 20% e depois teve redução de 20% sobre o novo preço. Qual é o valor final?",
+        "R$ 96, porque a segunda porcentagem usa R$ 120 como base.",
+        "R$ 100, pois aumentos e reduções de 20% se anulam.",
+        "R$ 80, pois a primeira mudança pode ser ignorada.",
+        "A quarta seção explica que porcentagens sucessivas usam bases diferentes.",
+        "Após subir 20%, o preço chega a R$ 120; reduzir 20% de 120 tira R$ 24, deixando R$ 96.",
+        "Subir 20% de 100 e cair 20% de 120 não são operações inversas sobre a mesma base.",
+        "A primeira variação elevou o preço, por isso o desconto posterior não se aplica aos R$ 100 iniciais."
       ]
     ]
   ],
@@ -219,24 +219,24 @@ export const PEDAGOGY_BRIDGES_VI_VIII=buildBridgeLessons([
         "Os nomes das clínicas não explicam diferenças de gravidade."
       ],
       [
-        "Se A supera B nas taxas de grupos leves e graves, o total de A sempre supera B?",
-        "Não, os pesos dos grupos podem produzir inversão.",
-        "Sim, médias agregadas preservam qualquer comparação por grupo.",
-        "Não, porque as taxas são sempre iguais.",
-        "Pergunte quantos pacientes cada opção tem em cada categoria.",
-        "Composições diferentes podem inverter a ordenação das taxas agregadas.",
-        "Somar taxas sem ponderar pode gerar a aparente contradição.",
-        "A questão descreve taxas melhores dentro dos grupos, não igualdade."
+        "Uma empresa pergunta apenas aos clientes que terminaram a compra se a experiência foi fácil. Quem ficou fora da pesquisa?",
+        "Os clientes que desistiram durante o processo.",
+        "Todos os clientes que conseguiram finalizar.",
+        "Somente pessoas que nunca visitaram o site.",
+        "A segunda seção explica que a amostra pode excluir justamente quem enfrentou dificuldades.",
+        "Quem desistiu não entrou no grupo consultado e pode ter tido uma experiência pior; a avaliação dos compradores não cobre esse público.",
+        "Os compradores finais são precisamente as pessoas incluídas na pesquisa apresentada.",
+        "Não visitantes não são o problema central; os abandonos ao longo da compra são casos relevantes e ausentes."
       ],
       [
-        "Duas escolas anunciam desempenho total oposto às taxas de cada turno. Qual primeira verificação?",
-        "Separar taxas e quantidades de alunos por turno.",
-        "Descartar os dados por serem necessariamente falsos.",
-        "Comparar só a média total já publicada.",
-        "A proporção de alunos em cada turno altera a média agregada.",
-        "Uma decomposição por grupos e seus tamanhos identifica efeito de composição.",
-        "Uma inversão agregada é possível sem fraude ou dados falsos.",
-        "Usar apenas o total impede diagnosticar a inversão."
+        "Uma equipe testa cem hipóteses e publica só duas que pareceram significativas. Qual cuidado é necessário?",
+        "Examinar o conjunto dos testes e a possibilidade de achados por acaso.",
+        "Considerar as duas descobertas provas absolutas sem investigar as demais.",
+        "Supor que testar muitas hipóteses elimina o risco de erros.",
+        "A última seção mostra que muitos testes aumentam a chance de resultados fortuitos.",
+        "Selecionar só os resultados positivos entre muitas tentativas pode exagerar a evidência; devemos considerar multiplicidade e seleção.",
+        "Significância isolada não significa certeza, especialmente após selecionar resultados.",
+        "Mais testes sem controle podem elevar, e não reduzir, a ocorrência de achados fortuitos."
       ]
     ]
   ],
@@ -339,14 +339,14 @@ export const PEDAGOGY_BRIDGES_VI_VIII=buildBridgeLessons([
         "A força retórica da afirmação não acrescenta evidência sobre desempenho."
       ],
       [
-        "A empresa diz 'desempenho cresceu 60%'. Que checagem precisa vir antes da conclusão?",
-        "Definir medida, referência inicial e grupo de comparação.",
-        "Assumir que 60% significa 60 pontos em qualquer escala.",
-        "Concluir que todos melhoraram exatamente 60%.",
-        "Pergunte '60% de quê, em relação a quando e a quem?'.",
-        "Sem referência e definição de medida, o número é insuficiente para sustentar a interpretação.",
-        "Crescimento percentual e ganho em pontos absolutos são grandezas diferentes.",
-        "Um ganho médio não implica que cada pessoa mudou o mesmo valor."
+        "Um anúncio responde à crítica dizendo 'quem discorda ignora a ciência'. Qual pergunta ajuda a auditar essa resposta?",
+        "Se a frase oferece evidências pertinentes ou tenta desqualificar o crítico.",
+        "Se o crítico tem uma personalidade agradável.",
+        "Se a frase é popular entre as pessoas que já concordam com o anúncio.",
+        "A segunda seção orienta avaliar a relevância das razões sem transformar a pessoa no objeto do debate.",
+        "A desqualificação pessoal não substitui dados sobre o programa; é preciso examinar quais evidências sustentam o efeito alegado.",
+        "A simpatia pessoal não demonstra nem refuta a eficácia do programa anunciado.",
+        "Popularidade da resposta retórica não comprova a afirmação científica original."
       ],
       [
         "Uma campanha usa ataque pessoal, porcentagem sem denominador e promessa causal sem controle. O que fazer?",
