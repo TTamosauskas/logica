@@ -1,5 +1,13 @@
-/** Pedagogia V3 — questões-ponte formativas dos pilotos. Não alteram notas nem progresso. */
+/** Pedagogia V3 — cobertura formativa integral do currículo, sem afetar notas nem progresso. */
+import { PEDAGOGY_BRIDGES_I_II } from './pedagogy-v3-units12.js';
+import { PEDAGOGY_BRIDGES_III_V } from './pedagogy-v3-units345.js';
+import { PEDAGOGY_BRIDGES_VI_VIII } from './pedagogy-v3-units68.js';
+import { PEDAGOGY_BRIDGES_VII } from './pedagogy-v3-unit7.js';
 export const PEDAGOGY_BRIDGES=Object.freeze({
+  ...PEDAGOGY_BRIDGES_I_II,
+  ...PEDAGOGY_BRIDGES_III_V,
+  ...PEDAGOGY_BRIDGES_VI_VIII,
+  ...PEDAGOGY_BRIDGES_VII,
   "fundamentos": {
     "handoff": {
       "title": "Antes de começar um exercício",
