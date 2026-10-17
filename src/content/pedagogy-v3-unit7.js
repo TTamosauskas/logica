@@ -29,14 +29,14 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
         "Possibilidade pode valer mesmo quando a necessidade falha."
       ],
       [
-        "Uma porta pode estar aberta em um cenário acessível, fechada em outro. O que podemos afirmar no mundo inicial?",
-        "◇aberta é verdadeira e □aberta é falsa.",
-        "□aberta é verdadeira porque existe uma alternativa aberta.",
-        "◇aberta é falsa porque há uma alternativa fechada.",
-        "Possibilidade exige um destino; necessidade exige todos.",
-        "Um cenário aberto basta para ◇, mas o fechado refuta □.",
-        "A necessidade falha se qualquer alternativa acessível estiver fechada.",
-        "A possibilidade não exige que todas as alternativas sejam abertas."
+        "Em w0, para cada mundo acessível há outro mundo alcançável onde p é verdadeira. Qual fórmula descreve isso?",
+        "□◇p, pois em cada destino de w0 deve ser possível encontrar p.",
+        "◇p, pois basta uma alternativa imediata a w0.",
+        "□p, pois p já deve valer em todo destino imediato.",
+        "A última seção diferencia seguir duas camadas de setas de olhar apenas o mundo atual.",
+        "Em □◇p, o □ examina cada primeiro destino e o ◇ procura uma testemunha de p acessível a partir dele.",
+        "◇p examina apenas se há uma testemunha acessível diretamente de w0, uma exigência diferente.",
+        "□p exige p nos destinos imediatos, não que eles possam alcançar outros mundos com p."
       ]
     ]
   ],
@@ -189,14 +189,14 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
         "O modelo de conhecimento considera as alternativas compatíveis, não apenas confiança subjetiva."
       ],
       [
-        "O relatório realmente foi aprovado, mas Beto ainda admite um cenário em que foi rejeitado. Podemos atribuir K_B(aprovado)?",
-        "Não, a alternativa de rejeição impede o conhecimento no modelo.",
-        "Sim, verdade factual garante conhecimento de todos.",
-        "Sim, admitir rejeição prova que ele conhece a aprovação.",
-        "Separe o fato ocorrido das possibilidades disponíveis ao agente.",
-        "A verdade no mundo atual não basta para conhecimento enquanto resta alternativa acessível onde a proposição falha.",
-        "Pessoas podem ignorar fatos verdadeiros no mundo real.",
-        "Uma alternativa de rejeição é precisamente um obstáculo a K da aprovação."
+        "Ana considera dois cenários: em um deles Beto sabe que o relatório foi aprovado e no outro Beto não sabe. Ana sabe que Beto sabe?",
+        "Não: KₐKᵦp falha porque nem todos os cenários de Ana satisfazem Kᵦp.",
+        "Sim: basta um cenário em que Beto saiba o resultado.",
+        "Sim: a aprovação verdadeira dispensa verificar o conhecimento de Beto.",
+        "A terceira seção explica que a fórmula KₐKᵦp verifica o conhecimento de Beto em cada cenário de Ana.",
+        "Para Ana saber que Beto sabe p, todos os mundos que Ana considera possíveis precisam satisfazer Kᵦp.",
+        "Um só cenário positivo dá possibilidade, não conhecimento do conhecimento.",
+        "A verdade de p não garante que Beto saiba p, muito menos que Ana saiba que Beto sabe."
       ]
     ]
   ],
@@ -259,24 +259,24 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
         "A escala 0 a 1 não representa diretamente temperatura em graus Celsius."
       ],
       [
-        "Uma temperatura tem pertinência 0,2 em 'quente' e 0,8 em 'morna'. Podemos interpretar isso como uma contradição?",
-        "Não; as duas categorias podem ter graus diferentes de pertinência.",
-        "Sim; apenas uma categoria pode ter valor não nulo.",
-        "Sim; cada valor é uma certeza estatística sobre outra água.",
-        "Gradações de categorias podem se sobrepor conforme suas funções.",
-        "Funções de pertinência diferentes podem atribuir graus distintos ao mesmo objeto.",
-        "Uma modelagem difusa não exige categorias necessariamente excludentes.",
-        "Esses graus não são chances de ocorrências aleatórias distintas."
+        "Usando as operações de Zadeh do texto, se μ(p)=0,7 e μ(q)=0,4, qual é o grau de p∧q?",
+        "0,4, pois a conjunção toma o menor dos dois graus.",
+        "0,7, pois a conjunção toma sempre o maior grau.",
+        "1,1, pois basta somar os graus sem limite.",
+        "A segunda seção define E por min e OU por max para os graus de pertinência.",
+        "A conjunção na lógica difusa básica adotada usa min(0,7; 0,4), que resulta em 0,4.",
+        "0,7 seria o resultado da disjunção max nesse exemplo, não da conjunção.",
+        "As operações especificadas não consistem em somar os valores de pertinência."
       ],
       [
-        "Dois termômetros usam definições diferentes de 'muito quente' e registram graus de pertinência diferentes para 40°C. Qual conclusão é responsável?",
-        "Os graus dependem das funções de pertinência adotadas.",
-        "Um termômetro necessariamente mentiu sobre a temperatura.",
-        "Os graus são probabilidades de um evento futuro.",
-        "Antes de comparar graus, confira a definição da categoria em cada sistema.",
-        "Sem função comum, graus podem refletir critérios distintos, não erro de leitura.",
-        "Diferenças de modelagem não provam falsificação da medição.",
-        "Grau de pertencimento a um predicado não prevê automaticamente eventos."
+        "Um controle automático combina a pertinência a 'ambiente quente' e 'umidade alta' antes de ajustar o ventilador. O que deve estar definido?",
+        "Funções de pertinência, operações da regra e modo de converter o resultado em ação.",
+        "Uma única temperatura que determine todos os graus sem qualquer regra.",
+        "A afirmação de que cada grau é probabilidade estatística.",
+        "A terceira seção exige explicitar as regras graduais e a passagem da regra para uma ação.",
+        "Um controlador difuso precisa declarar como calcula pertinências e combina condições antes de produzir um comando.",
+        "Um valor isolado não especifica a função de pertinência nem como integrar a umidade à decisão.",
+        "Pertinência em uma categoria gradual não é automaticamente probabilidade de um evento."
       ]
     ]
   ],
@@ -299,24 +299,24 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
         "Pode-se conservar e examinar evidências conflitantes em vez de apagá-las."
       ],
       [
-        "Na lógica clássica explosiva, a partir de p e ¬p como premissas pode-se derivar formalmente:",
-        "Uma proposição arbitrária q.",
-        "Apenas a própria p, nunca outra fórmula.",
-        "Um fato empírico comprovado sobre q.",
-        "Separe derivabilidade formal de prova factual.",
-        "A explosão clássica permite derivação de qualquer q a partir da inconsistência.",
-        "A propriedade da explosão não limita a conclusão a p.",
-        "Uma derivação num sistema inconsistente não comprova fatos observáveis."
+        "Na semântica FDE apresentada, uma proposição com suporte simultâneo para verdadeiro e falso fica em qual estado?",
+        "B, que registra ambos os tipos de suporte.",
+        "T, que registra apenas suporte para verdadeiro.",
+        "N, que representa ausência dos dois suportes.",
+        "A segunda seção apresenta os quatro estados informacionais T, F, B e N.",
+        "B permite registrar informações favoráveis e contrárias à mesma proposição sem apagar nenhuma delas.",
+        "O estado T não registra o suporte negativo que também está presente.",
+        "N indicaria que não há suporte em nenhuma direção, diferente da situação descrita."
       ],
       [
-        "Dois sensores discordam sobre a porta: um indica aberta, outro fechada. Qual atitude é compatível com abordagem paraconsistente?",
-        "Registrar os dois suportes sem deduzir, por isso, uma notícia arbitrária.",
-        "Concluir que qualquer notícia do mundo está correta.",
-        "Ignorar todos os registros, inclusive os concordantes.",
-        "A contradição local deve permanecer localizada no que foi observado.",
-        "O sistema pode preservar informações contraditórias e evitar que contaminem todas as conclusões.",
-        "O conflito sobre porta não fornece evidência sobre fatos desconexos.",
-        "Descartar tudo não é requisito da lógica paraconsistente."
+        "Num modelo FDE, p e ¬p recebem suporte positivo, mas q não recebe. Podemos concluir q apenas dessas premissas?",
+        "Não; o modelo mostra que a inferência explosiva pode falhar.",
+        "Sim; qualquer q decorre obrigatoriamente de toda contradição em FDE.",
+        "Sim; q deve ganhar suporte positivo por não tratar de p.",
+        "A última seção mostra um modelo em que a contradição local não obriga uma proposição independente.",
+        "Uma valoração com p no estado B e q no estado F sustenta p e ¬p, mas não sustenta q; portanto a inferência não é válida em FDE.",
+        "A ausência de explosão é precisamente a diferença em relação à inferência clássica com premissas inconsistentes.",
+        "Não existe regra FDE que atribua automaticamente suporte a q só porque ele fala de outro assunto."
       ]
     ]
   ],
@@ -369,14 +369,14 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
     ],
     [
       [
-        "Em FDE, suporte positivo de p∧q aparece quando:",
-        "As duas parcelas têm suporte positivo.",
-        "Pelo menos uma parcela tem suporte positivo.",
-        "Nenhuma parcela tem suporte negativo.",
-        "Para apoiar 'p e q', é preciso apoiar cada uma das afirmações.",
-        "O suporte positivo da conjunção é o E dos suportes positivos de p e q.",
-        "Ter apenas um lado apoiado não basta para apoiar a conjunção inteira.",
-        "Ausência de suporte negativo não cria suporte positivo automaticamente."
+        "Em FDE, uma proposição tem suporte positivo e negativo ao mesmo tempo. Qual par representa esses dois suportes?",
+        "B=(1,1), com ambos os componentes presentes.",
+        "T=(1,0), apenas com suporte positivo.",
+        "N=(0,0), sem nenhum dos dois suportes.",
+        "A primeira seção introduz os dois componentes do estado informacional.",
+        "Registrar os dois tipos de evidência exige 1 no componente positivo e 1 no negativo, formando B=(1,1).",
+        "T não preserva a evidência negativa que também foi informada.",
+        "N indica ausência de evidência e não a presença simultânea das duas formas de suporte."
       ],
       [
         "Se p=T=(1,0) e q=F=(0,1), qual estado resulta de p∧q?",
@@ -549,14 +549,14 @@ export const PEDAGOGY_BRIDGES_VII=buildBridgeLessons([
         "Propriedades formais não produzem automaticamente fatos empíricos."
       ],
       [
-        "Um problema não pode ser demonstrado impossível, mas ainda não temos uma solução construída. Qual afirmação é prudente sob enfoque construtivo?",
-        "Não concluir que já existe uma solução efetivamente construída.",
-        "Concluir que há solução concreta por eliminação da dupla negação.",
-        "Concluir que o problema é impossível porque a solução não apareceu.",
-        "Peça uma testemunha ou método construtivo antes de afirmar existência.",
-        "Não refutar uma solução não é o mesmo que apresentar a solução construída.",
-        "Essa conclusão aplicaria eliminação clássica da dupla negação sem construção.",
-        "Não ter solução em mãos não demonstra impossibilidade."
+        "Em w0, p ainda não foi provada, mas há uma extensão w1 na qual p é demonstrada. É correto afirmar ¬p em w0?",
+        "Não; a extensão que força p impede demonstrar sua impossibilidade em w0.",
+        "Sim; não ter prova de p em w0 já demonstra ¬p.",
+        "Sim; a extensão w1 comprova que p é impossível.",
+        "A terceira seção usa mundos de informação crescente para testar negações construtivas.",
+        "Como w1 estende w0 e força p, a negação construtiva de p não pode ser forçada em w0 nesse modelo.",
+        "Ausência atual de prova não exclui a possibilidade de demonstração futura em uma extensão.",
+        "A prova de p em w1 contradiz, em vez de sustentar, a impossibilidade construtiva de p."
       ]
     ]
   ]
