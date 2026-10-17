@@ -34,6 +34,12 @@ Essas verificações são **estruturais**. Não seria correto afirmar que um tes
 
 O objetivo é favorecer a transferência: não repetir a pergunta resolvida, mas explicitar a sequência de decisões que pode ser reutilizada em um caso novo.
 
+## Falha semântica adicional identificada
+
+**Metateoria:** havia duas versões do conteúdo de leitura em módulos diferentes. A versão efetivamente usada no aplicativo (agregada por último a partir de `FOUNDATIONS_READINGS`) apresenta, em sequência, consequência semântica (⊨), derivação (⊢) e relação entre correção e completude. As questões-ponte, entretanto, haviam sido escritas para a outra versão e perguntavam sobre Gödel e o problema da parada, ainda não ensinados nessa aula.
+
+As três questões-ponte e o roteiro foram reescritos conforme a versão **realmente exibida**. Há agora um teste específico que impede retornar às perguntas avançadas sem explicação prévia. Esse caso demonstra por que uma auditoria precisa examinar o conteúdo final resultante da composição dos módulos, não apenas um arquivo com título semelhante.
+
 ## Rubrica de revisão de cada aula
 
 | Transição | Pergunta que o editor deve responder | Critério |
