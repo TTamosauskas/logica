@@ -61,10 +61,64 @@ test('validação rejeita alternativas e índices inconsistentes',()=>{
 
 test('questões-ponte formativas não alteram critérios de aprovação nem o estado persistente',()=>{
   const app=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
-  assert.match(app,/renderPedagogyBridge\(support\.bridges\[slot\],slot\)/);
+  assert.match(app,/renderPedagogyBridge\(support\.bridges\[slot\],slot,section\.heading\)/);
   assert.match(app,/data-caction="bridge-check"/);
   assert.match(app,/data-caction="bridge-hint"/);
   assert.match(app,/data-bridge-feedback role="status" aria-live="polite"/);
   assert.match(app,/feedback\.dataset\.result=correct\?'correct':'retry'/);
   assert.match(app,/const result=gradeAssessment\(questions,answers\)/);
+});
+
+/**
+ * Matriz editorial de regressão: identifica conteúdos que antes eram cobrados
+ * antes da seção introdutória. O teste verifica tanto o texto apresentado até
+ * o ponto de decisão quanto o foco da própria questão. Não substitui revisão
+ * humana de pertinência semântica.
+ */
+test('questões de conceitos sensíveis respeitam a seção em que foram ensinados',()=>{
+  const checks=[
+    ['condicionais_naturais',0,/suficiente/i,/inscriç[aã]o/i],
+    ['condicionais_naturais',1,/necessári/i,/somente se/i],
+    ['condicionais_naturais',2,/p se q/i,/feira/i],
+    ['classificacao',0,/bivalência/i,/valores/i],
+    ['regras_inferencia',0,/modus ponens/i,/p→q e p/i],
+    ['regras_inferencia',1,/modus tollens/i,/p→q e ¬q/i],
+    ['infer_conectivos',1,/conjunção/i,/introdução do E/i],
+    ['silogismos',1,/silogismo hipotético/i,/p→q e q→r/i],
+    ['silogismos',2,/silogismo disjuntivo/i,/pasta A/i],
+    ['provas',0,/prova formal/i,/prova formal/i],
+    ['provas',1,/modus ponens/i,/modus ponens/i],
+    ['categoricos2',0,/particular/i,/forma/i],
+    ['categoricos2',1,/contradição/i,/contradiz/i],
+    ['predicados2',0,/relação/i,/Ajuda/i],
+    ['probabilidade',0,/falsos positivos/i,/99/i],
+    ['vieses_julgamento',1,/ancoragem/i,/bicicleta/i],
+    ['vieses_julgamento',2,/enquadramento/i,/sobrevivência/i],
+    ['vieses_decisao',1,/calibrad/i,/previsões/i],
+    ['vieses_decisao',2,/sobrevivência/i,/empresas/i],
+    ['ilusoes_graficos',0,/participantes/i,/80%/i],
+    ['ilusoes_graficos',1,/redução relativa/i,/redução absoluta/i],
+    ['ilusoes_graficos',2,/variações sucessivas/i,/20%/i],
+    ['ilusoes_inferencia',1,/desistiram/i,/terminaram a compra/i],
+    ['ilusoes_inferencia',2,/hipóteses/i,/cem hipóteses/i],
+    ['oficina_erros',1,/ataque retórico/i,/quem discorda/i],
+    ['modais',2,/□◇p/i,/□◇p/i],
+    ['epistemica',2,/KₐKᵦp/i,/KₐKᵦp/i],
+    ['difusa',1,/conjunção/i,/μ\(p\)/i],
+    ['paraconsistente',1,/FDE/i,/FDE/i],
+    ['fde_conjuncao',0,/suporte negativo/i,/suporte positivo/i],
+    ['intuicionista_dupla_negacao',2,/w0/i,/w0/i],
+    ['semantica_modelos',2,/satisfatível/i,/p∧q/i]
+  ];
+  for(const [id,stage,taught,asked] of checks){
+    const reading=readings[id], bridge=PEDAGOGY_BRIDGES[id].bridges[stage];
+    const positions=[0,Math.floor((reading.sections.length-1)/2),reading.sections.length-1];
+    const available=reading.sections.slice(0,positions[stage]+1)
+      .flatMap(section=>section.paragraphs).join(' ');
+    assert.match(available,taught,id+' precisa apresentar o conceito antes da questão '+(stage+1));
+    assert.match(bridge.question,asked,id+' precisa perguntar sobre o conceito da seção');
+  }
+  assert.doesNotMatch(PEDAGOGY_BRIDGES.condicionais_naturais.bridges[0].question,
+    /somente se|condição necessária|modus tollens/i,
+    'A primeira questão de Condição suficiente não pode antecipar a seção seguinte');
 });
