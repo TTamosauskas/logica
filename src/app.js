@@ -1706,14 +1706,15 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     target?.scrollIntoView({behavior:'auto',block:'nearest'});
     target?.focus({preventScroll:true});
   }
-  function renderPedagogyBridge(bridge,index){
+  function renderPedagogyBridge(bridge,index,sectionHeading){
     const labels=['Reconheça a ideia','Complete o raciocínio','Tente em outro contexto'];
     const choices=bridge.options.map((label,i)=>
       `<label class="reading-check-option"><input type="radio" name="reading-bridge-${index}" value="${i}"><span>${escapeHTML(label)}</span></label>`
     ).join('');
     return `<fieldset class="reading-bridge" data-reading-bridge="${index}">
       <legend>Questão-ponte ${index+1}/3 · ${labels[index]}</legend>
-      <p class="reading-bridge-intro">Faça uma pequena decisão antes de avançar. Não vale nota; a pista é opcional.</p>
+      <p class="reading-bridge-section">Sobre a seção que você acabou de ler: <strong>${escapeHTML(sectionHeading)}</strong></p>
+      <p class="reading-bridge-intro">Aplique essa ideia antes de avançar. Não vale nota; a pista é opcional.</p>
       <strong class="reading-check-question">${escapeHTML(bridge.question)}</strong>
       <div class="reading-check-options">${choices}</div>
       <div class="reading-bridge-actions"><button type="button" class="button small" data-caction="bridge-check">Conferir meu raciocínio</button>
@@ -1729,7 +1730,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     const positions=[0,Math.floor((reading.sections.length-1)/2),reading.sections.length-1];
     const sections=reading.sections.map((section,i)=>{
       const slot=positions.indexOf(i);
-      return `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>${support&&slot>=0?renderPedagogyBridge(support.bridges[slot],slot):''}`;
+      return `<section class="reading-section"><h4>${escapeHTML(section.heading)}</h4>${section.paragraphs.map(text=>`<p>${escapeHTML(text)}</p>`).join('')}</section>${support&&slot>=0?renderPedagogyBridge(support.bridges[slot],slot,section.heading):''}`;
     }).join('');
     const choices=reading.check.options.map((label,i)=>
       `<label class="reading-check-option"><input type="radio" name="reading-check" value="${i}"><span>${escapeHTML(label)}</span></label>`

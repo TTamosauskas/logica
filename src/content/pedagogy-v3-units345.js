@@ -19,24 +19,24 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
         "Negar o antecedente não sustenta essa cadeia condicional."
       ],
       [
-        "De p∨q e ¬p, qual conclusão é necessária?",
-        "q.",
-        "¬q.",
-        "p.",
-        "Se uma alternativa do OU é impossível, qual precisa sustentar a disjunção?",
-        "A disjunção inclusiva precisa de ao menos uma parcela verdadeira; com p falsa, q vale.",
-        "Sem p, negar q tornaria ambas as partes falsas.",
-        "A premissa informa justamente que p não ocorre."
+        "De p→q e q→r, suponha p verdadeira. Qual caminho justifica que r também será verdadeira?",
+        "Primeiro obtemos q de p; depois obtemos r de q.",
+        "Passamos diretamente de r para p sem outras premissas.",
+        "Negamos q para garantir que r seja falsa.",
+        "A segunda seção percorre o encadeamento assumindo p como verdadeira.",
+        "Aplicar a primeira condicional produz q; aplicar a segunda a q produz r, justificando a ligação entre p e r.",
+        "A direção dada pelas premissas é p→q→r; ela não autoriza automaticamente r→p.",
+        "As premissas exigem q e r quando p vale; não autorizam negar os consequentes."
       ],
       [
-        "'Se o sistema é autenticado, dá acesso. Se dá acesso, registra a sessão.' O que segue?",
-        "Se é autenticado, registra a sessão.",
-        "Se registra, necessariamente foi autenticado.",
-        "Se não é autenticado, não registra.",
-        "Ligue a consequência da primeira regra à condição da segunda.",
-        "O encadeamento das condicionais leva autenticação→registro sem afirmar o caminho inverso.",
-        "O registro poderia ocorrer por outros mecanismos; a recíproca não segue.",
-        "A ausência de autenticação não proíbe registro por outra via."
+        "O arquivo está na pasta A ou na pasta B. Sabemos que não está na pasta A. Qual conclusão segue?",
+        "O arquivo está na pasta B, pelo silogismo disjuntivo.",
+        "O arquivo não está em nenhuma das duas pastas.",
+        "O arquivo está necessariamente na pasta A.",
+        "A terceira seção ensina que de p∨q e ¬p podemos concluir q.",
+        "Como a primeira alternativa do OU foi descartada, a segunda precisa valer para manter a premissa disjuntiva verdadeira.",
+        "Com ambas as alternativas falsas, a disjunção inicial também seria falsa.",
+        "Essa opção contradiz a informação dada de que o arquivo não está na pasta A."
       ]
     ]
   ],
@@ -49,16 +49,6 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
     ],
     [
       [
-        "De p→q e ¬q, qual regra autoriza ¬p?",
-        "Modus tollens.",
-        "Modus ponens.",
-        "Afirmação do consequente.",
-        "A negação do resultado elimina a condição que o garantiria.",
-        "Modus tollens usa a condicional e a negação do consequente para negar o antecedente.",
-        "Modus ponens precisaria de p, não de ¬q.",
-        "Afirmar o consequente tenta obter p a partir de q, estrutura diferente."
-      ],
-      [
         "De p→q e p, qual linha pode ser acrescentada?",
         "q.",
         "¬q.",
@@ -67,6 +57,16 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
         "A condição p está satisfeita; por modus ponens, q deve ser verdadeira.",
         "Negar q tornaria falsa a condicional com p verdadeira.",
         "A premissa já afirma p; dela não segue sua negação."
+      ],
+      [
+        "De p→q e ¬q, qual regra autoriza ¬p?",
+        "Modus tollens.",
+        "Modus ponens.",
+        "Afirmação do consequente.",
+        "A negação do resultado elimina a condição que o garantiria.",
+        "Modus tollens usa a condicional e a negação do consequente para negar o antecedente.",
+        "Modus ponens precisaria de p, não de ¬q.",
+        "Afirmar o consequente tenta obter p a partir de q, estrutura diferente."
       ],
       [
         "'Se o envio foi aprovado, há número de rastreio. Não há número.' Que inferência é válida?",
@@ -99,14 +99,14 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
         "A conjunção não justifica negar q como consequência de p."
       ],
       [
-        "De p, qual disjunção podemos introduzir validamente?",
-        "p∨r.",
-        "p∧r.",
-        "¬p∨r.",
-        "Uma disjunção inclusiva é verdadeira se uma parcela já é V.",
-        "A introdução do OU admite qualquer alternativa adicional r sem afirmar r.",
-        "A conjunção precisaria de uma prova de r que não foi dada.",
-        "A premissa p não sustenta ¬p, e r tampouco foi demonstrada."
+        "Já demonstramos p e também demonstramos q. Qual fórmula podemos formar usando a introdução do E?",
+        "p ∧ q.",
+        "p ∨ ¬q.",
+        "p → ¬q.",
+        "Para escrever uma conjunção, precisamos das duas parcelas já demonstradas.",
+        "Como p e q já têm prova, a regra de introdução da conjunção permite reuni-las numa única linha p ∧ q.",
+        "O fato de q ser demonstrada não permite substituí-la por ¬q na segunda parcela.",
+        "A premissa q é verdadeira, portanto não se pode concluir a implicação que exige ¬q a partir de p."
       ],
       [
         "Sabemos que a sala tem projetor. Qual conclusão é válida sem verificar a rede?",
@@ -129,24 +129,24 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
     ],
     [
       [
-        "Se as linhas anteriores são p e p→q, como justificar q?",
-        "Modus ponens.",
-        "Afirmação do consequente.",
-        "Comutatividade.",
-        "A regra deve usar exatamente as linhas necessárias.",
-        "Uma condicional com o antecedente afirmado autoriza seu consequente.",
-        "A falácia partiria de q para p, no sentido oposto.",
-        "Trocar a ordem de parcelas não explica esta inferência."
+        "Por que escrever apenas uma conclusão verdadeira não constitui, por si só, uma prova formal?",
+        "Porque cada passo até a conclusão precisa ter justificativa por regras.",
+        "Porque provas formais exigem que toda conclusão seja uma tautologia.",
+        "Porque uma prova formal não pode utilizar premissas.",
+        "A primeira seção diferencia verificar um resultado e justificar uma cadeia de inferências.",
+        "Uma prova formal apresenta premissas e passos autorizados; a conclusão pode estar correta por acaso sem ter sido demonstrada.",
+        "A conclusão de um argumento pode depender de premissas e não precisa ser tautologia isolada.",
+        "Premissas são o ponto de partida de muitas provas; o importante é justificar a obtenção das novas linhas."
       ],
       [
-        "Numa prova clássica por absurdo de p, qual hipótese provisória fazemos?",
-        "¬p, buscando uma contradição.",
-        "p e q como duas premissas reais.",
-        "Uma frase sem relação com p.",
-        "Procure o oposto do que pretende concluir e marque que é provisório.",
-        "Assumir ¬p e obter ⊥ permite descartar a hipótese e concluir p no cálculo clássico.",
-        "Não é necessário assumir p como fato para demonstrá-la por absurdo.",
-        "Uma hipótese arbitrária não garante contradição relevante."
+        "Uma prova tem a linha 1: p → q e a linha 2: p. Qual é a linha 3 justificada por modus ponens?",
+        "q, pois o antecedente da condicional foi demonstrado.",
+        "¬q, pois toda condicional autoriza negar o consequente.",
+        "¬p, porque a segunda linha deve ser descartada.",
+        "Use as duas linhas já apresentadas na seção: condicional e antecedente.",
+        "De p → q e p, o modus ponens autoriza acrescentar q como conclusão; a linha 3 depende dessas duas premissas.",
+        "A condicional com p verdadeiro exige q, não a sua negação.",
+        "A segunda linha afirma p; não há motivo lógico para substituí-la por ¬p."
       ],
       [
         "Um estudante assume 'o servidor NÃO está disponível' e dessa suposição deduz uma contradição. O que pode concluir numa prova clássica adequada?",
@@ -269,14 +269,14 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
         "A fórmula afirma que todos têm P, o oposto de negar a existência de P."
       ],
       [
-        "'Existe um livro disponível' é falsa. O que podemos afirmar na interpretação considerada?",
-        "Nenhum livro está disponível.",
-        "Algum livro não está disponível e outro sim.",
-        "Todos os livros estão disponíveis.",
-        "A negação de uma existência exclui todas as testemunhas.",
-        "Se não existe livro disponível, todo livro considerado é indisponível.",
-        "O segundo cenário ainda teria uma testemunha disponível.",
-        "Isso exigiria livros disponíveis, em contradição com o dado."
+        "A frase 'Todos os alunos receberam o aviso' refere-se apenas à turma A. Para negá-la, qual caso é suficiente?",
+        "Encontrar pelo menos um aluno da turma A que não recebeu o aviso.",
+        "Encontrar um aluno da turma B que não recebeu o aviso.",
+        "Mostrar que todos os alunos da turma A receberam o aviso.",
+        "A última seção destaca que o domínio escolhido delimita os possíveis contraexemplos.",
+        "Uma universal sobre a turma A é refutada por ao menos um integrante da própria turma que não recebeu o aviso.",
+        "Um aluno de outra turma está fora do domínio da frase e não a contradiz.",
+        "Confirmar que todos os alunos da turma A receberam o aviso torna a universal verdadeira, não falsa."
       ]
     ]
   ],
@@ -329,24 +329,24 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
     ],
     [
       [
-        "Qual sentença contradiz 'Todos os S são P' (A)?",
+        "Entre as quatro formas do quadrado das oposições, qual letra representa 'Alguns S não são P'?",
+        "A forma O, uma particular negativa.",
+        "A forma A, uma universal afirmativa.",
+        "A forma E, uma universal negativa.",
+        "A primeira seção apresenta A, E, I e O e distingue universal de particular.",
+        "A forma O afirma a existência de pelo menos um S que não pertence a P; por isso é particular negativa.",
+        "A forma A diz que todos os S são P, sem testemunha contrária.",
+        "A forma E diz que nenhum S é P, uma proposição universal e não particular."
+      ],
+      [
+        "No quadrado das oposições, qual sentença contradiz 'Todos os S são P' (A)?",
         "Alguns S não são P (O).",
         "Nenhum S é P (E).",
         "Alguns S são P (I).",
-        "Uma universal é falsa quando há um contraexemplo particular.",
-        "A e O são contraditórias em semântica clássica, com ou sem S vazio.",
-        "A e E podem ambas ser verdadeiras se S for vazio.",
-        "A e I podem ambas ser verdadeiras quando há um S que também é P."
-      ],
-      [
-        "Se S é vazio, como são A='Todos S são P' e I='Alguns S são P' na semântica moderna?",
-        "A verdadeira; I falsa.",
-        "Ambas verdadeiras.",
-        "Ambas falsas.",
-        "A universal exige ausência de contraexemplos; a particular exige existência.",
-        "Sem S, não há contraexemplo a A nem testemunha para I.",
-        "A particular não pode ser verdadeira sem pelo menos um S.",
-        "A universal é verdadeira por vacuidade com domínio S vazio."
+        "Contradição significa que uma proposição é verdadeira exatamente quando a outra é falsa.",
+        "A e O são contraditórias: se todos os S são P, não pode existir S fora de P; se existir tal S, A é falsa.",
+        "A e E podem ser ambas verdadeiras quando o conjunto S está vazio na semântica moderna.",
+        "A e I podem ser ambas verdadeiras, por exemplo quando S não é vazio e está incluído em P."
       ],
       [
         "Numa escola não há membros do clube X. De 'Todos os membros de X são voluntários' podemos inferir 'Algum membro de X é voluntário'?",
@@ -369,14 +369,14 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
     ],
     [
       [
-        "Na lógica de predicados, a fórmula ∃!x F(x) afirma:",
-        "Exatamente um indivíduo satisfaz F.",
-        "Ao menos dois indivíduos satisfazem F.",
-        "Todo indivíduo satisfaz F.",
-        "O símbolo ∃! reúne existência e unicidade.",
-        "É preciso existir uma testemunha e garantir que nenhuma outra distinta tenha F.",
-        "Duas testemunhas distintas violariam unicidade.",
-        "A universal não descreve o mesmo requisito de 'exatamente um'."
+        "Em uma relação 'Ajuda(Ana, Beto)', o que devemos observar antes de trocar a ordem dos nomes?",
+        "Em geral, a ordem importa: Ana ajudar Beto não garante que Beto ajude Ana.",
+        "A ordem nunca importa porque todas as relações são simétricas.",
+        "A troca é obrigatória em toda fórmula que contenha dois nomes.",
+        "A primeira seção explica que relações expressam papéis e que trocar os argumentos pode alterar a afirmação.",
+        "Uma relação binária como Ajuda(x,y) distingue quem ajuda e quem é ajudado; inverter os nomes muda a sentença.",
+        "Simetria é uma propriedade adicional, não uma regra válida para qualquer relação.",
+        "Nomes só podem ser invertidos com justificativa; a linguagem de predicados não impõe essa troca."
       ],
       [
         "Ana e Beto venceram a prova. A descrição 'o único vencedor' é adequada?",
@@ -529,14 +529,14 @@ export const PEDAGOGY_BRIDGES_III_V=buildBridgeLessons([
     ],
     [
       [
-        "O que P(doença | teste positivo) representa?",
-        "A probabilidade de doença entre pessoas com teste positivo.",
-        "A probabilidade de teste positivo entre pessoas doentes.",
-        "A probabilidade de doença na população inteira.",
-        "Na notação P(A|B), B é a condição que delimita o grupo.",
-        "A proporção solicitada tem denominador formado pelo conjunto de testes positivos.",
-        "Isso seria P(teste positivo|doença), que inverte os eventos.",
-        "A taxa geral de doença não condiciona o resultado ao teste."
+        "No exemplo do texto, o teste identificou 8 pessoas com a condição e acusou outras 99 sem a condição. Quantos resultados positivos houve?",
+        "107 resultados positivos: 8 verdadeiros e 99 falsos.",
+        "Apenas 8 resultados positivos, contando só os casos reais.",
+        "Apenas 99 resultados positivos, excluindo os casos reais.",
+        "A primeira seção separou os positivos corretos dos falsos positivos; some os dois grupos.",
+        "O total de testes positivos inclui os 8 verdadeiros positivos e os 99 falsos positivos, perfazendo 107 pessoas.",
+        "O teste também pode dar positivo em pessoas sem a condição, e esses resultados entram no total.",
+        "Os oito casos com a condição identificados pelo teste também fazem parte do conjunto de positivos."
       ],
       [
         "Em 1000 pessoas, 10 têm a condição; teste detecta 9 delas. Se 99 das 990 sem condição testam positivo, quantos positivos totais há?",

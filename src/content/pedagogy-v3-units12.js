@@ -49,34 +49,34 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
     ],
     [
       [
-        "'O clube funciona somente se houver monitor.' O monitor é:",
+        "Se a inscrição for aceita, a secretaria enviará uma confirmação. O que a inscrição aceita garante?",
+        "O envio de uma confirmação pela secretaria.",
+        "Que toda confirmação recebida veio de uma inscrição aceita.",
+        "Que a secretaria nunca envia confirmações.",
+        "Use a regra recém-lida: se a condição acontece, o resultado deve acontecer.",
+        "Inscrição aceita é suficiente para garantir confirmação; a regra não diz que essa seja a única origem possível de confirmações.",
+        "A regra garante o envio quando há inscrição aceita, mas não proíbe outros motivos para uma confirmação.",
+        "A frase afirma justamente que, quando a inscrição é aceita, a confirmação será enviada."
+      ],
+      [
+        "'O clube funciona somente se houver monitor.' De acordo com a frase, o monitor é:",
         "Uma condição necessária para o clube funcionar.",
         "Uma garantia de que o clube funcionará.",
         "Uma consequência impossível do funcionamento.",
-        "'Somente se' marca aquilo que não pode faltar quando o fato ocorre.",
-        "Haver monitor é necessário, mas não basta para assegurar a atividade.",
-        "Necessário não significa suficiente; outras condições podem falhar.",
-        "O enunciado exige monitor quando o clube funciona; não o proíbe."
+        "A seção explicou: 'somente se' apresenta um requisito que não pode faltar.",
+        "Haver monitor é necessário para o clube funcionar, mas, por si só, não é suficiente para garantir a atividade.",
+        "Necessário não significa suficiente; o funcionamento pode depender de outras condições.",
+        "A regra exige a presença de monitor quando o clube funciona; não diz que monitor é impossível."
       ],
       [
-        "Em 'p se q', qual é a direção da seta?",
-        "q→p.",
-        "p→q.",
-        "p↔q.",
-        "Comece pelo trecho introduzido por 'se': ele é a condição.",
-        "'p se q' diz 'se q, então p', portanto q é o antecedente.",
-        "Essa direção corresponde a 'p somente se q', outra frase.",
-        "O bicondicional acrescentaria a volta p→q, não afirmada."
-      ],
-      [
-        "'Recebo um aviso se houver mudança de horário.' Se não recebi aviso, qual conclusão segue da regra, supondo que ela vale?",
-        "Não houve mudança de horário.",
-        "Houve mudança de horário.",
-        "Não é possível concluir nada sobre a mudança.",
-        "Modele mudança→aviso e use a ausência do resultado.",
-        "De mudança→aviso e ¬aviso, segue ¬mudança por modus tollens.",
-        "Isso contradiz a condição: mudança exigiria que o aviso tivesse chegado.",
-        "A ausência do consequente elimina o antecedente na condicional assumida."
+        "'A feira acontece se não chover.' Seja p = 'a feira acontece' e q = 'não chove'. Qual fórmula traduz a frase?",
+        "q → p.",
+        "p → q.",
+        "p ↔ q.",
+        "Na construção 'p se q', a palavra 'se' introduz q como condição suficiente.",
+        "'A feira acontece se não chover' significa 'se q, então p': a ausência de chuva garante a feira, sem prometer a volta.",
+        "p → q traduziria 'a feira acontece somente se não chover', uma exigência no sentido inverso.",
+        "O bicondicional exigiria duas direções; o enunciado apresenta apenas uma condição suficiente."
       ]
     ]
   ],
@@ -99,14 +99,14 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
         "É precisamente sem a exceção que a frase fornece uma garantia."
       ],
       [
-        "Com p='haverá aula' e q='falta energia', qual é a forma mínima?",
-        "¬q→p.",
-        "q→¬p.",
-        "p→¬q.",
-        "O antecedente é a ausência da exceção, não a exceção.",
-        "A forma ¬q→p traduz a garantia de aula no caso sem falta de energia.",
-        "Essa opção afirma cancelamento obrigatório quando falta energia, o que não foi dito.",
-        "Essa opção proíbe aula com falta de energia, restrição não afirmada."
+        "Uma regra diz 'a entrega ocorrerá, a menos que haja greve'. Se realmente houver greve, o que a regra permite concluir?",
+        "Não é possível determinar só com essa frase se a entrega ocorrerá.",
+        "Que a entrega obrigatoriamente será cancelada.",
+        "Que a entrega obrigatoriamente acontecerá.",
+        "A segunda seção explica o que acontece quando a exceção está presente.",
+        "A greve suspende a garantia do cenário sem exceção, mas não decide sozinha se a entrega será feita.",
+        "A frase não proíbe explicitamente uma entrega em caso de greve.",
+        "A ocorrência da exceção não fornece uma nova promessa de entrega."
       ],
       [
         "'A entrega ocorre, a menos que haja greve.' Houve greve e a entrega ocorreu. A regra foi violada?",
@@ -289,14 +289,14 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
     ],
     [
       [
-        "Uma fórmula que é V em todas as valorações clássicas é:",
-        "Uma tautologia.",
-        "Uma contradição.",
-        "Uma contingência.",
-        "Observe se alguma linha apresenta F.",
-        "Tautologia é a classificação de fórmulas verdadeiras em todas as interpretações.",
-        "Contradição é sempre F, o oposto do caso descrito.",
-        "Contingência assume V em algumas linhas e F em outras."
+        "No modelo clássico, a afirmação 'A porta está aberta', mantendo o mesmo significado, pode receber quais valores?",
+        "Verdadeiro ou falso, conforme a situação considerada.",
+        "Verdadeiro, falso ou um terceiro valor obrigatório.",
+        "Apenas verdadeiro, pois a frase é declarativa.",
+        "A primeira seção explica a bivalência: uma proposição clássica recebe V ou F.",
+        "A bivalência clássica atribui V ou F a cada proposição; não é preciso saber qual dos dois vale no mundo real.",
+        "Um terceiro valor não faz parte da semântica bivalente clássica apresentada nesta seção.",
+        "Uma frase declarativa pode ser falsa; ser proposição não a torna automaticamente verdadeira."
       ],
       [
         "Se p=V, qual o valor de ¬(p∧¬p)?",
@@ -379,14 +379,14 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
         "Distribuir não exige negar a parcela externa."
       ],
       [
-        "Qual é a forma distribuída correta de A∧(B∨C)?",
-        "(A∧B)∨(A∧C).",
-        "(A∧B)∨C.",
-        "A∨(B∧C).",
-        "Confirme a presença de A junto tanto a B quanto a C.",
-        "A conjunção externa distribui para os dois ramos da disjunção.",
-        "O segundo ramo perde A e torna-se menos restrito.",
-        "Essa troca de conectivos não é uma aplicação de distributividade."
+        "Qual é a distribuição de p∨(q∧r), com o OU por fora e o E por dentro?",
+        "(p∨q)∧(p∨r).",
+        "(p∨q)∨r.",
+        "(p∧q)∨(p∧r).",
+        "A segunda seção ensina que a disjunção também distribui sobre a conjunção.",
+        "Na distribuição do OU sobre o E, p é repetida em ambos os ramos: (p∨q)∧(p∨r).",
+        "Deixar a segunda parcela sem p altera as condições de verdade da expressão original.",
+        "Essa forma distribui E sobre OU e não corresponde à operação apresentada."
       ],
       [
         "Uma oferta vale quando há cupom E (pagamento por Pix OU cartão). Qual leitura é equivalente?",
@@ -459,14 +459,14 @@ export const PEDAGOGY_BRIDGES_I_II=buildBridgeLessons([
         "Essa forma é a inversa; não é a contrapositiva da original."
       ],
       [
-        "Se uma regra diz 'se é ave, tem penas', qual consequência equivalente ela fornece?",
-        "Se não tem penas, então não é ave.",
-        "Se tem penas, então é ave.",
-        "Se não é ave, então não tem penas.",
-        "A contrapositiva começa pela negação do consequente original.",
-        "'Não tem penas' elimina a condição 'é ave' na regra fornecida.",
-        "Ter penas pode ocorrer em outras situações; isso é recíproca.",
-        "A ausência do antecedente não obriga ausência do consequente."
+        "Para a condicional p → q, qual expressão é a recíproca, que NÃO é equivalente em geral?",
+        "q → p.",
+        "¬q → ¬p.",
+        "¬p ∧ q.",
+        "A segunda seção mostra que inverter apenas a ordem produz a recíproca.",
+        "A recíproca troca os lados de p → q sem negá-los; essa inversão não preserva a verdade em todos os casos.",
+        "¬q → ¬p é a contrapositiva, que preserva a equivalência da condicional original.",
+        "Uma conjunção com negação não é a recíproca e não expressa a mesma regra condicional."
       ],
       [
         "'Se um cadastro foi validado, há protocolo.' Não há protocolo. O que segue?",

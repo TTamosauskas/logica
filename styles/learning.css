@@ -388,3 +388,7 @@
 .exercise-lesson-link:hover{color:var(--text)}
 .exercise-lesson-link:focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:4px}
 @media(max-width:520px){.work-return-links{align-items:stretch;flex-direction:column;gap:0}}
+
+/* A questão-ponte declara a seção imediatamente anterior como referência. */
+.reading-bridge-section{margin:4px 0 12px!important;font-size:13px!important;line-height:1.6!important;color:var(--text)!important}
+.reading-bridge-section strong{font-weight:800;color:var(--accent)}
