@@ -50,11 +50,22 @@ try{
   await firstBridge.locator('input[value="0"]').check();
   await firstBridge.locator('[data-caction="bridge-check"]').click();
   assert.equal(await firstBridge.locator('[data-bridge-feedback]').getAttribute('data-result'),'retry');
+  const wrongBridgeLink=firstBridge.locator('a.chatgpt-explain-link');
+  assert.equal(await wrongBridgeLink.isVisible(),true);
+  const wrongBridgePrompt=new URL(await wrongBridgeLink.getAttribute('href')).searchParams.get('q');
+  assert.match(wrongBridgePrompt,/^Explique retornando aos primeiros princípios:/);
+  assert.match(wrongBridgePrompt,/Alternativas:/);
+  assert.match(wrongBridgePrompt,/Resposta dada pelo estudante:/);
+  assert.match(wrongBridgePrompt,/Correção e justificativa:/);
+  assert.equal(await wrongBridgeLink.getAttribute('target'),'_blank');
+  assert.match(await wrongBridgeLink.getAttribute('rel'),/noopener/);
   await firstBridge.locator('[data-caction="bridge-hint"]').click();
   assert.equal(await firstBridge.locator('[data-bridge-hint]').isVisible(),true);
   await firstBridge.locator('input[value="1"]').check();
   await firstBridge.locator('[data-caction="bridge-check"]').click();
   assert.equal(await firstBridge.locator('[data-bridge-feedback]').getAttribute('data-result'),'correct');
+  assert.equal(await firstBridge.locator('a.chatgpt-explain-link').count(),1,
+    'O acerto também mantém a ajuda, sem multiplicar os botões');
   // A questão mostrada depois de uma seção identifica explicitamente a ideia recém-estudada.
   assert.match(await firstBridge.locator('.reading-bridge-section').innerText(),/proposiç|frases/i);
   await page.goto(root+'#aula-condicionais_naturais',{waitUntil:'networkidle'});
@@ -350,6 +361,8 @@ try{
   await indicatorPage.locator('[data-caction="exam-submit"]').click();
   assert.match(await indicatorPage.locator('#courseExam .course-course-result').innerText(),/Avaliação integrada pendente/);
   assert.equal(await indicatorPage.locator('.exam-study-plan [data-caction="lesson"]').count()>0,true);
+  assert.equal(await indicatorPage.locator('#courseExam .chatgpt-explain-link').count(),12);
+  assert.match(new URL(await indicatorPage.locator('#courseExam .chatgpt-explain-link').first().getAttribute('href')).searchParams.get('q'),/Resposta esperada:/);
   await indicatorPage.locator('.exam-study-plan [data-caction="lesson"]').first().click();
   assert.equal(await indicatorPage.locator('#courseLesson').isVisible(),true);
   assert.match(indicatorPage.url(),/#aula-/);
@@ -1147,6 +1160,7 @@ try{
       await pedagogy.locator(`input[name="reading-check"][value="${wrong}"]`).check();
       await pedagogy.locator('[data-caction="reading-check"]').click();
       assert.match(await pedagogy.locator('[data-reading-feedback]').innerText(),/Ainda não/);
+      assert.equal(await pedagogy.locator('[data-reading-check] .chatgpt-explain-link').count(),1);
       await pedagogy.locator(`input[name="reading-check"][value="${lesson.correct}"]`).check();
       await pedagogy.locator('[data-caction="reading-check"]').click();
       assert.match(await pedagogy.locator('[data-reading-feedback]').innerText(),/Isso mesmo/);
@@ -1238,6 +1252,8 @@ try{
       await applied.locator('#checkButton').click();
       assert.equal(await applied.locator('#feedbackArea').isVisible(),true);
       assert.equal(await applied.locator('#specialArea .course-question-explanation').count(),questionCount);
+      assert.equal(await applied.locator('#specialArea .chatgpt-explain-link').count(),questionCount);
+      assert.equal(await applied.locator('#feedbackArea .chatgpt-explain-link').count(),1);
       await applied.locator('#backButton').click();
       assert.equal(await applied.locator('#courseLesson').isVisible(),true);
     }
@@ -1359,9 +1375,11 @@ try{
     await screen.locator('input[name^="worked-check-"][value="1"]').check();
     await screen.locator('[data-caction="worked-check"]').click();
     assert.equal(await screen.locator('[data-worked-feedback]').getAttribute('data-result'),'retry');
+    assert.equal(await screen.locator('.worked-check .chatgpt-explain-link').count(),1);
     await screen.locator('input[name^="worked-check-"][value="0"]').check();
     await screen.locator('[data-caction="worked-check"]').click();
     assert.equal(await screen.locator('[data-worked-feedback]').getAttribute('data-result'),'correct');
+    assert.equal(await screen.locator('.worked-check .chatgpt-explain-link').count(),1);
     assert.equal(await screen.locator('[data-caction="guided"]').count(),0);
     await screen.locator('[data-caction="example"]').click();
     assert.equal(await screen.locator('[data-caction="guided"]').count(),1);
@@ -1466,6 +1484,13 @@ try{
       await app14.locator('[data-caction="lesson-quiz"]').click();
       assert.equal((await app14.locator('#course-stage-5 [data-assessment-score]').innerText()).trim(),'4/5 de acertos.');
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
+      assert.equal(await app14.locator('#course-stage-5 .chatgpt-explain-link').count(),5);
+      const wrongLink=app14.locator('#course-stage-5 [data-assessment-question="'+wrong+'"] .chatgpt-explain-link');
+      const wrongPrompt=new URL(await wrongLink.getAttribute('href')).searchParams.get('q');
+      assert.match(wrongPrompt,/^Explique retornando aos primeiros princípios:/);
+      assert.match(wrongPrompt,/Resposta dada pelo estudante:/);
+      assert.match(wrongPrompt,/Resposta esperada:/);
+      assert.match(wrongPrompt,/Correção e justificativa:/);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback][data-result="incorrect"]').count(),1);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback][data-result="correct"]').count(),4);
       const incorrectCard=app14.locator('#course-stage-5 [data-assessment-question="'+wrong+'"]');
