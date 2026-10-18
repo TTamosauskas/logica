@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {COURSE_UNITS,LESSONS} from '../src/content/course.js';
 import {UNIT1_READINGS} from '../src/content/reading-unit1.js';
@@ -124,4 +125,10 @@ test('enunciados antigos em rascunhos são limpos sem alterar conteúdo ou ident
     'De p é válido introduzir:');
   assert.equal(cleanAssessmentQuestion('Em p→q, q é:'),'Em p→q, q é:');
   assert.equal(cleanAssessmentQuestion('Em outro contexto, p pode variar?'),'Em outro contexto, p pode variar?');
+});
+
+test('a normalização de rascunhos é usada pela avaliação inicial, não por exercícios especiais',()=>{
+  const app=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
+  assert.match(app,/<div class="course-question" data-assessment-question="\$\{i\}">\s*<strong>\$\{i\+1\}\. \$\{escapeHTML\(cleanAssessmentQuestion\(q\.question\)\)\}<\/strong>/);
+  assert.doesNotMatch(app,/<div class="special-card"><strong>\$\{i\+1\}\. \$\{escapeHTML\(cleanAssessmentQuestion\(q\.question\)\)\}/);
 });
