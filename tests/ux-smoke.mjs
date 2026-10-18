@@ -1462,7 +1462,7 @@ try{
       const originalTitles=await app14.locator('#course-stage-5 .course-question > strong').allInnerTexts();
       const answersBefore=await Promise.all(Array.from({length:5},(_,i)=>app14.locator('input[name="courseq-'+i+'"]:checked').inputValue()));
       await app14.locator('[data-caction="lesson-quiz"]').click();
-      assert.match(await app14.locator('#course-stage-5 [data-assessment-score]').innerText(),/4\\/5 no total · 1\\/2 no conceito central/);
+      assert.match(await app14.locator('#course-stage-5 [data-assessment-score]').innerText(),/4\/5 no total · 1\/2 no conceito central/);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback][data-result="incorrect"]').count(),1);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback][data-result="correct"]').count(),4);
@@ -1505,7 +1505,7 @@ try{
       assert.equal(await app14.locator('#course-stage-5 [data-caction="lesson-quiz"]').count(),1);
       for(let i=0;i<5;i++)await app14.locator('input[name="courseq-'+i+'"][value="'+assessment[i].correct+'"]').check();
       await app14.locator('[data-caction="lesson-quiz"]').click();
-      assert.match(await app14.locator('#course-stage-5 [data-assessment-score]').innerText(),/5\\/5 no total · 2\\/2 no conceito central/);
+      assert.match(await app14.locator('#course-stage-5 [data-assessment-score]').innerText(),/5\/5 no total · 2\/2 no conceito central/);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
       assert.match(await app14.locator('#courseLesson').innerText(),/6. Consolidar com revisões espaçadas/);
       const approved=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id],id);
