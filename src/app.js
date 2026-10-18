@@ -1415,7 +1415,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   });
   // O desenho responde a cliques; a seleção por teclado usa os botões textuais nativos.
   $('specialArea').addEventListener('change',onSpecialChange);$('checkButton').addEventListener('click',gradeExercise);$('hintButton').addEventListener('click',requestHint);$('independentHintDecision').addEventListener('click',handleHintDecision);$('clearButton').addEventListener('click',clear);$('undoClearButton').addEventListener('click',undoClear);$('revealButton').addEventListener('click',reveal);$('newButton').addEventListener('click',()=>nextExercise());$('newTopButton').addEventListener('click',()=>nextExercise());
-  $('backButton').addEventListener('click',()=>courseAttempt?openCourse(true,courseAttempt.id):goHome());$('topHome').addEventListener('click',()=>goHome());$('brand').addEventListener('click',e=>{e.preventDefault();goHome()});$('howButton').addEventListener('click',showGuide);$('topGuide').addEventListener('click',showGuide);$('themeButton').addEventListener('click',toggleTheme);$('resetButton').addEventListener('click',resetProgress);
+  $('backButton').addEventListener('click',()=>courseAttempt?openCourse(true,courseAttempt.id):goHome());$('topHome').addEventListener('click',()=>goHome());$('brand').addEventListener('click',e=>{e.preventDefault();goHome()});$('howButton').addEventListener('click',showGuide);$('topGuide').addEventListener('click',showGuide);$('themeButton').addEventListener('click',toggleTheme);
   $('deductionArea').addEventListener('click',e=>{if(e.target.closest('#toggleDeductionTable')&&exercise?.mode==='deducao'){exercise.metadata.tableOpened=!exercise.metadata.tableOpened;renderDeduction();}});
   $('deductionArea').addEventListener('input',e=>{if(e.target.id==='deductionScratch'&&exercise?.mode==='deducao')exercise.metadata.scratch=e.target.value});
   /* Curso guiado: armazenamento próprio, independente do histórico de exercícios legado. */
@@ -1671,7 +1671,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
         </div></li>`).join('')}</ol>
       <div class="worked-finish" data-worked-finish ${shown<count?'hidden':''}>
         <fieldset class="worked-check"><legend>Confira o raciocínio</legend>
-          <p>Uma pergunta opcional para verificar o exemplo; não vale nota.</p>
+          
           <strong class="worked-check-question">${escapeHTML(c.question)}</strong>
           <div class="worked-check-options">${options}</div>
           <button type="button" class="button small" data-caction="worked-check">Conferir resposta</button>
@@ -1715,8 +1715,8 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     ).join('');
     return `<fieldset class="reading-bridge" data-reading-bridge="${index}">
       <legend>Questão-ponte ${index+1}/3 · ${labels[index]}</legend>
-      <p class="reading-bridge-section">Sobre a seção que você acabou de ler: <strong>${escapeHTML(sectionHeading)}</strong></p>
-      <p class="reading-bridge-intro">Aplique essa ideia antes de avançar. Não vale nota; a pista é opcional.</p>
+      <p class="reading-bridge-section"><strong>${escapeHTML(sectionHeading)}</strong></p>
+      
       <strong class="reading-check-question">${escapeHTML(bridge.question)}</strong>
       <div class="reading-check-options">${choices}</div>
       <div class="reading-bridge-actions"><button type="button" class="button small" data-caction="bridge-check">Conferir meu raciocínio</button>
@@ -1738,7 +1738,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       `<label class="reading-check-option"><input type="radio" name="reading-check" value="${i}"><span>${escapeHTML(label)}</span></label>`
     ).join('');
     const handoff=support?`<aside class="reading-handoff" aria-label="Roteiro de aplicação"><h4>${escapeHTML(support.handoff.title)}</h4><ol>${support.handoff.steps.map(step=>`<li>${escapeHTML(step)}</li>`).join('')}</ol><p>${escapeHTML(support.handoff.next)}</p></aside>`:'';
-    return `<div class="pedagogical-reading"><p class="reading-objective"><strong>Ao final desta explicação, você será capaz de:</strong> ${escapeHTML(reading.objective)}</p>${sections}${handoff}<div class="reading-distinction"><strong>Uma confusão comum</strong><p>${escapeHTML(reading.misconception)}</p></div><p class="reading-summary"><strong>Em resumo:</strong> ${escapeHTML(reading.summary)}</p><fieldset class="reading-check" data-reading-check><legend>Confira o essencial</legend><p>Uma pergunta para refletir sobre o conceito. Não vale nota e você pode tentar novamente.</p><strong class="reading-check-question">${escapeHTML(reading.check.question)}</strong><div class="reading-check-options">${choices}</div><button type="button" class="button small" data-caction="reading-check">Conferir resposta</button><p class="reading-check-feedback" data-reading-feedback role="status" aria-live="polite"></p></fieldset></div>`;
+    return `<div class="pedagogical-reading"><p class="reading-objective"><strong>Ao final desta explicação, você será capaz de:</strong> ${escapeHTML(reading.objective)}</p>${sections}${handoff}<div class="reading-distinction"><strong>Uma confusão comum</strong><p>${escapeHTML(reading.misconception)}</p></div><p class="reading-summary"><strong>Em resumo:</strong> ${escapeHTML(reading.summary)}</p><fieldset class="reading-check" data-reading-check><legend>Confira o essencial</legend><strong class="reading-check-question">${escapeHTML(reading.check.question)}</strong><div class="reading-check-options">${choices}</div><button type="button" class="button small" data-caction="reading-check">Conferir resposta</button><p class="reading-check-feedback" data-reading-feedback role="status" aria-live="polite"></p></fieldset></div>`;
   }
   function renderOppositionSquare(){
     const nodes=[['A',58,66],['E',482,66],['I',58,322],['O',482,322]];
@@ -1821,9 +1821,17 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     const guide=practiceTransferGuide(id,COURSE_READINGS,PEDAGOGY_BRIDGES,WORKED_EXAMPLES,'guided');
     return `<div class="practice-transfer-prep"><p><strong>Do exemplo ao seu exercício:</strong> você vai aplicar o procedimento a dados novos. Antes de começar, lembre-se destas decisões:</p>
       ${renderTransferSteps(guide)}
-      <p>Se não souber começar, abra a orientação dentro do exercício e consulte o exemplo resolvido. Essas ajudas não valem nota.</p></div>`;
+</div>`;
   }
-  function renderLessonAssessment(id,progress){
+  function stagePanelStart(number,title,completed,forceOpen=false,extraClass=''){
+    const heading=`<h3 tabindex="-1">${number}. ${escapeHTML(title)}</h3>`;
+    const klass=`course-lesson-panel${extraClass?' '+extraClass:''}`;
+    return completed
+      ?`<details class="${klass} course-stage-completed" id="course-stage-${number}" ${forceOpen?'open':''}><summary>${heading}</summary><div class="course-stage-content">`
+      :`<section class="${klass}" id="course-stage-${number}">${heading}`;
+  }
+  const stagePanelEnd=completed=>completed?'</div></details>':'</section>';
+  function renderLessonAssessment(id,progress,forceOpen=false){
     const questions=assessmentForLesson(id),draft=progress.assessmentV2.draft;
     const graded=draft.result,answers=draft.answers||{};
     const items=questions.map((q,i)=>{
@@ -1841,21 +1849,17 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
         ${options}${explanation}</div>`;
     }).join('');
     const score=graded?`<div class="course-course-result ${graded.passed?'':'warn'}" tabindex="-1" role="status" data-assessment-score>
-      <strong>${graded.overall}/5 no total · ${graded.concepts}/2 no conceito central.</strong>
-      <p>${escapeHTML(graded.reason)}</p>
-      <p>Suas perguntas e respostas foram preservadas. Para receber novas perguntas, selecione “Tente outra vez”.</p>
+      <strong>${graded.overall}/5 de acertos.</strong>
     </div>`:'';
-    return `<section class="course-lesson-panel" id="course-stage-5">
-      <h3 tabindex="-1">5. Aprovar a avaliação inicial</h3>
-      <p>A avaliação tem cinco questões variáveis: duas conceituais e três de aplicação. Para aprovar, acerte ao menos quatro no total, incluindo ambas as conceituais. As revisões espaçadas continuam separadas.</p>
+    return `${stagePanelStart(5,'Aprovar a avaliação inicial',progress.mastered,forceOpen)}
       ${progress.mastered&&!progress.assessmentV2?.last?.passed?'<p>Sua aprovação anterior foi preservada; a nova aferição conceitual é independente.</p>':''}
       <div class="course-assessment">${items}</div>
       ${score}
       <div class="course-lesson-actions"><button type="button" class="button primary"
         data-caction="${graded?'lesson-retry':'lesson-quiz'}">${graded?'Tente outra vez':'Corrigir avaliação'}</button></div>
-    </section>`;
+    ${stagePanelEnd(progress.mastered)}`;
   }
-  function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
+  function renderCourseLesson(forceOpenStage=null){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
     const stages=[
       {label:'1. Compreender',done:p.read,available:true},
       {label:'2. Observar',done:p.example,available:p.read},
@@ -1870,19 +1874,19 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       :`<span class="course-stage locked" aria-label="${escapeHTML(stage.label)} — indisponível" title="Conclua a etapa anterior para desbloquear">${lockIcon}${escapeHTML(stage.label)}</span>`).join('');
     let html=`<div class="course-lesson-head"><span class="eyebrow">MÓDULO ${m.no} · ${m.level}</span><h2>${escapeHTML(m.name)}</h2><p>${escapeHTML(lesson.lead)}</p><nav class="course-lesson-flow" aria-label="Etapas da aula">${stageNavigation}</nav><button type="button" class="button small" data-caction="map">← Mapa das unidades</button> <button type="button" class="button small" data-caction="practice-free">Prática livre deste tema</button></div>`;
     const reading=COURSE_READINGS[id];
-    html+=`<section class="course-lesson-panel" id="course-stage-1"><h3 tabindex="-1">1. Compreender</h3>${reading?renderPedagogicalReading(reading,id):`<p>${escapeHTML(lesson.theory)}</p>`}${id==='categoricos2'?renderOppositionSquare():''}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div></section>`;
-    if(p.read){html+=`<section class="course-lesson-panel" id="course-stage-2"><h3 tabindex="-1">2. Observar um exemplo resolvido</h3>${renderWorkedExample(id,p)}</section>`}
-    if(p.example&&THEORY_CARDS[id]&&id!=='metateoria'){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
-    if(p.example){html+=`<section class="course-lesson-panel" id="course-stage-3"><h3 tabindex="-1">3. Praticar com ajuda</h3><p>Aplique o método do exemplo a uma tarefa nova. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p>${renderTransferPrep(id)}<div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
-    if(p.guided){html+=`<section class="course-lesson-panel" id="course-stage-4"><h3 tabindex="-1">4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
-    if(p.independent)html+=renderLessonAssessment(id,p);
+    html+=`${stagePanelStart(1,'Compreender',p.read)}${reading?renderPedagogicalReading(reading,id):`<p>${escapeHTML(lesson.theory)}</p>`}${id==='categoricos2'?renderOppositionSquare():''}<div class="course-lesson-actions"><button type="button" class="button ${p.read?'':'primary'}" data-caction="read">${p.read?'✓ Leitura registrada · rever exemplo':'Li a explicação · continuar para o exemplo →'}</button></div>${stagePanelEnd(p.read)}`;
+    if(p.read){html+=`${stagePanelStart(2,'Observar um exemplo resolvido',p.example)}${renderWorkedExample(id,p)}${stagePanelEnd(p.example)}`}
+    if(p.example&&THEORY_CARDS[id]&&id!=='metateoria'){html+=`<details class="course-lesson-panel course-optional-study"><summary><h3>Para ir além: teoremas e demonstrações</h3></summary><div class="course-stage-content">${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</div></details>`;}
+    if(p.example){html+=`${stagePanelStart(3,'Praticar com ajuda',p.guided)}${renderTransferPrep(id)}<div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div>${stagePanelEnd(p.guided)}`}
+    if(p.guided){html+=`${stagePanelStart(4,'Resolver com autonomia',p.independent)}<div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div>${stagePanelEnd(p.independent)}`}
+    if(p.independent)html+=renderLessonAssessment(id,p,forceOpenStage===5);
     if(p.mastered){
       const state=reviewStatus(p);
-      html+=`<section class="course-lesson-panel course-review-panel" id="course-stage-6"><h3 tabindex="-1">6. Consolidar com revisões espaçadas</h3><p>Você aprovou a avaliação inicial. Domínio consolidado exige duas novas tentativas independentes, corrigidas com pelo menos 80% e sem dicas: uma após 1 dia e outra após mais 7 dias.</p>`;
+      html+=stagePanelStart(6,'Consolidar com revisões espaçadas',state.status==='consolidated',false,'course-review-panel');
       if(state.status==='consolidated')html+='<p class="review-good"><strong>Domínio consolidado.</strong> Duas revisões espaçadas concluídas com autonomia.</p>';
-      else if(state.status==='due')html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível.</strong> Um novo exercício será gerado para você.</p><div class="course-lesson-actions"><button type="button" class="button primary" data-caction="review">Fazer revisão independente →</button></div>`;
-      else html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível a partir de ${formatReviewDate(state.dueAt)}.</strong> Continue praticando livremente até a liberação.</p>`;
-      html+='</section>';
+      else if(state.status==='due')html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível.</strong> </p><div class="course-lesson-actions"><button type="button" class="button primary" data-caction="review">Fazer revisão independente →</button></div>`;
+      else html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível a partir de ${formatReviewDate(state.dueAt)}.</strong></p>`;
+      html+=stagePanelEnd(state.status==='consolidated');
     }
     $('courseLesson').innerHTML=html;
     if(id==='categoricos2')updateSquareLab($('courseLesson').querySelector('[data-square-lab]'));
@@ -1900,14 +1904,14 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     const stage=courseAttempt.stage,isReview=stage==='review',
       independent=stage==='independent'||isReview,used=independent&&courseAttempt.hintUsed;
     const instructions=independent
-      ?used?'Treino com ajuda: esta tentativa não valida autonomia nem consolidação. Faça outro exercício sem dica.'
-        :isReview?'Revisão espaçada: resolva um novo desafio com ao menos 80% na primeira correção, sem campos pendentes nem dicas.'
-        :'Meta: ao menos 80% na primeira correção, sem campos pendentes e sem consultar dicas. Se abrir uma dica, esta tentativa se torna prática assistida.'
-      :'Prática assistida: consulte as dicas e corrija para registrar esta etapa.';
+      ?used?'Você consultou uma dica. Use esta tentativa para praticar.'
+        :isReview?'Resolva o exercício de revisão sem dicas.'
+        :'Resolva o exercício por conta própria.'
+      :'Use os passos abaixo para orientar sua resolução.';
     const guide=practiceTransferGuide(courseAttempt.id,COURSE_READINGS,PEDAGOGY_BRIDGES,WORKED_EXAMPLES,stage);
     const transfer=guide?`<section class="practice-transfer-banner" aria-label="Como aplicar a explicação a este exercício">
       <h3>Como começar este exercício</h3>
-      <p>O enunciado será diferente do exemplo, mas o raciocínio é o mesmo. Comece pelo primeiro passo antes de preencher a resposta.</p>
+
       ${renderTransferSteps(guide)}
       ${renderWorkedReminder(guide)}
     </section>`:'';
@@ -1952,6 +1956,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       if(!Number.isInteger(stage)||stage<1||stage>6)return;
       const panel=$('courseLesson').querySelector('#course-stage-'+stage);
       if(!panel)return;
+      if(panel.tagName==='DETAILS')panel.open=true;
       panel.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
       panel.querySelector('h3')?.focus({preventScroll:true});
       return;
@@ -2024,7 +2029,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       if(!recordAssessmentAttempt(a,result,answers))return;
       p.best=Math.max(p.best,result.overall/5);
       if(result.passed){p.mastered=true;beginReviewTracking(p)}
-      saveCourseState();renderCourseLesson();
+      saveCourseState();renderCourseLesson(5);
       const score=$('courseLesson').querySelector('[data-assessment-score]');
       score?.focus({preventScroll:true});
       score?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});
@@ -2098,9 +2103,6 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   }
   addEventListener('pagehide',()=>{saveExerciseDraft();saveExamDraft()});
   $('feedbackNextActions').addEventListener('click',e=>{const b=e.target.closest('[data-feedback-action]');if(!b)return;if(b.dataset.feedbackAction==='course')openCourse(true,courseAttempt?.id);else nextExercise()});
-  $('exportProgressButton').addEventListener('click',exportProgress);
-  $('importProgressButton').addEventListener('click',()=>$('importProgressFile').click());
-  $('importProgressFile').addEventListener('change',importProgressFile);
   $('continueButton').addEventListener('click',resumeLearning);
   $('nextLessonButton').addEventListener('click',openRecommendedLesson);
   $('heroNextStepButton').addEventListener('click',openRecommendedLesson);

@@ -41,6 +41,10 @@ try{
   assert.equal(await page.locator('#courseNext').count(),0);
   // Pedagogia V3: decisões entre trechos, diagnóstico do erro e pista opcional.
   assert.equal(await page.locator('[data-reading-bridge]').count(),3);
+  const visibleLessonText=await page.locator('#courseLesson').innerText();
+  for(const phrase of ["Aplique essa ideia antes de avançar. Não vale nota; a pista é opcional.","Uma pergunta opcional para verificar o exemplo; não vale nota.","Aplique o método do exemplo a uma tarefa nova. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.","Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.","A avaliação tem cinco questões variáveis: duas conceituais e três de aplicação."]){
+    assert.equal(visibleLessonText.includes(phrase),false,'Texto operacional deve ser removido');
+  }
   assert.equal(await page.locator('.reading-handoff ol li').count(),3);
   const firstBridge=page.locator('[data-reading-bridge="0"]');
   await firstBridge.locator('input[value="0"]').check();
@@ -194,14 +198,14 @@ try{
   await study.locator('#hintButton').click();
   await study.locator('[data-hint-action="show"]').click();
   assert.equal(await study.locator('#inlineHint').isVisible(),true);
-  assert.match(await study.locator('#courseExerciseBanner').innerText(),/não valida autonomia/);
+  assert.match(await study.locator('#courseExerciseBanner').innerText(),/Você consultou uma dica/);
   draft=await study.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_exercise_drafts_v1')));
   assert.equal(draft.byMode.fundamentos.courseAttempt.hintUsed,true);
   await study.locator('#checkButton').click();
   assert.equal(await study.locator('.feedback-assisted').isVisible(),true);
   await study.reload({waitUntil:'networkidle'});
   assert.equal(await study.locator('#inlineHint').isVisible(),true);
-  assert.match(await study.locator('#courseExerciseBanner').innerText(),/não valida autonomia/);
+  assert.match(await study.locator('#courseExerciseBanner').innerText(),/Você consultou uma dica/);
   // A dica consultada após uma correção é revisão e não invalida a tentativa.
   await study.locator('#newButton').click();
   await study.locator('#checkButton').click();
@@ -291,7 +295,7 @@ try{
   await progressPage.locator('#continueButton').click();
   assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
   await progressPage.locator('[data-caction="review"]').click();
-  assert.match(await progressPage.locator('#courseExerciseBanner').innerText(),/Revisão espaçada/);
+  assert.match(await progressPage.locator('#courseExerciseBanner').innerText(),/Revisão independente/);
   await progressPage.locator('#hintButton').click();
   assert.equal(await progressPage.locator('#independentHintDecision').isVisible(),true);
   await progressPage.locator('[data-hint-action="show"]').click();
@@ -301,25 +305,16 @@ try{
   assert.equal(stateAfter.completed,0);
   assert.equal(stateAfter.consolidated,false);
 
-  // Backup local pode sair do navegador e ser restaurado após confirmação.
+  // O rodapé de gestão manual foi removido, mas o progresso continua persistente.
   await progressPage.locator('#brand').click();
-  const downloadPromise=progressPage.waitForEvent('download');
-  await progressPage.locator('#exportProgressButton').click();
-  const download=await downloadPromise;
-  assert.match(download.suggestedFilename(),/logiclab-progresso-\d{4}-\d{2}-\d{2}\.json/);
-  const {readFileSync}=await import('node:fs');
-  const backup=JSON.parse(readFileSync(await download.path(),'utf8'));
-  assert.equal(backup.format,'logiclab-backup');
-  assert.equal(JSON.parse(backup.data.logiclab_curso_formal_v2).lessons.fundamentos.mastered,true);
-  await progressPage.evaluate(()=>localStorage.removeItem('logiclab_curso_formal_v2'));
-  progressPage.on('dialog',dialog=>dialog.accept());
-  await Promise.all([
-    progressPage.waitForEvent('load'),
-    progressPage.locator('#importProgressFile').setInputFiles({name:'progresso.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))})
-  ]);
-  const restored=await progressPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons.fundamentos);
-  assert.equal(restored.mastered,true);
-  assert.equal(restored.review.completed,0);
+  assert.equal(await progressPage.locator('footer').count(),0);
+  for(const selector of ['#exportProgressButton','#importProgressButton','#importProgressFile','#resetButton']){
+    assert.equal(await progressPage.locator(selector).count(),0,selector+' não deve existir');
+  }
+  await progressPage.reload({waitUntil:'networkidle'});
+  const retained=await progressPage.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons.fundamentos);
+  assert.equal(retained.mastered,true);
+  assert.equal(retained.review.completed,0);
   assert.deepEqual(progressErrors,[]);
   await progressContext.close();
 
@@ -477,7 +472,7 @@ try{
     await journey.locator('#courseLesson [data-caction="independent"]').click();
     assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-banner').count(),0,
       'A avaliação independente não deve revelar o roteiro de resposta');
-    assert.match(await journey.locator('#courseExerciseBanner').innerText(),/Meta: ao menos 80%/);
+    assert.match(await journey.locator('#courseExerciseBanner').innerText(),/Resolva o exercício por conta própria/);
 
     // Outro tema evita confundir a tentativa guiada salva com uma prática livre.
     await journey.goto(root+'#operadores',{waitUntil:'networkidle'});
@@ -1370,6 +1365,9 @@ try{
     assert.equal(await screen.locator('[data-caction="guided"]').count(),0);
     await screen.locator('[data-caction="example"]').click();
     assert.equal(await screen.locator('[data-caction="guided"]').count(),1);
+    assert.equal(await screen.locator('#course-stage-2').evaluate(el=>el.tagName),'DETAILS');
+    assert.equal(await screen.locator('#course-stage-2').getAttribute('open'),null);
+    await screen.locator('#course-stage-2 > summary').click();
     await screen.locator('[data-caction="worked-restart"]').click();
     assert.equal(await screen.locator('[data-worked-step]:visible').count(),1);
     assert.equal(await screen.locator('[data-caction="guided"]').count(),1);
@@ -1415,7 +1413,11 @@ try{
     const progressAfterJump=await app14.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons.fundamentos);
     assert.equal(progressAfterJump.read,true);
     assert.equal(progressAfterJump.example,false);
+    assert.equal(await app14.locator('#course-stage-1').evaluate(el=>el.tagName),'DETAILS');
+    assert.equal(await app14.locator('#course-stage-1').getAttribute('open'),null);
+    assert.equal(await app14.locator('#course-stage-1 > summary').innerText(),'1. Compreender');
     await app14.locator('#courseLesson .course-lesson-flow button[data-stage="1"]').click();
+    assert.equal(await app14.locator('#course-stage-1').getAttribute('open'),'');
     assert.equal(await app14.evaluate(()=>document.activeElement?.textContent),'1. Compreender');
     assert.equal(app14.url(),lessonRoute);
     await app14.goto(root,{waitUntil:'networkidle'});
@@ -1462,7 +1464,7 @@ try{
       const originalTitles=await app14.locator('#course-stage-5 .course-question > strong').allInnerTexts();
       const answersBefore=await Promise.all(Array.from({length:5},(_,i)=>app14.locator('input[name="courseq-'+i+'"]:checked').inputValue()));
       await app14.locator('[data-caction="lesson-quiz"]').click();
-      assert.match(await app14.locator('#course-stage-5 [data-assessment-score]').innerText(),/4\/5 no total · 1\/2 no conceito central/);
+      assert.equal((await app14.locator('#course-stage-5 [data-assessment-score]').innerText()).trim(),'4/5 de acertos.');
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback][data-result="incorrect"]').count(),1);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback][data-result="correct"]').count(),4);
@@ -1489,6 +1491,8 @@ try{
       assert.equal(rejected.mastered,false);
       assert.equal(rejected.assessmentV2.history.length,1);
       await app14.reload({waitUntil:'networkidle'});
+      // Após aprovação, somente o título da etapa fica visível, até a abertura manual.
+      // Após reprovação, a avaliação permanece aberta para permitir nova tentativa.
       assert.deepEqual(await app14.locator('#course-stage-5 .course-question > strong').allInnerTexts(),originalTitles);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-score]').count(),1);
@@ -1505,12 +1509,24 @@ try{
       assert.equal(await app14.locator('#course-stage-5 [data-caction="lesson-quiz"]').count(),1);
       for(let i=0;i<5;i++)await app14.locator('input[name="courseq-'+i+'"][value="'+assessment[i].correct+'"]').check();
       await app14.locator('[data-caction="lesson-quiz"]').click();
-      assert.match(await app14.locator('#course-stage-5 [data-assessment-score]').innerText(),/5\/5 no total · 2\/2 no conceito central/);
+      assert.equal((await app14.locator('#course-stage-5 [data-assessment-score]').innerText()).trim(),'5/5 de acertos.');
       assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
       assert.match(await app14.locator('#courseLesson').innerText(),/6. Consolidar com revisões espaçadas/);
       const approved=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id],id);
       assert.equal(approved.mastered,true);
       assert.equal(approved.assessmentV2.history.length,2);
+      // O resultado é visível imediatamente; ao reabrir a página, as etapas concluídas se recolhem.
+      assert.equal(await app14.locator('#course-stage-5').getAttribute('open'),'');
+      await app14.reload({waitUntil:'networkidle'});
+      for(const number of [1,2,3,4,5]){
+        const stage=app14.locator('#course-stage-'+number);
+        assert.equal(await stage.evaluate(el=>el.tagName),'DETAILS');
+        assert.equal(await stage.getAttribute('open'),null,'Etapa '+number+' deve iniciar recolhida');
+        const title=await stage.locator(':scope > summary').innerText();
+        assert.match(title,new RegExp('^'+number+'\\. '));
+      }
+      await app14.locator('#course-stage-5 > summary').click();
+      assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
       // A sexta etapa aparece somente após aprovação e navega até a revisão agendada.
       assert.equal(await app14.locator('#courseLesson .course-lesson-flow button[data-stage="6"]').count(),1);
       const routeBeforeReview=app14.url();
