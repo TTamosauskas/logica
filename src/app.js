@@ -48,6 +48,7 @@ import { UNIT3_ASSESSMENTS } from './content/assessment-unit3.js';
 import { UNIT4_ASSESSMENTS } from './content/assessment-unit4.js';
 import { UNIT5_TO_7_ASSESSMENTS } from './content/assessment-unit5to7.js';
 import { ASSESSMENT_VERSION, prepareBank, composeAssessment, gradeAssessment } from './core/assessment.js';
+import { recordAssessmentAttempt, beginAssessmentRetry } from './core/assessment-attempt.js';
 import { buildIntegratedExamQuestions } from './core/integrated-exam.js';
 import { OTHER_LOGIC_LAB_IDS,createOtherLogicLab } from './core/other-logics-labs.js';
 import { syllogismTemplatesFor, translationTemplatesFor } from './core/practice-scope.js';
@@ -1565,7 +1566,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     ex.grade={correct,total,missing};if(!ex.gradedEver){ex.firstGrade={...ex.grade};ex.gradedEver=true;const data=stats.byMode[ex.mode]||{tries:0,perfect:0,correct:0,total:0};data.tries++;data.correct+=correct;data.total+=total;if(correct===total)data.perfect++;stats.byMode[ex.mode]=data;stats.tries++;stats.correct+=correct;stats.total+=total;if(correct===total)stats.perfect++;save()}recordGuidedAttempt();renderExercise();$('feedbackArea').scrollIntoView({behavior:'smooth',block:'nearest'});
   }
   function loadCourseState(){try{const parsed=JSON.parse(localStorage.getItem(COURSE_KEY));if(parsed&&parsed.lessons&&parsed.final)return parsed}catch(e){}return {lessons:{},final:{}}}
-  let courseState=loadCourseState(),courseActive=null,courseAttempt=null,lessonFeedback=null,finalExamSession=null;
+  let courseState=loadCourseState(),courseActive=null,courseAttempt=null,finalExamSession=null;
   function saveCourseState(){try{localStorage.setItem(COURSE_KEY,JSON.stringify(courseState))}catch(e){}}
   // Migração não destrutiva: as conquistas antigas continuam como avaliações aprovadas.
   // Novas revisões começam a contar somente depois da publicação desta versão.
@@ -1626,7 +1627,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     });
     $('courseMap').innerHTML=html;
   }
-  function openCourse(updateHash=true,id=null){courseAttempt=null;courseActive=id&&LESSONS[id]?id:null;lessonFeedback=null;$('freeTableView').classList.add('hide');$('homeView').classList.add('hide');$('workView').classList.add('hide');$('courseView').classList.remove('hide');$('courseExam').classList.add('hide');if(updateHash)setRouteHash(courseActive?'aula-'+courseActive:'curso');renderCourse();scrollTo({top:0,behavior:'instant'})}
+  function openCourse(updateHash=true,id=null){courseAttempt=null;courseActive=id&&LESSONS[id]?id:null;$('freeTableView').classList.add('hide');$('homeView').classList.add('hide');$('workView').classList.add('hide');$('courseView').classList.remove('hide');$('courseExam').classList.add('hide');if(updateHash)setRouteHash(courseActive?'aula-'+courseActive:'curso');renderCourse();scrollTo({top:0,behavior:'instant'})}
   function renderCourse(){
     updateCourseContext(courseActive?'lesson':'map');
     renderCourseMap();$('courseMap').classList.toggle('hide',!!courseActive);$('courseLesson').classList.toggle('hide',!courseActive);$('courseMapButton').classList.toggle('hide',!courseActive);$('courseExam').classList.add('hide');if(courseActive)renderCourseLesson();}
@@ -1822,6 +1823,38 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       ${renderTransferSteps(guide)}
       <p>Se não souber começar, abra a orientação dentro do exercício e consulte o exemplo resolvido. Essas ajudas não valem nota.</p></div>`;
   }
+  function renderLessonAssessment(id,progress){
+    const questions=assessmentForLesson(id),draft=progress.assessmentV2.draft;
+    const graded=draft.result,answers=draft.answers||{};
+    const items=questions.map((q,i)=>{
+      const selected=answers[i]===undefined?null:Number(answers[i]),correct=selected===q.correct;
+      const options=q.options.map((option,j)=>`<label class="course-option">
+        <input type="radio" name="courseq-${i}" value="${j}" ${selected===j?'checked':''} ${graded?'disabled':''}>
+        <span>${escapeHTML(option)}</span></label>`).join('');
+      const explanation=graded?`<div class="course-question-feedback ${correct?'correct':'incorrect'}" data-assessment-feedback="${i}" data-result="${correct?'correct':'incorrect'}">
+        <strong>${correct?'✓ Resposta correta.':'Resposta a rever.'}</strong>
+        ${correct?'':`<p><strong>Resposta esperada:</strong> ${escapeHTML(q.options[q.correct])}</p>`}
+        <p>${escapeHTML(q.why)}</p></div>`:'';
+      return `<div class="course-question" data-assessment-question="${i}">
+        <strong>${i+1}. ${escapeHTML(q.question)}</strong>
+        <small>${q.dimension==='concept'?'Compreensão conceitual':'Aplicação e interpretação'}</small>
+        ${options}${explanation}</div>`;
+    }).join('');
+    const score=graded?`<div class="course-course-result ${graded.passed?'':'warn'}" tabindex="-1" role="status" data-assessment-score>
+      <strong>${graded.overall}/5 no total · ${graded.concepts}/2 no conceito central.</strong>
+      <p>${escapeHTML(graded.reason)}</p>
+      <p>Suas perguntas e respostas foram preservadas. Para receber novas perguntas, selecione “Tente outra vez”.</p>
+    </div>`:'';
+    return `<section class="course-lesson-panel" id="course-stage-5">
+      <h3 tabindex="-1">5. Aprovar a avaliação inicial</h3>
+      <p>A avaliação tem cinco questões variáveis: duas conceituais e três de aplicação. Para aprovar, acerte ao menos quatro no total, incluindo ambas as conceituais. As revisões espaçadas continuam separadas.</p>
+      ${progress.mastered&&!progress.assessmentV2?.last?.passed?'<p>Sua aprovação anterior foi preservada; a nova aferição conceitual é independente.</p>':''}
+      <div class="course-assessment">${items}</div>
+      ${score}
+      <div class="course-lesson-actions"><button type="button" class="button primary"
+        data-caction="${graded?'lesson-retry':'lesson-quiz'}">${graded?'Tente outra vez':'Corrigir avaliação'}</button></div>
+    </section>`;
+  }
   function renderCourseLesson(){const id=courseActive,lesson=LESSONS[id],m=MODULES.find(m=>m.id===id),p=courseProgress(id);if(!lesson)return;
     const stages=[
       {label:'1. Compreender',done:p.read,available:true},
@@ -1842,10 +1875,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     if(p.example&&THEORY_CARDS[id]&&id!=='metateoria'){html+=`<section class="course-lesson-panel"><span class="eyebrow">APROFUNDAMENTO FORMAL</span><h3>Para ir além: teoremas e demonstrações</h3><p>Conteúdo opcional de aprofundamento. Não é necessário para avançar na aula: abra um teorema caso deseje explorar as hipóteses e os passos da demonstração.</p>${THEORY_CARDS[id].map((t,i)=>`<details class="advanced-theorem"><summary>${escapeHTML(t.title)} · <code>${escapeHTML(t.statement)}</code></summary><p><strong>Hipóteses:</strong> ${escapeHTML(t.hypothesis)}</p><ol>${t.proof.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ol><small><strong>Alcance e limites:</strong> ${escapeHTML(t.scope)}</small></details>`).join('')}</section>`;}
     if(p.example){html+=`<section class="course-lesson-panel" id="course-stage-3"><h3 tabindex="-1">3. Praticar com ajuda</h3><p>Aplique o método do exemplo a uma tarefa nova. Consulte a dica sempre que precisar; após corrigir sua primeira tentativa, este estágio será registrado.</p>${renderTransferPrep(id)}<div class="course-lesson-actions"><button type="button" class="button ${p.guided?'':'primary'}" data-caction="guided">${p.guided?'✓ Prática assistida concluída · praticar novamente':'Abrir exercício assistido →'}</button></div></section>`}
     if(p.guided){html+=`<section class="course-lesson-panel" id="course-stage-4"><h3 tabindex="-1">4. Resolver com autonomia</h3><p>Resolva uma nova questão e alcance pelo menos 80% na primeira correção. O sistema registra esta etapa quando você completa a tentativa usando seu próprio raciocínio.</p><div class="course-lesson-actions"><button type="button" class="button ${p.independent?'':'primary'}" data-caction="independent">${p.independent?'✓ Independência demonstrada · praticar novamente':'Tentar exercício independente →'}</button></div></section>`}
-    if(p.independent){
-      const questions=assessmentForLesson(id),last=p.assessmentV2?.last;
-      html+=`<section class="course-lesson-panel" id="course-stage-5"><h3 tabindex="-1">5. Aprovar a avaliação inicial</h3><p>A avaliação tem cinco questões variáveis: duas conceituais e três de aplicação. Para aprovar, acerte ao menos quatro no total, incluindo ambas as conceituais. As revisões espaçadas continuam separadas.</p>${p.mastered&&!last?.passed?'<p>Sua aprovação anterior foi preservada; a nova aferição conceitual é independente.</p>':''}${lessonFeedback&&lessonFeedback.id===id?`<div class="course-course-result ${lessonFeedback.passed?'':'warn'}" tabindex="-1" role="status"><strong>${lessonFeedback.score}/5 no total · ${lessonFeedback.concepts}/2 no conceito central.</strong> ${escapeHTML(lessonFeedback.reason)}${lessonFeedback.details.map(x=>`<p>${escapeHTML(x)}</p>`).join('')}</div>`:last?`<p class="course-previous-result">Última tentativa: ${last.overall}/5 no total e ${last.concepts}/2 no conceito central. ${escapeHTML(last.reason)}</p>`:''}<div class="course-assessment">${questions.map((q,i)=>`<div class="course-question"><strong>${i+1}. ${escapeHTML(q.question)}</strong><small>${q.dimension==='concept'?'Compreensão conceitual':'Aplicação e interpretação'}</small>${q.options.map((option,j)=>`<label class="course-option"><input type="radio" name="courseq-${i}" value="${j}" ${String(p.assessmentV2.draft.answers?.[i])===String(j)?'checked':''}><span>${escapeHTML(option)}</span></label>`).join('')}</div>`).join('')}</div><div class="course-lesson-actions"><button type="button" class="button primary" data-caction="lesson-quiz">Corrigir avaliação</button></div></section>`;
-    }
+    if(p.independent)html+=renderLessonAssessment(id,p);
     if(p.mastered){
       const state=reviewStatus(p);
       html+=`<section class="course-lesson-panel course-review-panel" id="course-stage-6"><h3 tabindex="-1">6. Consolidar com revisões espaçadas</h3><p>Você aprovou a avaliação inicial. Domínio consolidado exige duas novas tentativas independentes, corrigidas com pelo menos 80% e sem dicas: uma após 1 dia e outra após mais 7 dias.</p>`;
@@ -1910,7 +1940,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
   $('courseLesson').addEventListener('change',e=>{
     if(!courseActive||!e.target.matches('input[type="radio"][name^="courseq-"]'))return;
     const p=courseProgress(courseActive),a=p.assessmentV2;
-    if(!a?.draft)return;
+    if(!a?.draft||a.draft.result)return;
     a.draft.answers=a.draft.answers||{};
     const index=Number(e.target.name.slice('courseq-'.length));
     if(Number.isInteger(index)&&index>=0&&index<5)a.draft.answers[index]=e.target.value;
@@ -1986,19 +2016,27 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     }
     if(action==='guided'||action==='independent'||action==='review'){beginCourseExercise(courseActive,action);return}
     if(action==='lesson-quiz'){
-      const questions=assessmentForLesson(courseActive);
+      const questions=assessmentForLesson(courseActive),p=courseProgress(courseActive),a=p.assessmentV2;
+      if(a.draft.result)return;
       const answers=questions.map((_,i)=>$('courseLesson').querySelector(`input[name="courseq-${i}"]:checked`)?.value);
       if(answers.some(x=>x===undefined)){toast('Responda às cinco perguntas antes de corrigir.');return}
-      const result=gradeAssessment(questions,answers),p=courseProgress(courseActive),a=p.assessmentV2;
+      const result=gradeAssessment(questions,answers);
+      if(!recordAssessmentAttempt(a,result,answers))return;
       p.best=Math.max(p.best,result.overall/5);
       if(result.passed){p.mastered=true;beginReviewTracking(p)}
-      a.last={...result,at:Date.now()};
-      a.history.push({at:Date.now(),questionIds:questions.map(x=>x.id),overall:result.overall,concepts:result.concepts,passed:result.passed});
-      a.history=a.history.slice(-20);
-      a.draft=null;
-      lessonFeedback={id:courseActive,score:result.overall,concepts:result.concepts,passed:result.passed,reason:result.reason,details:questions.map((item,i)=>`${i+1}. ${Number(answers[i])===item.correct?'Correto.':'Revisar.'} ${item.why}`)};
       saveCourseState();renderCourseLesson();
-      $('courseLesson').querySelector('.course-course-result')?.focus({preventScroll:true});
+      const score=$('courseLesson').querySelector('[data-assessment-score]');
+      score?.focus({preventScroll:true});
+      score?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});
+      return;
+    }
+    if(action==='lesson-retry'){
+      const p=courseProgress(courseActive),a=p.assessmentV2;
+      if(!a?.draft?.result)return;
+      const bank=prepareBank(courseActive,LESSONS[courseActive],COURSE_READINGS[courseActive],EXTENDED_ASSESSMENTS[courseActive]||[]);
+      if(!beginAssessmentRetry(a,composeAssessment(bank,a.history)))return;
+      saveCourseState();renderCourseLesson();
+      $('courseLesson').querySelector('#course-stage-5 h3')?.focus({preventScroll:true});
       return;
     }
     if(action==='exam-open'){openFinalExam();return}

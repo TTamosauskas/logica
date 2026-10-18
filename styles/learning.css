@@ -413,3 +413,14 @@
 .practice-transfer-example small{color:var(--muted);font-size:13px;line-height:1.6}
 .practice-transfer-example .practice-transfer-note{font-size:13px;color:var(--muted)}
 @media(max-width:520px){.practice-transfer-prep,.practice-transfer-banner{padding:13px}.practice-transfer-steps{padding-left:22px}.practice-transfer-banner h3{font-size:16px}}
+
+/* Avaliação inicial: cada justificativa acompanha a questão já respondida. */
+#course-stage-5 .course-question-feedback{margin-top:13px;padding:13px 15px;border:1px solid var(--border-hi);border-left:3px solid var(--teal);border-radius:9px;background:var(--panel2);font-size:13px;line-height:1.6}
+#course-stage-5 .course-question-feedback.incorrect{border-left-color:var(--warning)}
+#course-stage-5 .course-question-feedback strong{font-size:13px}
+#course-stage-5 .course-question-feedback p{margin:6px 0 0}
+#course-stage-5 .course-option:has(input:disabled){cursor:default}
+#course-stage-5 [data-assessment-score]{margin:18px 0 0;line-height:1.65}
+#course-stage-5 [data-assessment-score] p{margin:6px 0 0}
+#course-stage-5 .course-lesson-actions{margin-top:14px}
+@media(max-width:520px){#course-stage-5 .course-question-feedback{padding:12px}#course-stage-5 [data-assessment-score]{font-size:14px}}
