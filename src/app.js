@@ -48,6 +48,7 @@ import { UNIT3_ASSESSMENTS } from './content/assessment-unit3.js';
 import { UNIT4_ASSESSMENTS } from './content/assessment-unit4.js';
 import { UNIT5_TO_7_ASSESSMENTS } from './content/assessment-unit5to7.js';
 import { ASSESSMENT_VERSION, prepareBank, composeAssessment, gradeAssessment, cleanAssessmentQuestion } from './core/assessment.js';
+import { explanationChatGPTUrl } from './core/chatgpt-explanation.js';
 import { recordAssessmentAttempt, beginAssessmentRetry } from './core/assessment-attempt.js';
 import { buildIntegratedExamQuestions } from './core/integrated-exam.js';
 import { OTHER_LOGIC_LAB_IDS,createOtherLogicLab } from './core/other-logics-labs.js';
@@ -1091,7 +1092,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     $('workLocation').textContent=orientation.location;
     $('workDescription').textContent=orientation.description;
     $('taskKicker').textContent=mode==='misto'?'TREINO MISTO · '+currentExerciseMode().name.toUpperCase():currentExerciseMode().name.toUpperCase();$('taskTitle').textContent=ex.title;$('taskInstruction').textContent=ex.instruction;$('lineCount').textContent=`· ${ex.envs.length} linhas`;$('exerciseIndex').textContent=`Rodada ${serial} · ${ex.vars.length} ${ex.vars.length===1?'variável':'variáveis'}`;
-    $('tableHeaderTitle').firstChild.textContent='Tabela-verdade ';$('lineCount').textContent=`· ${ex.envs.length} linhas`;renderTranslation();renderDeduction();document.querySelectorAll('.segment').forEach(b=>{const active=b.dataset.level===level;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});renderTable();renderChoice();renderFeedback();renderFeedbackActions();renderExerciseHelp();renderSidebar();renderInlineHint();renderCategorical();$('checkButton').disabled=ex.revealed||!!(ex.translation&&!ex.translation.unlocked)||!!(ex.cat&&!ex.cat.venn.verdictVerified);$('clearButton').disabled=ex.revealed;$('revealButton').disabled=ex.revealed;$('hintButton').disabled=false;renderSpecial();renderCourseExerciseBanner();$('undoClearButton').hidden=!undoClearState;saveExerciseDraft();}
+    $('tableHeaderTitle').firstChild.textContent='Tabela-verdade ';$('lineCount').textContent=`· ${ex.envs.length} linhas`;renderTranslation();renderDeduction();document.querySelectorAll('.segment').forEach(b=>{const active=b.dataset.level===level;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});renderTable();renderChoice();renderFeedback();renderFeedbackActions();renderExerciseHelp();renderSidebar();renderInlineHint();renderCategorical();$('checkButton').disabled=ex.revealed||!!(ex.translation&&!ex.translation.unlocked)||!!(ex.cat&&!ex.cat.venn.verdictVerified);$('clearButton').disabled=ex.revealed;$('revealButton').disabled=ex.revealed;$('hintButton').disabled=false;renderSpecial();renderCourseExerciseBanner();syncExplanationLinks();$('undoClearButton').hidden=!undoClearState;saveExerciseDraft();}
   function fieldKey(row,col){return row+'-'+col}
   function expected(ex,row,col){const cell=ex.cols[col];if(ex.mode==='categoricos'){const mask=ex.envs[row].__model;if(cell.key==='model')return modelLabel(mask);if(cell.key==='counter')return t(ex.cat.forms.slice(0,2).every(x=>catValue(x,mask))&&!catValue(ex.cat.forms[2],mask));return t(catValue(ex.cat.forms[cell.catIndex],mask))}return cell.assignmentIndex!==undefined?ex.metadata.items[ex.envs[row].__assignment[cell.assignmentIndex]]:t(evalAst(cell.node,ex.envs[row]))}
   // A ocultação é apenas visual: índices e respostas permanecem no exercício original.
@@ -1831,6 +1832,113 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       :`<section class="${klass}" id="course-stage-${number}">${heading}`;
   }
   const stagePanelEnd=completed=>completed?'</div></details>':'</section>';
+  /** Exibe ajuda externa abaixo do feedback, sem enviar dados até o clique no link. */
+  function explanationData(feedback){
+    const wrap=feedback.closest('[data-assessment-question],.course-question,.reading-bridge,.reading-check,.worked-check,.special-card,.cat-question,.categorical-stage,.translation-question,.decision,.result-box,[data-square-lab]')||feedback.parentElement;
+    const selectedText=()=>[...wrap.querySelectorAll('input:checked,select,button[aria-pressed="true"]')].map(el=>{
+      if(el.tagName==='SELECT')return el.selectedOptions[0]?.textContent?.trim()||'';
+      if(el.matches('input'))return el.closest('label')?.textContent?.trim()||el.value;
+      return el.textContent.trim();
+    }).filter(Boolean).join(' | ');
+    const optionTexts=()=>[...wrap.querySelectorAll('label.course-option span,label.reading-check-option span,label.worked-check-option span,select option:not([value=""]),button.choice,button.translation-option')].map(el=>el.textContent.trim()).filter(Boolean);
+    const context=exercise&&feedback.closest('#workView')
+      ?[exercise.title,exercise.instruction,exercise.translation?.statements?.join(' | '),exercise.cat?.texts?.join(' | '),exercise.special?.scope].filter(Boolean).join(' — ')
+      :'';
+    const data={question:wrap.querySelector('.reading-check-question,.course-question > strong,.special-card > strong,.special-card > h4,.decision > h3,.cat-question-statement,.worked-check-question')?.textContent?.trim()||
+      (exercise?.title||'Questão de lógica formal'),
+      context,options:optionTexts(),selected:selectedText(),feedback:feedback.textContent.trim()};
+
+    if(feedback.matches('[data-assessment-feedback]')&&courseActive){
+      const index=Number(feedback.dataset.assessmentFeedback);
+      const draft=courseProgress(courseActive).assessmentV2?.draft;
+      const q=draft?.questions?.[index];
+      if(q){
+        data.question=cleanAssessmentQuestion(q.question);
+        data.context=q.dimension==='concept'?'Compreensão conceitual':'Aplicação e interpretação';
+        data.options=q.options;
+        data.selected=q.options[Number(draft.answers[index])]||'Sem resposta';
+        data.correct=q.options[q.correct];
+      }
+    }else if(feedback.closest('#courseExam')&&finalExamSession?.result){
+      const card=feedback.closest('.course-question'),index=[...card.parentElement.children].indexOf(card);
+      const q=finalExamSession.questions[index];
+      if(q){data.question=q.question;data.context=MODULES.find(m=>m.id===q.id)?.name||'Avaliação final';
+        data.options=q.options;data.selected=q.options[Number(finalExamSession.result.answers[index])]||'Sem resposta';data.correct=q.options[q.correct];}
+    }else if(feedback.matches('[data-bridge-feedback]')&&courseActive){
+      const index=Number(feedback.closest('[data-reading-bridge]').dataset.readingBridge);
+      const q=PEDAGOGY_BRIDGES[courseActive]?.bridges[index],chosen=feedback.closest('fieldset').querySelector('input:checked');
+      if(q){data.question=q.question;data.options=q.options;data.context=feedback.closest('fieldset').querySelector('.reading-bridge-section')?.textContent||'Questão-ponte';
+        data.selected=q.options[Number(chosen?.value)]||'Sem resposta';data.correct=q.options[q.correct];}
+    }else if(feedback.matches('[data-reading-feedback]')&&courseActive){
+      const q=COURSE_READINGS[courseActive]?.check,chosen=feedback.closest('fieldset').querySelector('input:checked');
+      if(q){data.question=q.question;data.options=q.options;data.selected=q.options[Number(chosen?.value)]||'Sem resposta';data.correct=q.options[q.correct];}
+    }else if(feedback.matches('[data-worked-feedback]')&&courseActive){
+      const q=WORKED_EXAMPLES[courseActive]?.check,chosen=feedback.closest('fieldset').querySelector('input:checked');
+      if(q){data.question=q.question;data.options=q.options;data.context=WORKED_EXAMPLES[courseActive].context;
+        data.selected=q.options[Number(chosen?.value)]||'Sem resposta';data.correct=q.options[q.correct];}
+    }else if(feedback.closest('#specialArea')&&exercise?.special){
+      const cards=[...feedback.closest('#specialArea').querySelectorAll('.special-card')],card=feedback.closest('.special-card');
+      const index=cards.indexOf(card),special=exercise.special;
+      if(index>=0){
+        if(special.questions?.[index]?.question){const q=special.questions[index];
+          data.question=q.question;data.options=q.options||data.options;data.selected=q.options?.[Number(special.values[index])]||data.selected;
+          data.correct=q.options?.[q.correct]||data.correct;}
+        else if(special.parts?.[index]){const q=special.parts[index];
+          data.question=q.question;data.options=q.options;data.selected=q.options[Number(special.values[index])]||data.selected;data.correct=q.options[q.correct];}
+        else if(special.items?.[index]){const q=special.items[index];
+          data.question=q.formula||q.question||data.question;data.options=q.options||['V','F'];data.selected=special.values[index]||'Sem resposta';data.correct=q.value;}
+        else if(special.steps?.[index]){data.question=card?.querySelector('strong')?.textContent+' — Fórmula e regra de inferência';
+          data.context=[data.context,card?.querySelector('.special-line')?.textContent].filter(Boolean).join(' — ');}
+        data.context=[exercise.title,exercise.instruction,special.scope||special.context||'',data.context].filter(Boolean).join(' — ');
+      }
+    }else if(feedback.closest('#workView')&&exercise){
+      if(feedback.closest('#feedbackArea')){
+        const ex=exercise;
+        data.question=ex.title+' — '+ex.instruction;
+        data.options=ex.choice?.options||[];
+        data.selected=[ex.choice?.question&&('Escolha: '+ex.choice.question+' = '+(ex.picked||'não marcada')),
+          ...Object.entries(ex.answers||{}).map(([key,value])=>key+' = '+value),
+          ex.translation?.values?.join(' | '),ex.cat?.values?.join(' | ')].filter(Boolean).join('; ');
+        data.correct=[ex.choice?.correct?'Escolha correta: '+ex.choice.correct:'',ex.resolution].filter(Boolean).join(' — ');
+        const table=ex.envs?.flatMap((_,row)=>ex.cols?.filter(col=>col.editable).map(col=>col.label+' na linha '+(row+1)+': '+(ex.answers?.[row+'-'+ex.cols.indexOf(col)]||'não respondida'))||[])||[];
+        data.context=[data.context,ex.choice?.question,'Respostas da tabela: '+table.join('; ')].filter(Boolean).join(' — ');
+      }else if(feedback.closest('#decisionArea')&&exercise.choice){
+        data.question=exercise.choice.question;data.options=exercise.choice.options;
+        data.selected=exercise.picked||'Sem resposta';data.correct=exercise.choice.correct;
+      }
+    }
+    return data;
+  }
+  function syncExplanationLinks(){
+    const selector=[
+      '#courseLesson [data-bridge-feedback][data-result]',
+      '#courseLesson [data-reading-feedback][data-result]',
+      '#courseLesson [data-worked-feedback][data-result]',
+      '#courseLesson [data-square-feedback][data-result]',
+      '#courseLesson [data-assessment-feedback]',
+      '#courseExam .course-question-explanation',
+      '#specialArea .course-question-explanation',
+      '#specialArea .correct-label','#specialArea .incorrect-label',
+      '#decisionArea .explanation','#feedbackArea .result-box',
+      '#translationArea .translation-feedback','#categoricalArea .translation-feedback',
+      '#categoricalModelWorkbench .cat-feedback'
+    ].join(',');
+    for(const node of document.querySelectorAll(selector)){
+      const text=node.textContent.trim();
+      if(!text||node.closest('[hidden]'))continue;
+      const data=explanationData(node);
+      let link=node.nextElementSibling;
+      if(!link?.matches('a.chatgpt-explain-link')){
+        link=document.createElement('a');
+        link.className='button small chatgpt-explain-link';
+        link.textContent='Explicar no ChatGPT ↗';
+        link.target='_blank';link.rel='noopener noreferrer';
+        link.setAttribute('aria-label','Explicar esta resposta no ChatGPT em nova aba');
+        node.insertAdjacentElement('afterend',link);
+      }
+      link.href=explanationChatGPTUrl(data);
+    }
+  }
   function renderLessonAssessment(id,progress,forceOpen=false){
     const questions=assessmentForLesson(id),draft=progress.assessmentV2.draft;
     const graded=draft.result,answers=draft.answers||{};
@@ -1890,6 +1998,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     }
     $('courseLesson').innerHTML=html;
     if(id==='categoricos2')updateSquareLab($('courseLesson').querySelector('[data-square-lab]'));
+    syncExplanationLinks();
   }
   function beginCourseExercise(id,stage){
     if(stage==='review'&&reviewStatus(courseProgress(id)).status!=='due'){toast('Esta revisão ainda não está disponível. Consulte o calendário do tema.');return}
@@ -2086,9 +2195,13 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     }else html+='<div class="course-lesson-actions"><button type="button" class="button primary" data-caction="exam-submit">Corrigir avaliação final</button></div>';
     html+='</section>';
     $('courseExam').innerHTML=html;
+    syncExplanationLinks();
   }
   function gradeFinalExam(){const ses=finalExamSession,answers=ses.questions.map((_,i)=>$('courseExam').querySelector(`input[name="finalq-${i}"]:checked`)?.value);if(answers.some(x=>x===undefined)){toast('Responda às 12 questões antes de corrigir.');return}const score=ses.questions.reduce((acc,q,i)=>acc+(answers[i]===String(q.correct)?1:0),0);ses.result={answers,score};ses.answers=answers;saveExamDraft();courseState.final.attempts=(courseState.final.attempts||0)+1;courseState.final.best=Math.max(courseState.final.best||0,score);saveCourseState();renderFinalExam();$('courseExam').querySelector('.course-course-result')?.focus({preventScroll:true});}
 
+  // Feedback gerado por etapas interativas (corretas ou incorretas) também ganha ajuda.
+  document.addEventListener('click',syncExplanationLinks);
+  document.addEventListener('change',syncExplanationLinks);
   $('courseExam').addEventListener('change',e=>{
     if(!finalExamSession||finalExamSession.result||!e.target.matches('input[type="radio"][name^="finalq-"]'))return;
     const index=Number(e.target.name.slice(7));
