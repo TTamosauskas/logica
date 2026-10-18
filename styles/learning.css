@@ -424,3 +424,25 @@
 #course-stage-5 [data-assessment-score] p{margin:6px 0 0}
 #course-stage-5 .course-lesson-actions{margin-top:14px}
 @media(max-width:520px){#course-stage-5 .course-question-feedback{padding:12px}#course-stage-5 [data-assessment-score]{font-size:14px}}
+
+/* Etapas concluídas: apenas o título permanece visível até o aluno abrir. */
+details.course-stage-completed,details.course-optional-study{padding:0}
+details.course-stage-completed>summary,details.course-optional-study>summary{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  cursor:pointer;list-style:none;padding:18px 23px;min-height:60px;
+}
+details.course-stage-completed>summary::-webkit-details-marker,details.course-optional-study>summary::-webkit-details-marker{display:none}
+details.course-stage-completed>summary h3,details.course-optional-study>summary h3{margin:0;font-size:19px;line-height:1.4}
+details.course-stage-completed>summary:after,details.course-optional-study>summary:after{
+  content:'⌄';font-size:24px;line-height:1;flex:none;color:var(--muted);transition:transform .15s;
+}
+details.course-stage-completed[open]>summary:after,details.course-optional-study[open]>summary:after{transform:rotate(180deg)}
+details.course-stage-completed>summary:hover,details.course-optional-study>summary:hover{background:var(--panel2);border-radius:16px}
+details.course-stage-completed>summary:focus-visible,details.course-optional-study>summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+details.course-stage-completed>.course-stage-content,details.course-optional-study>.course-stage-content{padding:0 23px 23px}
+details.course-stage-completed>summary h3:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px}
+@media(max-width:520px){
+ details.course-stage-completed>summary,details.course-optional-study>summary{padding:15px 16px;min-height:54px}
+ details.course-stage-completed>.course-stage-content,details.course-optional-study>.course-stage-content{padding:0 16px 16px}
+ details.course-stage-completed>summary h3,details.course-optional-study>summary h3{font-size:17px}
+}
