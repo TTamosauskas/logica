@@ -896,7 +896,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Aplicar uma única competência"
     },
     {
-      "question": "Em outro contexto, princípio 1: Qual regra extrai p de p∧q?",
+      "question": "Qual regra extrai p de p∧q?",
       "options": [
         "Eliminação da conjunção.",
         "Introdução da conjunção.",
@@ -908,7 +908,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 2: Para introduzir p∧q precisamos de:",
+      "question": "Para introduzir p∧q precisamos de:",
       "options": [
         "Uma prova de p e outra de q.",
         "Somente p.",
@@ -920,7 +920,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 3: De p é válido introduzir:",
+      "question": "De p é válido introduzir:",
       "options": [
         "p∨r.",
         "p∧r.",
@@ -932,7 +932,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 4: Introdução de p∨r a partir de p prova r?",
+      "question": "Introdução de p∨r a partir de p prova r?",
       "options": [
         "Não.",
         "Sim.",
@@ -994,7 +994,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Aplicar uma única competência"
     },
     {
-      "question": "Em outro contexto, princípio 1: Como proceder numa negação com vários quantificadores?",
+      "question": "Como proceder numa negação com vários quantificadores?",
       "options": [
         "De fora para dentro, mantendo a ordem.",
         "Inverter a ordem arbitrariamente.",
@@ -1006,7 +1006,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 2: A negação de ∀x∃yR(x,y) começa por:",
+      "question": "A negação de ∀x∃yR(x,y) começa por:",
       "options": [
         "∃x¬∃yR(x,y).",
         "∀y¬∀xR(x,y).",
@@ -1018,7 +1018,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 3: Negar a condicional P(x)→Q(x) produz:",
+      "question": "Negar a condicional P(x)→Q(x) produz:",
       "options": [
         "P(x)∧¬Q(x).",
         "¬P(x)→¬Q(x).",
@@ -1030,7 +1030,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 4: Na negação de ∀x(P(x)→Q(x)), buscamos:",
+      "question": "Na negação de ∀x(P(x)→Q(x)), buscamos:",
       "options": [
         "Um P que não seja Q.",
         "Que nenhum P seja Q.",
@@ -1092,7 +1092,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Aplicar uma única competência"
     },
     {
-      "question": "Em outro contexto, princípio 1: O paradoxo de Simpson envolve:",
+      "question": "O paradoxo de Simpson envolve:",
       "options": [
         "Comparações estratificadas e agregadas com pesos diferentes.",
         "Qualquer soma incorreta.",
@@ -1104,7 +1104,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 2: Um agregado mais baixo prova tratamento pior?",
+      "question": "Um agregado mais baixo prova tratamento pior?",
       "options": [
         "Não, a composição pode explicar a diferença.",
         "Sim, sem considerar grupos.",
@@ -1116,7 +1116,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 3: O fator comum que merece estratificação deve ser:",
+      "question": "O fator comum que merece estratificação deve ser:",
       "options": [
         "Relevante para o desfecho e distribuído diferentemente.",
         "Apenas a letra do nome da clínica.",
@@ -1128,7 +1128,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 4: Um grupo com muitos casos graves terá seu agregado influenciado por:",
+      "question": "Um grupo com muitos casos graves terá seu agregado influenciado por:",
       "options": [
         "A taxa observada entre casos graves.",
         "A cor das tabelas.",
@@ -1190,7 +1190,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Aplicar uma única competência"
     },
     {
-      "question": "Em outro contexto, princípio 1: O que significa p em G(p→Fq) no exemplo?",
+      "question": "O que significa p em G(p→Fq) no exemplo?",
       "options": [
         "Um pedido que requer resposta.",
         "Uma resposta obrigatória.",
@@ -1202,7 +1202,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 2: Em cada instante, Fq procura:",
+      "question": "Em cada instante, Fq procura:",
       "options": [
         "q nesse instante ou depois.",
         "q somente antes.",
@@ -1214,7 +1214,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 3: Para que G(p→Fq) seja verdadeira:",
+      "question": "Para que G(p→Fq) seja verdadeira:",
       "options": [
         "Cada ocorrência de p deve ter uma resposta presente ou futura.",
         "Basta uma resposta em qualquer ponto.",
@@ -1226,7 +1226,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 4: Qual sequência de cálculo é correta?",
+      "question": "Qual sequência de cálculo é correta?",
       "options": [
         "Primeiro Fq, depois p→Fq, depois G.",
         "Primeiro G e depois o antecedente.",
@@ -1288,7 +1288,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Aplicar uma única competência"
     },
     {
-      "question": "Em outro contexto, princípio 1: Na conjunção FDE, o suporte positivo requer:",
+      "question": "Na conjunção FDE, o suporte positivo requer:",
       "options": [
         "Ambas as parcelas com suporte positivo.",
         "Uma única parcela com suporte positivo.",
@@ -1300,7 +1300,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 2: Na conjunção FDE, o suporte negativo requer:",
+      "question": "Na conjunção FDE, o suporte negativo requer:",
       "options": [
         "Pelo menos uma parcela com suporte negativo.",
         "As duas parcelas com suporte negativo.",
@@ -1312,7 +1312,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 3: Qual é a representação de B?",
+      "question": "Qual é a representação de B?",
       "options": [
         "(1,1).",
         "(0,0).",
@@ -1324,7 +1324,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 4: Qual é a representação de N?",
+      "question": "Qual é a representação de N?",
       "options": [
         "(0,0).",
         "(1,1).",
@@ -1386,7 +1386,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Aplicar uma única competência"
     },
     {
-      "question": "Em outro contexto, princípio 1: Para o suporte positivo de p∨q basta:",
+      "question": "Para o suporte positivo de p∨q basta:",
       "options": [
         "Uma parcela com positivo.",
         "Duas parcelas com positivo.",
@@ -1398,7 +1398,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 2: Para o suporte negativo de p∨q é preciso:",
+      "question": "Para o suporte negativo de p∨q é preciso:",
       "options": [
         "Negativo nas duas parcelas.",
         "Negativo em uma só parcela.",
@@ -1410,7 +1410,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 3: Qual par representa F em FDE?",
+      "question": "Qual par representa F em FDE?",
       "options": [
         "(0,1).",
         "(1,0).",
@@ -1422,7 +1422,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 4: O estado N significa:",
+      "question": "O estado N significa:",
       "options": [
         "Ausência de ambos os suportes.",
         "Ambos os suportes presentes.",
@@ -1484,7 +1484,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Aplicar uma única competência"
     },
     {
-      "question": "Em outro contexto, princípio 1: Qual direção da dupla negação é válida intuicionisticamente?",
+      "question": "Qual direção da dupla negação é válida intuicionisticamente?",
       "options": [
         "p→¬¬p.",
         "¬¬p→p em qualquer modelo.",
@@ -1496,7 +1496,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 2: Uma afirmação ¬¬p informa:",
+      "question": "Uma afirmação ¬¬p informa:",
       "options": [
         "Que provar ¬p levaria a contradição.",
         "Que já existe prova construtiva de p.",
@@ -1508,7 +1508,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 3: A regra ¬¬p→p é:",
+      "question": "A regra ¬¬p→p é:",
       "options": [
         "Clássica, não universal no intuicionismo.",
         "A regra básica de toda lógica construtiva.",
@@ -1520,7 +1520,7 @@ export const MICRO_ASSESSMENTS_B={
       "objective": "Compreender a competência isolada"
     },
     {
-      "question": "Em outro contexto, princípio 4: Como ler ¬p construtivamente?",
+      "question": "Como ler ¬p construtivamente?",
       "options": [
         "p→⊥.",
         "Ausência de notícias sobre p.",
