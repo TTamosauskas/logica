@@ -47,7 +47,7 @@ import { UNIT2_ASSESSMENTS } from './content/assessment-unit2.js';
 import { UNIT3_ASSESSMENTS } from './content/assessment-unit3.js';
 import { UNIT4_ASSESSMENTS } from './content/assessment-unit4.js';
 import { UNIT5_TO_7_ASSESSMENTS } from './content/assessment-unit5to7.js';
-import { ASSESSMENT_VERSION, prepareBank, composeAssessment, gradeAssessment } from './core/assessment.js';
+import { ASSESSMENT_VERSION, prepareBank, composeAssessment, gradeAssessment, cleanAssessmentQuestion } from './core/assessment.js';
 import { recordAssessmentAttempt, beginAssessmentRetry } from './core/assessment-attempt.js';
 import { buildIntegratedExamQuestions } from './core/integrated-exam.js';
 import { OTHER_LOGIC_LAB_IDS,createOtherLogicLab } from './core/other-logics-labs.js';
@@ -1844,7 +1844,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
         ${correct?'':`<p><strong>Resposta esperada:</strong> ${escapeHTML(q.options[q.correct])}</p>`}
         <p>${escapeHTML(q.why)}</p></div>`:'';
       return `<div class="course-question" data-assessment-question="${i}">
-        <strong>${i+1}. ${escapeHTML(q.question)}</strong>
+        <strong>${i+1}. ${escapeHTML(cleanAssessmentQuestion(q.question))}</strong>
         <small>${q.dimension==='concept'?'Compreensão conceitual':'Aplicação e interpretação'}</small>
         ${options}${explanation}</div>`;
     }).join('');
