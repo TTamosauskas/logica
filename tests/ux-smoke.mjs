@@ -295,7 +295,7 @@ try{
   await progressPage.locator('#continueButton').click();
   assert.equal(await progressPage.locator('[data-caction="review"]').count(),1);
   await progressPage.locator('[data-caction="review"]').click();
-  assert.match(await progressPage.locator('#courseExerciseBanner').innerText(),/Revisão espaçada/);
+  assert.match(await progressPage.locator('#courseExerciseBanner').innerText(),/Revisão independente/);
   await progressPage.locator('#hintButton').click();
   assert.equal(await progressPage.locator('#independentHintDecision').isVisible(),true);
   await progressPage.locator('[data-hint-action="show"]').click();
