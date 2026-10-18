@@ -286,6 +286,8 @@ a { color: var(--accent); }
   border-style: dashed;
   background: var(--panel2);
 }
+/* Preserve a geometria já verificada pelo teste de interface: cadeado de 12 px. */
+.course-stage-lock { width: 12px; height: 12px; }
 .course-lesson-flow button.course-stage:not(.done) { color: var(--text); border-color: var(--border-hi); }
 .course-lesson-flow button.course-stage:hover {
   border-color: var(--accent);
