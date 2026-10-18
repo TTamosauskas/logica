@@ -1,5 +1,13 @@
 /** Avaliações locais: seleção por competência, correção e metadados estáveis. */
 export const ASSESSMENT_VERSION=2;
+/** Limpa rótulos editoriais obsoletos, inclusive em perguntas já salvas no navegador.
+ * Não altera ids, alternativas, respostas nem critérios de aprovação.
+ */
+export function cleanAssessmentQuestion(question){
+  return String(question)
+    .replace(/^Em outra situação conceitual \d+,\s*/u,'')
+    .replace(/^Em outro contexto, princípio \d+:\s*/u,'');
+}
 const mix=(items,random=Math.random)=>{const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 export function prepareBank(id,lesson,reading,supplement=[]){
   // A autoverificação de leitura é formativa e não deve reaparecer no exame somativo.
