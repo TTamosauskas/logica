@@ -1555,7 +1555,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
         body+=`<div class="special-card"><strong>Linha ${rowCount+i+1} — derivada das linhas ${step.from.join(' e ')}</strong><div class="special-line">Qual fórmula resulta da aplicação da regra?</div><label class="inline-label" for="proofFormula${i}">Fórmula deduzida</label><select id="proofFormula${i}" data-special-field="${formulaKey}" ${ex.revealed?'disabled':''}><option value="">Selecione a fórmula...</option>${step.options.map(o=>`<option value="${escapeHTML(o)}" ${v===o?'selected':''}>${escapeHTML(o)}</option>`).join('')}</select><label class="inline-label" for="proofRule${i}">Justificativa</label><select id="proofRule${i}" data-special-field="${ruleKey}" ${ex.revealed?'disabled':''}><option value="">Selecione a regra...</option>${s.ruleOptions.map(([key,label])=>`<option value="${key}" ${rule===key?'selected':''}>${escapeHTML(label)}</option>`).join('')}</select>${graded?`<p class="${v===correct||ex.revealed?'correct-label':'incorrect-label'}">Fórmula: ${escapeHTML(correct)} · Regra: ${escapeHTML(s.ruleOptions.find(x=>x[0]===step.rule)[1])} · origem ${step.from.join(', ')}</p>`:''}</div>`;
       });area.innerHTML=body+'</div>';
     }else{
-      area.innerHTML=`<div class="special-grid">${s.questions.map((q,i)=>`<div class="special-card"><strong>${i+1}. ${escapeHTML(cleanAssessmentQuestion(q.question))}</strong><label class="inline-label" for="specialChoice${i}">Escolha sua resposta</label><select id="specialChoice${i}" data-special-field="${i}" ${ex.revealed?'disabled':''}><option value="">Escolha uma alternativa...</option>${q.options.map((o,j)=>`<option value="${j}" ${s.values[i]===String(j)?'selected':''}>${escapeHTML(o)}</option>`).join('')}</select>${ex.grade||ex.revealed?`<div class="course-question-explanation"><strong>Correta:</strong> ${escapeHTML(q.options[q.correct])}. ${escapeHTML(q.why)}</div>`:''}</div>`).join('')}</div>`;
+      area.innerHTML=`<div class="special-grid">${s.questions.map((q,i)=>`<div class="special-card"><strong>${i+1}. ${escapeHTML(q.question)}</strong><label class="inline-label" for="specialChoice${i}">Escolha sua resposta</label><select id="specialChoice${i}" data-special-field="${i}" ${ex.revealed?'disabled':''}><option value="">Escolha uma alternativa...</option>${q.options.map((o,j)=>`<option value="${j}" ${s.values[i]===String(j)?'selected':''}>${escapeHTML(o)}</option>`).join('')}</select>${ex.grade||ex.revealed?`<div class="course-question-explanation"><strong>Correta:</strong> ${escapeHTML(q.options[q.correct])}. ${escapeHTML(q.why)}</div>`:''}</div>`).join('')}</div>`;
     }
   }
   function gradeSpecial(){const ex=exercise,s=ex.special;if(ex.revealed)return;let correct=0,total=0,missing=0;
@@ -1844,7 +1844,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
         ${correct?'':`<p><strong>Resposta esperada:</strong> ${escapeHTML(q.options[q.correct])}</p>`}
         <p>${escapeHTML(q.why)}</p></div>`:'';
       return `<div class="course-question" data-assessment-question="${i}">
-        <strong>${i+1}. ${escapeHTML(q.question)}</strong>
+        <strong>${i+1}. ${escapeHTML(cleanAssessmentQuestion(q.question))}</strong>
         <small>${q.dimension==='concept'?'Compreensão conceitual':'Aplicação e interpretação'}</small>
         ${options}${explanation}</div>`;
     }).join('');
