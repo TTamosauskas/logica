@@ -11,7 +11,7 @@ export const FOCUSED_LESSONS_A={
     ],
     "quiz": [
       {
-        "question": "Em 'p se q', a seta aponta de:",
+        "question": "Na expressão 'p se q', em qual direção deve ser lida a implicação?",
         "options": [
           "q para p.",
           "p para q.",
@@ -21,7 +21,7 @@ export const FOCUSED_LESSONS_A={
         "why": "O trecho depois de se indica a condição suficiente."
       },
       {
-        "question": "Em 'p somente se q', a seta aponta de:",
+        "question": "Para traduzir 'p somente se q', qual é o sentido correto da seta?",
         "options": [
           "p para q.",
           "q para p.",
@@ -31,7 +31,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A expressão somente se apresenta q como requisito de p."
       },
       {
-        "question": "Em p→q, p é:",
+        "question": "Qual papel p desempenha em relação a q na condicional p→q?",
         "options": [
           "Suficiente para q.",
           "Necessária e suficiente por definição.",
@@ -41,7 +41,7 @@ export const FOCUSED_LESSONS_A={
         "why": "O antecedente assegura o consequente."
       },
       {
-        "question": "Em p→q, q é:",
+        "question": "Qual papel q desempenha em relação a p na condicional p→q?",
         "options": [
           "Necessária para p.",
           "Suficiente para p.",
@@ -63,7 +63,7 @@ export const FOCUSED_LESSONS_A={
     ],
     "quiz": [
       {
-        "question": "Comutatividade significa:",
+        "question": "Qual transformação caracteriza a lei comutativa?",
         "options": [
           "Trocar a ordem das parcelas.",
           "Trocar ∧ por →.",
@@ -73,7 +73,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A operação permanece a mesma, mas os termos trocam de posição."
       },
       {
-        "question": "Associatividade significa:",
+        "question": "Ao aplicar a lei associativa, o que se pode modificar?",
         "options": [
           "Reagrupar parcelas com o mesmo conectivo.",
           "Negar cada parcela.",
@@ -83,7 +83,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A posição dos parênteses muda em uma sequência uniforme."
       },
       {
-        "question": "Qual conectivo clássico é comutativo?",
+        "question": "Qual destes conectivos admite a troca da ordem dos operandos?",
         "options": [
           "Conjunção ∧.",
           "Condicional →.",
@@ -93,7 +93,7 @@ export const FOCUSED_LESSONS_A={
         "why": "Os termos de uma conjunção podem ser trocados."
       },
       {
-        "question": "Uma associação correta exige:",
+        "question": "Que requisito permite reagrupar parcelas pela associatividade?",
         "options": [
           "O mesmo conectivo nas operações agrupadas.",
           "Sempre duas operações distintas.",
@@ -115,7 +115,7 @@ export const FOCUSED_LESSONS_A={
     ],
     "quiz": [
       {
-        "question": "Uma contraposição exige:",
+        "question": "Que operações produzem a contrapositiva de uma condicional?",
         "options": [
           "Trocar e negar as duas partes.",
           "Apenas trocar os lados.",
@@ -125,7 +125,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A forma geral é ¬q→¬p. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
       },
       {
-        "question": "A recíproca de p→q é:",
+        "question": "Ao inverter os lados de p→q sem negá-los, qual condicional surge?",
         "options": [
           "q→p.",
           "¬q→¬p.",
@@ -135,7 +135,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A recíproca troca sem negar. A conclusão é uma aplicação da definição estudada na leitura e no exemplo resolvido."
       },
       {
-        "question": "Qual fórmula é equivalente a p→q por contraposição?",
+        "question": "Qual forma conserva o valor lógico de p→q por contraposição?",
         "options": [
           "¬q→¬p.",
           "q→p.",
@@ -145,7 +145,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A contrapositiva preserva as linhas da condicional."
       },
       {
-        "question": "A recíproca é sempre equivalente?",
+        "question": "Inverter antecedente e consequente garante equivalência lógica?",
         "options": [
           "Não.",
           "Sim.",
@@ -167,7 +167,7 @@ export const FOCUSED_LESSONS_A={
     ],
     "quiz": [
       {
-        "question": "Modus ponens usa:",
+        "question": "Quais premissas autorizam a regra de modus ponens?",
         "options": [
           "p→q e p.",
           "p→q e ¬q.",
@@ -177,7 +177,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A confirmação do antecedente autoriza o consequente."
       },
       {
-        "question": "Modus tollens usa:",
+        "question": "Quais premissas caracterizam uma aplicação de modus tollens?",
         "options": [
           "p→q e ¬q.",
           "p→q e q.",
@@ -187,7 +187,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A falta do consequente exclui o antecedente."
       },
       {
-        "question": "De p→q e q, podemos concluir p?",
+        "question": "Sabendo p→q e q, a conclusão p está necessariamente justificada?",
         "options": [
           "Não, seria afirmação do consequente.",
           "Sim, por modus ponens.",
@@ -197,7 +197,7 @@ export const FOCUSED_LESSONS_A={
         "why": "O mesmo q pode ocorrer por outras causas."
       },
       {
-        "question": "De p→q e ¬p, podemos concluir ¬q?",
+        "question": "Sabendo p→q e ¬p, é válido deduzir obrigatoriamente ¬q?",
         "options": [
           "Não, seria negação do antecedente.",
           "Sim, por modus tollens.",
@@ -219,7 +219,7 @@ export const FOCUSED_LESSONS_A={
     ],
     "quiz": [
       {
-        "question": "Negar ∀ usa:",
+        "question": "Ao negar uma afirmação universal, que quantificador e predicado aparecem?",
         "options": [
           "∃ com predicado negado.",
           "∀ com predicado negado.",
@@ -229,7 +229,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A negação troca o quantificador universal por existencial."
       },
       {
-        "question": "Negar ∃ usa:",
+        "question": "A negação de uma afirmação existencial usa qual forma?",
         "options": [
           "∀ com predicado negado.",
           "∃ com predicado negado.",
@@ -239,7 +239,7 @@ export const FOCUSED_LESSONS_A={
         "why": "A inexistência de testemunhas exige negação universal."
       },
       {
-        "question": "A expressão 'nem todos' significa:",
+        "question": "Qual contraexemplo basta para afirmar que 'nem todos' satisfazem uma condição?",
         "options": [
           "Existe ao menos um que não.",
           "Ninguém.",
@@ -249,7 +249,7 @@ export const FOCUSED_LESSONS_A={
         "why": "Uma exceção refuta o quantificador universal."
       },
       {
-        "question": "A expressão 'nenhum' significa:",
+        "question": "A frase 'nenhum elemento satisfaz P' exclui o quê?",
         "options": [
           "Não existe testemunha favorável.",
           "Existe alguém contrário apenas.",
