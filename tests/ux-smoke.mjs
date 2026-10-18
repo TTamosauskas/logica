@@ -1550,6 +1550,39 @@ try{
     await context14.close();
   }
 
+  // Um rascunho gerado antes da correção mantém perguntas e alternativas,
+  // mas os prefixos editoriais obsoletos não são mostrados ao estudante.
+  const legacyWordContext=await browser.newContext({viewport:{width:375,height:812},isMobile:true,hasTouch:true});
+  const legacyWordPage=await legacyWordContext.newPage(),legacyWordErrors=[];
+  legacyWordPage.on('pageerror',error=>legacyWordErrors.push(error.message));
+  await legacyWordPage.goto(root+'#aula-condicionais_naturais',{waitUntil:'networkidle'});
+  await legacyWordPage.evaluate(async()=>{
+    const {LESSONS}=await import('./src/content/course.js');
+    const {FOCUSED_ASSESSMENTS_A}=await import('./src/content/focused-lessons-a.js');
+    const {prepareBank,composeAssessment}=await import('./src/core/assessment.js');
+    const id='condicionais_naturais';
+    const bank=prepareBank(id,LESSONS[id],null,FOCUSED_ASSESSMENTS_A[id]);
+    const questions=composeAssessment(bank,[],()=>0.37);
+    questions[0].question="Em outra situação conceitual 2, Em 'p somente se q', a seta aponta de:";
+    questions[1].question="Em outro contexto, princípio 1: Qual regra extrai p de p∧q?";
+    localStorage.setItem('logiclab_curso_formal_v2',JSON.stringify({lessons:{
+      [id]:{read:true,example:true,guided:true,independent:true,mastered:false,best:0,
+        assessmentV2:{version:2,history:[],draft:{questions,answers:{},startedAt:Date.now()}}}
+    },final:{}}));
+  });
+  await legacyWordPage.reload({waitUntil:'networkidle'});
+  const oldQuestions=await legacyWordPage.locator('#course-stage-5 .course-question > strong').allInnerTexts();
+  assert.equal(oldQuestions[0],"1. Em 'p somente se q', a seta aponta de:");
+  assert.equal(oldQuestions[1],'2. Qual regra extrai p de p∧q?');
+  const preservedQuestion=await legacyWordPage.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('logiclab_curso_formal_v2'));
+    return s.lessons.condicionais_naturais.assessmentV2.draft.questions[0].question;
+  });
+  assert.match(preservedQuestion,/^Em outra situação conceitual 2,/,
+    'A correção visual não deve substituir o rascunho ou o histórico salvo');
+  assert.deepEqual(legacyWordErrors,[]);
+  await legacyWordContext.close();
+
   // Amostra transversal de oito unidades: três decisões respondidas no celular,
   // sem escrita de progresso em nenhuma das questões-ponte.
   const bridgeContext=await browser.newContext({viewport:{width:375,height:812},isMobile:true,hasTouch:true});
