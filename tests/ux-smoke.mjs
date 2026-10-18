@@ -1559,6 +1559,14 @@ try{
       assert.match(await app14.evaluate(()=>document.activeElement?.textContent),/6. Consolidar com revisões espaçadas/);
       assert.equal(app14.url(),routeBeforeReview);
       assert.equal(await app14.locator('#course-stage-6').count(),1);
+      // Enquanto a revisão está agendada, a etapa 6 oferece retorno ao início.
+      const homeFromScheduledReview=app14.locator('#course-stage-6 [data-caction="home"]');
+      assert.equal(await homeFromScheduledReview.count(),1);
+      assert.equal((await homeFromScheduledReview.innerText()).trim(),'Voltar a Página Inicial');
+      assert.equal(await app14.locator('#course-stage-6 [data-caction="review"]').count(),0);
+      await homeFromScheduledReview.click();
+      assert.match(app14.url(),/#inicio$/);
+      assert.equal(await app14.locator('#homeView').isVisible(),true);
       }
     await app14.goto(root+'#aula-equivalencias',{waitUntil:'networkidle'});
     await app14.evaluate(()=>{
