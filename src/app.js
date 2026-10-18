@@ -1715,7 +1715,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     ).join('');
     return `<fieldset class="reading-bridge" data-reading-bridge="${index}">
       <legend>Questão-ponte ${index+1}/3 · ${labels[index]}</legend>
-      <p class="reading-bridge-section">Sobre a seção que você acabou de ler: <strong>${escapeHTML(sectionHeading)}</strong></p>
+      <p class="reading-bridge-section"><strong>${escapeHTML(sectionHeading)}</strong></p>
       
       <strong class="reading-check-question">${escapeHTML(bridge.question)}</strong>
       <div class="reading-check-options">${choices}</div>
