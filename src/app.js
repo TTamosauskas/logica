@@ -1882,7 +1882,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
     if(p.independent)html+=renderLessonAssessment(id,p,forceOpenStage===5);
     if(p.mastered){
       const state=reviewStatus(p);
-      html+=stagePanelStart(6,'Consolidar com revisões espaçadas',state.status==='consolidated',false,'course-review-panel');`;
+      html+=stagePanelStart(6,'Consolidar com revisões espaçadas',state.status==='consolidated',false,'course-review-panel');
       if(state.status==='consolidated')html+='<p class="review-good"><strong>Domínio consolidado.</strong> Duas revisões espaçadas concluídas com autonomia.</p>';
       else if(state.status==='due')html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível.</strong> </p><div class="course-lesson-actions"><button type="button" class="button primary" data-caction="review">Fazer revisão independente →</button></div>`;
       else html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível a partir de ${formatReviewDate(state.dueAt)}.</strong></p>`;
