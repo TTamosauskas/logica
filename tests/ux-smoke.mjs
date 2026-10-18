@@ -1457,16 +1457,56 @@ try{
         const value=i===wrong?(correct+1)%assessment[i].options.length:correct;
         await app14.locator('input[name="courseq-'+i+'"][value="'+value+'"]').check();
       }
+      const originalOrder=assessment.map(q=>q.id),originalText=assessment.map(q=>q.question);
+      const originalOptions=assessment.map(q=>q.options);
+      const originalTitles=await app14.locator('#course-stage-5 .course-question > strong').allInnerTexts();
+      const answersBefore=await Promise.all(Array.from({length:5},(_,i)=>app14.locator('input[name="courseq-'+i+'"]:checked').inputValue()));
       await app14.locator('[data-caction="lesson-quiz"]').click();
-      assert.match(await app14.locator('.course-course-result').innerText(),/4\/5 no total · 1\/2 no conceito central/);
+      assert.match(await app14.locator('#course-stage-5 [data-assessment-score]').innerText(),/4\\/5 no total · 1\\/2 no conceito central/);
+      assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
+      assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback][data-result="incorrect"]').count(),1);
+      assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback][data-result="correct"]').count(),4);
+      const incorrectCard=app14.locator('#course-stage-5 [data-assessment-question="'+wrong+'"]');
+      assert.match(await incorrectCard.locator('[data-assessment-feedback]').innerText(),/Resposta esperada/i);
+      assert.equal(await app14.locator('#course-stage-5 input[name^="courseq-"]:enabled').count(),0);
+      assert.equal(await app14.locator('#course-stage-5 [data-caction="lesson-quiz"]').count(),0);
+      assert.equal(await app14.locator('#course-stage-5 [data-caction="lesson-retry"]').innerText(),'Tente outra vez');
+      const sameAfterCorrection=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id].assessmentV2.draft,id);
+      assert.deepEqual(sameAfterCorrection.questions.map(q=>q.id),originalOrder);
+      assert.deepEqual(sameAfterCorrection.questions.map(q=>q.question),originalText);
+      assert.deepEqual(sameAfterCorrection.questions.map(q=>q.options),originalOptions);
+      assert.deepEqual(Array.from({length:5},(_,i)=>sameAfterCorrection.answers[i]),answersBefore);
+      assert.equal(sameAfterCorrection.result.overall,4);
+      const scorePlacement=await app14.evaluate(()=>{
+        const root=document.getElementById('course-stage-5');
+        const questions=root.querySelector('.course-assessment'),score=root.querySelector('[data-assessment-score]');
+        const actions=root.querySelector('.course-lesson-actions');
+        return Boolean(questions.compareDocumentPosition(score)&Node.DOCUMENT_POSITION_FOLLOWING) &&
+          Boolean(score.compareDocumentPosition(actions)&Node.DOCUMENT_POSITION_FOLLOWING);
+      });
+      assert.equal(scorePlacement,true,'A pontuação deve vir depois das perguntas e antes dos botões');
       const rejected=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id],id);
       assert.equal(rejected.mastered,false);
       assert.equal(rejected.assessmentV2.history.length,1);
-      // Nova rodada, acerto geral e acerto conceitual.
+      await app14.reload({waitUntil:'networkidle'});
+      assert.deepEqual(await app14.locator('#course-stage-5 .course-question > strong').allInnerTexts(),originalTitles);
+      assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
+      assert.equal(await app14.locator('#course-stage-5 [data-assessment-score]').count(),1);
+      assert.equal(await app14.locator('#course-stage-5 [data-caction="lesson-retry"]').count(),1);
+      assert.equal(await app14.locator('#course-stage-5 input[name^="courseq-"]:checked').count(),5);
+      assert.equal(await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id].assessmentV2.history.length,id),1);
+      // Apenas a ação explícita inicia uma nova avaliação.
+      await app14.locator('[data-caction="lesson-retry"]').click();
       assessment=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id].assessmentV2.draft.questions,id);
+      assert.ok(assessment.some(q=>!originalOrder.includes(q.id)),id+' deve oferecer perguntas renovadas após Tente outra vez');
+      assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),0);
+      assert.equal(await app14.locator('#course-stage-5 [data-assessment-score]').count(),0);
+      assert.equal(await app14.locator('#course-stage-5 input[name^="courseq-"]:checked').count(),0);
+      assert.equal(await app14.locator('#course-stage-5 [data-caction="lesson-quiz"]').count(),1);
       for(let i=0;i<5;i++)await app14.locator('input[name="courseq-'+i+'"][value="'+assessment[i].correct+'"]').check();
       await app14.locator('[data-caction="lesson-quiz"]').click();
-      assert.match(await app14.locator('.course-course-result').innerText(),/5\/5 no total · 2\/2 no conceito central/);
+      assert.match(await app14.locator('#course-stage-5 [data-assessment-score]').innerText(),/5\\/5 no total · 2\\/2 no conceito central/);
+      assert.equal(await app14.locator('#course-stage-5 [data-assessment-feedback]').count(),5);
       assert.match(await app14.locator('#courseLesson').innerText(),/6. Consolidar com revisões espaçadas/);
       const approved=await app14.evaluate(id=>JSON.parse(localStorage.getItem('logiclab_curso_formal_v2')).lessons[id],id);
       assert.equal(approved.mastered,true);
