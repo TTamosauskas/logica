@@ -11,7 +11,7 @@ export const MICRO_LESSONS_B={
     ],
     "quiz": [
       {
-        "question": "Qual regra extrai p de p∧q?",
+        "question": "Se p∧q já foi demonstrada, qual regra permite registrar p?",
         "options": [
           "Eliminação da conjunção.",
           "Introdução da conjunção.",
@@ -21,7 +21,7 @@ export const MICRO_LESSONS_B={
         "why": "A conjunção já garante cada parte."
       },
       {
-        "question": "Para introduzir p∧q precisamos de:",
+        "question": "Quais demonstrações precisam existir antes de construir p∧q?",
         "options": [
           "Uma prova de p e outra de q.",
           "Somente p.",
@@ -31,7 +31,7 @@ export const MICRO_LESSONS_B={
         "why": "O E exige que as duas partes estejam estabelecidas."
       },
       {
-        "question": "De p é válido introduzir:",
+        "question": "Se p já foi provada, que disjunção podemos escrever pela regra de introdução?",
         "options": [
           "p∨r.",
           "p∧r.",
@@ -41,7 +41,7 @@ export const MICRO_LESSONS_B={
         "why": "Uma disjunção inclusiva vale quando p vale."
       },
       {
-        "question": "Introdução de p∨r a partir de p prova r?",
+        "question": "Ao concluir p∨r a partir de p, a proposição r também foi demonstrada?",
         "options": [
           "Não.",
           "Sim.",
@@ -63,7 +63,7 @@ export const MICRO_LESSONS_B={
     ],
     "quiz": [
       {
-        "question": "Como proceder numa negação com vários quantificadores?",
+        "question": "Em uma fórmula com quantificadores aninhados, em que ordem devemos negar o escopo?",
         "options": [
           "De fora para dentro, mantendo a ordem.",
           "Inverter a ordem arbitrariamente.",
@@ -73,7 +73,7 @@ export const MICRO_LESSONS_B={
         "why": "Cada operador troca de tipo, mas o escopo continua aninhado."
       },
       {
-        "question": "A negação de ∀x∃yR(x,y) começa por:",
+        "question": "Qual é a primeira transformação ao negar ∀x∃yR(x,y)?",
         "options": [
           "∃x¬∃yR(x,y).",
           "∀y¬∀xR(x,y).",
@@ -83,7 +83,7 @@ export const MICRO_LESSONS_B={
         "why": "Primeiro trocamos a universal externa."
       },
       {
-        "question": "Negar a condicional P(x)→Q(x) produz:",
+        "question": "Que conjunção é equivalente a ¬(P(x)→Q(x))?",
         "options": [
           "P(x)∧¬Q(x).",
           "¬P(x)→¬Q(x).",
@@ -93,7 +93,7 @@ export const MICRO_LESSONS_B={
         "why": "A negação afirma um antecedente verdadeiro sem consequência."
       },
       {
-        "question": "Na negação de ∀x(P(x)→Q(x)), buscamos:",
+        "question": "Que tipo de elemento refuta a sentença ∀x(P(x)→Q(x))?",
         "options": [
           "Um P que não seja Q.",
           "Que nenhum P seja Q.",
@@ -115,7 +115,7 @@ export const MICRO_LESSONS_B={
     ],
     "quiz": [
       {
-        "question": "O paradoxo de Simpson envolve:",
+        "question": "Que diferença entre dados agregados e estratificados caracteriza o paradoxo de Simpson?",
         "options": [
           "Comparações estratificadas e agregadas com pesos diferentes.",
           "Qualquer soma incorreta.",
@@ -125,7 +125,7 @@ export const MICRO_LESSONS_B={
         "why": "A composição pode mudar a ordenação dos agregados."
       },
       {
-        "question": "Um agregado mais baixo prova tratamento pior?",
+        "question": "Uma taxa total menor basta para provar que o tratamento foi pior?",
         "options": [
           "Não, a composição pode explicar a diferença.",
           "Sim, sem considerar grupos.",
@@ -135,7 +135,7 @@ export const MICRO_LESSONS_B={
         "why": "Atribuir causa exige examinar comparabilidade dos casos."
       },
       {
-        "question": "O fator comum que merece estratificação deve ser:",
+        "question": "Que característica do grupo deve ser considerada ao estratificar a comparação?",
         "options": [
           "Relevante para o desfecho e distribuído diferentemente.",
           "Apenas a letra do nome da clínica.",
@@ -145,7 +145,7 @@ export const MICRO_LESSONS_B={
         "why": "Estratificar fatores relevantes ajuda a comparar casos semelhantes."
       },
       {
-        "question": "Um grupo com muitos casos graves terá seu agregado influenciado por:",
+        "question": "Se há muitos casos graves num grupo, qual taxa pesa no resultado agregado?",
         "options": [
           "A taxa observada entre casos graves.",
           "A cor das tabelas.",
@@ -167,7 +167,7 @@ export const MICRO_LESSONS_B={
     ],
     "quiz": [
       {
-        "question": "O que significa p em G(p→Fq) no exemplo?",
+        "question": "Na fórmula de pedidos e respostas G(p→Fq), que evento p representa?",
         "options": [
           "Um pedido que requer resposta.",
           "Uma resposta obrigatória.",
@@ -177,7 +177,7 @@ export const MICRO_LESSONS_B={
         "why": "O antecedente marca a condição que ativa a exigência."
       },
       {
-        "question": "Em cada instante, Fq procura:",
+        "question": "Para satisfazer Fq a partir de um instante, quando q pode aparecer?",
         "options": [
           "q nesse instante ou depois.",
           "q somente antes.",
@@ -187,7 +187,7 @@ export const MICRO_LESSONS_B={
         "why": "F é eventualidade inclusiva na semântica usada."
       },
       {
-        "question": "Para que G(p→Fq) seja verdadeira:",
+        "question": "O que deve acontecer com cada pedido p para satisfazer G(p→Fq)?",
         "options": [
           "Cada ocorrência de p deve ter uma resposta presente ou futura.",
           "Basta uma resposta em qualquer ponto.",
@@ -197,7 +197,7 @@ export const MICRO_LESSONS_B={
         "why": "G exige a condicional em todos os instantes."
       },
       {
-        "question": "Qual sequência de cálculo é correta?",
+        "question": "Em que ordem devemos avaliar os operadores na fórmula G(p→Fq)?",
         "options": [
           "Primeiro Fq, depois p→Fq, depois G.",
           "Primeiro G e depois o antecedente.",
@@ -219,7 +219,7 @@ export const MICRO_LESSONS_B={
     ],
     "quiz": [
       {
-        "question": "Na conjunção FDE, o suporte positivo requer:",
+        "question": "Para obter suporte positivo em p∧q na FDE, o que as duas parcelas precisam ter?",
         "options": [
           "Ambas as parcelas com suporte positivo.",
           "Uma única parcela com suporte positivo.",
@@ -229,7 +229,7 @@ export const MICRO_LESSONS_B={
         "why": "As duas afirmações precisam ser apoiadas para haver E positivo."
       },
       {
-        "question": "Na conjunção FDE, o suporte negativo requer:",
+        "question": "Que evidência é suficiente para suporte negativo de uma conjunção na FDE?",
         "options": [
           "Pelo menos uma parcela com suporte negativo.",
           "As duas parcelas com suporte negativo.",
@@ -239,7 +239,7 @@ export const MICRO_LESSONS_B={
         "why": "Uma objeção a uma parte basta para a conjunção."
       },
       {
-        "question": "Qual é a representação de B?",
+        "question": "Qual par de suportes corresponde ao estado B na FDE?",
         "options": [
           "(1,1).",
           "(0,0).",
@@ -249,7 +249,7 @@ export const MICRO_LESSONS_B={
         "why": "B registra suporte verdadeiro e falso ao mesmo tempo."
       },
       {
-        "question": "Qual é a representação de N?",
+        "question": "Que par de suportes identifica N, a ausência de informação, na FDE?",
         "options": [
           "(0,0).",
           "(1,1).",
@@ -271,7 +271,7 @@ export const MICRO_LESSONS_B={
     ],
     "quiz": [
       {
-        "question": "Para o suporte positivo de p∨q basta:",
+        "question": "Que evidência positiva é suficiente para sustentar p∨q na FDE?",
         "options": [
           "Uma parcela com positivo.",
           "Duas parcelas com positivo.",
@@ -281,7 +281,7 @@ export const MICRO_LESSONS_B={
         "why": "Uma alternativa apoiada já apoia a disjunção."
       },
       {
-        "question": "Para o suporte negativo de p∨q é preciso:",
+        "question": "Quando a disjunção p∨q recebe suporte negativo na FDE?",
         "options": [
           "Negativo nas duas parcelas.",
           "Negativo em uma só parcela.",
@@ -291,7 +291,7 @@ export const MICRO_LESSONS_B={
         "why": "A disjunção recebe suporte negativo somente quando as duas alternativas apresentam suporte negativo."
       },
       {
-        "question": "Qual par representa F em FDE?",
+        "question": "Na notação de pares da FDE, como representamos F?",
         "options": [
           "(0,1).",
           "(1,0).",
@@ -301,7 +301,7 @@ export const MICRO_LESSONS_B={
         "why": "F registra somente oposição à proposição."
       },
       {
-        "question": "O estado N significa:",
+        "question": "Qual informação está ausente quando a proposição está no estado N?",
         "options": [
           "Ausência de ambos os suportes.",
           "Ambos os suportes presentes.",
@@ -323,7 +323,7 @@ export const MICRO_LESSONS_B={
     ],
     "quiz": [
       {
-        "question": "Qual direção da dupla negação é válida intuicionisticamente?",
+        "question": "Qual implicação sobre dupla negação é válida na lógica intuicionista?",
         "options": [
           "p→¬¬p.",
           "¬¬p→p em qualquer modelo.",
@@ -333,7 +333,7 @@ export const MICRO_LESSONS_B={
         "why": "Uma prova positiva exclui sua própria negação."
       },
       {
-        "question": "Uma afirmação ¬¬p informa:",
+        "question": "Quando ¬¬p está provada, o que isso diz sobre uma eventual prova de ¬p?",
         "options": [
           "Que provar ¬p levaria a contradição.",
           "Que já existe prova construtiva de p.",
@@ -343,7 +343,7 @@ export const MICRO_LESSONS_B={
         "why": "A dupla negação não fornece obrigatoriamente uma testemunha de p."
       },
       {
-        "question": "A regra ¬¬p→p é:",
+        "question": "Como o intuicionismo classifica a eliminação geral de dupla negação ¬¬p→p?",
         "options": [
           "Clássica, não universal no intuicionismo.",
           "A regra básica de toda lógica construtiva.",
@@ -353,7 +353,7 @@ export const MICRO_LESSONS_B={
         "why": "A eliminação de dupla negação não é admissível em geral."
       },
       {
-        "question": "Como ler ¬p construtivamente?",
+        "question": "Qual fórmula define a negação construtiva de p?",
         "options": [
           "p→⊥.",
           "Ausência de notícias sobre p.",
