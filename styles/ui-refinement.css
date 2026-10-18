@@ -1,0 +1,130 @@
+/* LogicLab — refinamento visual sem alterações de comportamento ou estrutura.
+   Camada final de apresentação: preserva os estilos e estados funcionais existentes. */
+:root {
+  --ui-radius-card: 18px;
+  --ui-radius-inset: 12px;
+  --ui-radius-control: 10px;
+  --ui-shadow: 0 7px 24px rgba(0, 0, 0, .10);
+  --faint: #94a5c0;
+  /* Pilha local e previsível: não depende de fontes externas. */
+  --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+:root[data-theme="light"] {
+  --faint: #5c6880;
+  --ui-shadow: 0 7px 24px rgba(32, 49, 91, .055);
+  --truth-relation-green: #116f51;
+  --truth-relation-red: #b42d46;
+  --truth-relation-purple: #6c43b5;
+}
+body { font-kerning: normal; text-rendering: optimizeLegibility; }
+
+/* Escala de texto — aumenta a leitura dos apoios sem alterar o conteúdo. */
+.mode-card p, .mode-card .card-foot, .section-heading p,
+.course-unit-item small, .course-review-schedule-item span,
+.course-promo p, .ref-item, .side-list > div,
+.table-header small, .table-legend, .task-head p,
+.course-question .course-option, .course-question-explanation,
+.reading-bridge-intro, .reading-handoff p,
+.feedback-next, .free-inference-result {
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.stat-caption, .stat .tiny, .course-promo-progress,
+.learning-progress-heading, .side-footer, .draft-status,
+.mode-num, .course-lesson-flow .course-stage, .exercise-index,
+.course-review-panel .course-lesson-actions, .truth-relation-status {
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.eyebrow, .inline-label, .task-kicker { font-size: 11.5px; letter-spacing: 1.25px; }
+.course-lesson-panel p, .reading-section p, .course-lesson-head p,
+.work-head p, .free-page-head p { line-height: 1.7; }
+.course-lesson-panel p, .reading-section p, .work-head p { max-width: 76ch; }
+.course-lesson-head h2, .course-head h1, .work-head h1,
+.section-heading h2 { letter-spacing: -.025em; }
+
+/* Uma hierarquia de superfícies para mapas, aulas e prática. */
+.panel, .stat, .mode-card, .learning-next, .course-promo,
+.course-unit, .course-lesson-head, .course-lesson-panel,
+.practice-group, .reference, .bottom-note {
+  border-radius: var(--ui-radius-card);
+}
+.panel, .course-lesson-head, .course-lesson-panel, .course-unit,
+.practice-group, .stat { box-shadow: var(--ui-shadow); }
+.course-example, .course-question, .special-card,
+.course-review-schedule-item, .result-box, .reading-bridge,
+.reading-handoff, .inline-hint, .hint-decision {
+  border-radius: var(--ui-radius-inset);
+}
+.course-lesson-head { padding: 24px; }
+.course-lesson-panel { padding: 24px; margin: 16px 0; }
+.course-unit { padding: 20px 22px; }
+.course-unit-lessons { gap: 12px; margin-top: 16px; }
+.course-question { padding: 17px; }
+.course-question .course-option { border-radius: var(--ui-radius-control); }
+
+/* Ações existentes: os elementos primários continuam sendo os únicos sólidos. */
+.button, .choice, .segment, .course-lesson-flow .course-stage {
+  border-radius: var(--ui-radius-control);
+}
+.button { min-height: 44px; line-height: 1.35; font-weight: 700; }
+.button.ghost { border-color: transparent; }
+.button.ghost:hover:not(:disabled) { border-color: var(--border); }
+.course-lesson-actions, .task-actions, .hero-actions { gap: 10px; }
+.course-lesson-actions { margin-top: 20px; }
+
+/* Estados de progressão: disponível, concluído e bloqueado distinguíveis
+   por contraste, borda e preenchimento, sem depender somente de cor. */
+.course-lesson-flow { gap: 8px; margin: 16px 0 20px; }
+.course-lesson-flow .course-stage {
+  padding: 8px 11px;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.course-lesson-flow button.course-stage:not(.done) {
+  color: var(--text);
+  border-color: var(--border-hi);
+}
+.course-lesson-flow .course-stage.done {
+  background: var(--success-bg);
+}
+.course-lesson-flow .course-stage.locked {
+  opacity: 1;
+  border-style: dashed;
+  color: var(--muted);
+  background: var(--panel);
+}
+.course-stage-lock { width: 13px; height: 13px; }
+
+/* Abertura é o ponto de maior destaque; cartões seguintes, mais discretos. */
+.course-promo {
+  background: linear-gradient(110deg, rgba(115,100,235,.095), rgba(53,167,145,.04)), var(--panel);
+}
+.learning-next {
+  background: linear-gradient(120deg, rgba(115,100,235,.065), transparent 75%), var(--panel);
+}
+.mode-card::after { opacity: .55; }
+
+/* Leitura das tabelas e símbolos, mantendo células, estados e dimensões. */
+.truth-table, .free-truth-table { font-variant-numeric: tabular-nums; }
+.truth-table th { font-size: 12.5px; letter-spacing: .01em; }
+.truth-table th .col-sub { font-size: 10px; }
+.truth-table .cell { font-family: inherit; font-size: 14px; line-height: 1; }
+.truth-table .cell.filled { box-shadow: inset 0 0 0 1px var(--accent-bg); }
+.truth-table .cell.correct, .truth-table .cell.incorrect,
+.truth-table .cell.revealed { box-shadow: none; }
+
+@media (max-width: 700px) {
+  .course-unit { padding: 16px; }
+  .course-lesson-head, .course-lesson-panel { padding: 17px; }
+  .course-question { padding: 15px; }
+  .course-lesson-flow .course-stage { font-size: 12.5px; }
+}
+@media (max-width: 390px) {
+  .course-lesson-head, .course-lesson-panel { padding: 15px; }
+  .course-lesson-flow .course-stage { padding: 8px 9px; }
+  .course-unit { padding: 14px; }
+  .mode-card p, .mode-card .card-foot, .course-unit-item small {
+    font-size: 13px;
+  }
+}
