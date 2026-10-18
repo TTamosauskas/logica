@@ -656,7 +656,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Aplicação da competência central"
     },
     {
-      "question": "Em outra situação conceitual 1, Em 'p se q', a seta aponta de:",
+      "question": "Em 'p se q', a seta aponta de:",
       "options": [
         "q para p.",
         "p para q.",
@@ -668,7 +668,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 2, Em 'p somente se q', a seta aponta de:",
+      "question": "Em 'p somente se q', a seta aponta de:",
       "options": [
         "p para q.",
         "q para p.",
@@ -680,7 +680,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 3, Em p→q, p é:",
+      "question": "Em p→q, p é:",
       "options": [
         "Suficiente para q.",
         "Necessária e suficiente por definição.",
@@ -692,7 +692,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 4, Em p→q, q é:",
+      "question": "Em p→q, q é:",
       "options": [
         "Necessária para p.",
         "Suficiente para p.",
@@ -754,7 +754,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Aplicação da competência central"
     },
     {
-      "question": "Em outra situação conceitual 1, Comutatividade significa:",
+      "question": "Comutatividade significa:",
       "options": [
         "Trocar a ordem das parcelas.",
         "Trocar ∧ por →.",
@@ -766,7 +766,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 2, Associatividade significa:",
+      "question": "Associatividade significa:",
       "options": [
         "Reagrupar parcelas com o mesmo conectivo.",
         "Negar cada parcela.",
@@ -778,7 +778,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 3, Qual conectivo clássico é comutativo?",
+      "question": "Qual conectivo clássico é comutativo?",
       "options": [
         "Conjunção ∧.",
         "Condicional →.",
@@ -790,7 +790,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 4, Uma associação correta exige:",
+      "question": "Uma associação correta exige:",
       "options": [
         "O mesmo conectivo nas operações agrupadas.",
         "Sempre duas operações distintas.",
@@ -852,7 +852,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Aplicação da competência central"
     },
     {
-      "question": "Em outra situação conceitual 1, Uma contraposição exige:",
+      "question": "Uma contraposição exige:",
       "options": [
         "Trocar e negar as duas partes.",
         "Apenas trocar os lados.",
@@ -864,7 +864,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 2, A recíproca de p→q é:",
+      "question": "A recíproca de p→q é:",
       "options": [
         "q→p.",
         "¬q→¬p.",
@@ -876,7 +876,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 3, Qual fórmula é equivalente a p→q por contraposição?",
+      "question": "Qual fórmula é equivalente a p→q por contraposição?",
       "options": [
         "¬q→¬p.",
         "q→p.",
@@ -888,7 +888,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 4, A recíproca é sempre equivalente?",
+      "question": "A recíproca é sempre equivalente?",
       "options": [
         "Não.",
         "Sim.",
@@ -950,7 +950,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Aplicação da competência central"
     },
     {
-      "question": "Em outra situação conceitual 1, Modus ponens usa:",
+      "question": "Modus ponens usa:",
       "options": [
         "p→q e p.",
         "p→q e ¬q.",
@@ -962,7 +962,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 2, Modus tollens usa:",
+      "question": "Modus tollens usa:",
       "options": [
         "p→q e ¬q.",
         "p→q e q.",
@@ -974,7 +974,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 3, De p→q e q, podemos concluir p?",
+      "question": "De p→q e q, podemos concluir p?",
       "options": [
         "Não, seria afirmação do consequente.",
         "Sim, por modus ponens.",
@@ -986,7 +986,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 4, De p→q e ¬p, podemos concluir ¬q?",
+      "question": "De p→q e ¬p, podemos concluir ¬q?",
       "options": [
         "Não, seria negação do antecedente.",
         "Sim, por modus tollens.",
@@ -1048,7 +1048,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Aplicação da competência central"
     },
     {
-      "question": "Em outra situação conceitual 1, Negar ∀ usa:",
+      "question": "Negar ∀ usa:",
       "options": [
         "∃ com predicado negado.",
         "∀ com predicado negado.",
@@ -1060,7 +1060,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 2, Negar ∃ usa:",
+      "question": "Negar ∃ usa:",
       "options": [
         "∀ com predicado negado.",
         "∃ com predicado negado.",
@@ -1072,7 +1072,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 3, A expressão 'nem todos' significa:",
+      "question": "A expressão 'nem todos' significa:",
       "options": [
         "Existe ao menos um que não.",
         "Ninguém.",
@@ -1084,7 +1084,7 @@ export const FOCUSED_ASSESSMENTS_A={
       "objective": "Compreensão da competência central"
     },
     {
-      "question": "Em outra situação conceitual 4, A expressão 'nenhum' significa:",
+      "question": "A expressão 'nenhum' significa:",
       "options": [
         "Não existe testemunha favorável.",
         "Existe alguém contrário apenas.",
