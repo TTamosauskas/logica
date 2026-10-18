@@ -195,20 +195,20 @@ a { color: var(--accent); }
 .mini-table td:last-child { color: var(--accent); }
 
 /* 04 — Placas de estudo: bordas discretas, cantos arquitetônicos. */
-:where(.panel, .stat, .mode-card, .learning-next, .course-promo,
+:is(.panel, .stat, .mode-card, .learning-next, .course-promo,
   .course-unit, .course-lesson-head, .course-lesson-panel,
   .practice-group, .reference, .bottom-note, .free-card) {
   border-radius: 5px 14px 5px 14px;
   border-color: var(--border);
 }
-:where(.course-example, .course-question, .special-card,
+:is(.course-example, .course-question, .special-card,
   .course-review-schedule-item, .result-box, .reading-bridge,
   .reading-handoff, .inline-hint, .hint-decision,
   .free-entry, .free-formula-card, .quantifier-example,
   .truth-venn-panel, .cat-model-card) {
   border-radius: 5px 11px 5px 11px;
 }
-:where(.course-lesson-head, .course-unit, .course-promo,
+:is(.course-lesson-head, .course-unit, .course-promo,
   .learning-next, .free-card, .reference, .mode-card) {
   box-shadow: var(--ui-shadow);
 }
@@ -300,7 +300,7 @@ a { color: var(--accent); }
   background-color: var(--input);
   color: var(--text);
 }
-:where(.course-question .course-option, .worked-check-option,
+:is(.course-question .course-option, .worked-check-option,
   .reading-check-option) {
   border-radius: 5px 10px 5px 10px;
 }
