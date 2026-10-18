@@ -1998,7 +1998,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       html+=stagePanelStart(6,'Consolidar com revisões espaçadas',state.status==='consolidated',false,'course-review-panel');
       if(state.status==='consolidated')html+='<p class="review-good"><strong>Domínio consolidado.</strong> Duas revisões espaçadas concluídas com autonomia.</p>';
       else if(state.status==='due')html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível.</strong> </p><div class="course-lesson-actions"><button type="button" class="button primary" data-caction="review">Fazer revisão independente →</button></div>`;
-      else html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível a partir de ${formatReviewDate(state.dueAt)}.</strong></p>`;
+      else html+=`<p><strong>Revisão ${state.completed+1} de 2 disponível a partir de ${formatReviewDate(state.dueAt)}.</strong></p><div class="course-lesson-actions"><button type="button" class="button" data-caction="home">Voltar a Página Inicial</button></div>`;
       html+=stagePanelEnd(state.status==='consolidated');
     }
     $('courseLesson').innerHTML=html;
@@ -2075,6 +2075,7 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       panel.querySelector('h3')?.focus({preventScroll:true});
       return;
     }
+    if(action==='home'){goHome();return}
     if(action==='map'){openCourse(true);return}if(action==='lesson'){openCourse(true,id);return}if(action==='practice-free'){
       const previous=savedDrafts[courseActive];
       if(previous?.courseAttempt&&hasPendingWork(previous.exercise)&&!confirm('Esta aula possui uma tentativa guiada salva. Iniciar a prática livre substituirá essa tentativa. Deseja continuar?'))return;
