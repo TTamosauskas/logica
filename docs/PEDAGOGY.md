@@ -48,3 +48,11 @@ Para editar uma aula:
 5. Valide manualmente a relação entre texto e questão, complementando os testes de regressão de alinhamento em `tests/pedagogy-bridges.test.js`.
 
 A interface passa a exibir o título da seção recém-lida antes da questão correspondente, tornando esse vínculo auditável pelo estudante. Os testes verificam regressões concretas de introdução prematura em vários tópicos, mas **não substituem uma revisão pedagógica humana**.
+
+## Apresentação do percurso ao estudante
+
+A interface usa textos focados no raciocínio e no próximo exercício. Instruções sobre registro interno, pontuação de atividades formativas e condições de persistência não aparecem no corpo das etapas. A avaliação inicial mostra somente **N/5 de acertos**; a análise de cada escolha permanece junto da pergunta.
+
+Etapas concluídas (leitura, exemplo, prática assistida, autonomia, avaliação inicial e consolidação) começam recolhidas e exibem somente o título. O próprio título é um controle acessível para expandir e rever todo o conteúdo. A navegação por etapas também reabre uma seção concluída. A etapa em curso permanece aberta; ao corrigir uma avaliação, a pontuação e o feedback continuam visíveis nessa sessão, e na visita seguinte a etapa aprovada aparece recolhida.
+
+O rodapé com exportação, importação e exclusão manual do progresso foi removido da interface, sem modificar o armazenamento automático local ou os dados existentes. Essas operações deixam de estar disponíveis por botões na página.
