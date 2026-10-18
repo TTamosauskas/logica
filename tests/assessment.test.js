@@ -27,7 +27,7 @@ import {MICRO_READINGS_A,MICRO_ASSESSMENTS_A} from '../src/content/micro-lessons
 import {MICRO_READINGS_B,MICRO_ASSESSMENTS_B} from '../src/content/micro-lessons-b.js';
 import {FOCUSED_READINGS_A,FOCUSED_ASSESSMENTS_A} from '../src/content/focused-lessons-a.js';
 import {FOCUSED_READINGS_B,FOCUSED_ASSESSMENTS_B} from '../src/content/focused-lessons-b.js';
-import {prepareBank,validateBank,composeAssessment,gradeAssessment} from '../src/core/assessment.js';
+import {prepareBank,validateBank,composeAssessment,gradeAssessment,cleanAssessmentQuestion} from '../src/core/assessment.js';
 const readings={...UNIT1_READINGS,...UNIT2_READINGS,...UNIT3_READINGS,...UNIT4_TO_6_READINGS,...UNIT12_READINGS,...UNIT13_READINGS,...ERROR_READINGS,...OTHER_LOGIC_READINGS,...FOUNDATIONS_READINGS,...GAP_READINGS_A,...GAP_READINGS_B,...MICRO_READINGS_A,...MICRO_READINGS_B,...FOCUSED_READINGS_A,...FOCUSED_READINGS_B};
 const ids=COURSE_UNITS.flatMap(unit=>unit.ids);
 const supplements={...PILOT_ASSESSMENTS,...UNIT1_ASSESSMENTS,...UNIT2_ASSESSMENTS,...UNIT3_ASSESSMENTS,...UNIT4_ASSESSMENTS,...UNIT5_TO_7_ASSESSMENTS,...ERROR_ASSESSMENTS,...OTHER_LOGIC_ASSESSMENTS,...FOUNDATIONS_ASSESSMENTS,...GAP_ASSESSMENTS,...ALIGNED_ASSESSMENTS,...MICRO_ASSESSMENTS_A,...MICRO_ASSESSMENTS_B,...FOCUSED_ASSESSMENTS_A,...FOCUSED_ASSESSMENTS_B};
@@ -99,4 +99,29 @@ test('todas as respostas erradas possuem feedback e são distintas',()=>{
    assert.ok(q.why.trim().length>(q.id.includes('-extra-')?8:0),id+': justificativa ausente');
    assert.ok(q.options.every(x=>typeof x==='string'&&x.trim().length>0),id+': opção inválida');
  }
+});
+
+test('enunciados editoriais não incluem rótulos artificiais em nenhum dos 61 bancos',()=>{
+  const forbidden=/^(?:Em outra situação conceitual \d+,\s*|Em outro contexto, princípio \d+:\s*)/u;
+  for(const id of ids)for(const q of bank(id)){
+    assert.doesNotMatch(q.question,forbidden,id+' contém prefixo editorial: '+q.question);
+    assert.equal(cleanAssessmentQuestion(q.question),q.question,id+' ainda precisa de normalização');
+  }
+  const natural=bank('condicionais_naturais').map(q=>q.question);
+  assert.ok(natural.includes("Em 'p somente se q', a seta aponta de:"));
+  assert.ok(natural.includes('Em p→q, q é:'));
+  assert.ok(!natural.some(q=>q.includes('situação conceitual')));
+  const inference=bank('infer_conectivos').map(q=>q.question);
+  assert.ok(inference.includes('Qual regra extrai p de p∧q?'));
+});
+
+test('enunciados antigos em rascunhos são limpos sem alterar conteúdo ou identidade',()=>{
+  assert.equal(cleanAssessmentQuestion("Em outra situação conceitual 2, Em 'p somente se q', a seta aponta de:"),
+    "Em 'p somente se q', a seta aponta de:");
+  assert.equal(cleanAssessmentQuestion('Em outra situação conceitual 4, Em p→q, q é:'),
+    'Em p→q, q é:');
+  assert.equal(cleanAssessmentQuestion('Em outro contexto, princípio 3: De p é válido introduzir:'),
+    'De p é válido introduzir:');
+  assert.equal(cleanAssessmentQuestion('Em p→q, q é:'),'Em p→q, q é:');
+  assert.equal(cleanAssessmentQuestion('Em outro contexto, p pode variar?'),'Em outro contexto, p pode variar?');
 });
