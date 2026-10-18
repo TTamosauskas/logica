@@ -198,14 +198,14 @@ try{
   await study.locator('#hintButton').click();
   await study.locator('[data-hint-action="show"]').click();
   assert.equal(await study.locator('#inlineHint').isVisible(),true);
-  assert.match(await study.locator('#courseExerciseBanner').innerText(),/não valida autonomia/);
+  assert.match(await study.locator('#courseExerciseBanner').innerText(),/Você consultou uma dica/);
   draft=await study.evaluate(()=>JSON.parse(localStorage.getItem('logiclab_exercise_drafts_v1')));
   assert.equal(draft.byMode.fundamentos.courseAttempt.hintUsed,true);
   await study.locator('#checkButton').click();
   assert.equal(await study.locator('.feedback-assisted').isVisible(),true);
   await study.reload({waitUntil:'networkidle'});
   assert.equal(await study.locator('#inlineHint').isVisible(),true);
-  assert.match(await study.locator('#courseExerciseBanner').innerText(),/não valida autonomia/);
+  assert.match(await study.locator('#courseExerciseBanner').innerText(),/Você consultou uma dica/);
   // A dica consultada após uma correção é revisão e não invalida a tentativa.
   await study.locator('#newButton').click();
   await study.locator('#checkButton').click();
@@ -472,7 +472,7 @@ try{
     await journey.locator('#courseLesson [data-caction="independent"]').click();
     assert.equal(await journey.locator('#courseExerciseBanner .practice-transfer-banner').count(),0,
       'A avaliação independente não deve revelar o roteiro de resposta');
-    assert.match(await journey.locator('#courseExerciseBanner').innerText(),/Meta: ao menos 80%/);
+    assert.match(await journey.locator('#courseExerciseBanner').innerText(),/Resolva o exercício por conta própria/);
 
     // Outro tema evita confundir a tentativa guiada salva com uma prática livre.
     await journey.goto(root+'#operadores',{waitUntil:'networkidle'});
