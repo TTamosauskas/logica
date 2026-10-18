@@ -1921,7 +1921,12 @@ import { SQUARE_FORMS, SQUARE_MODES, squareConsequences, squarePairRelation, bui
       '#specialArea .correct-label','#specialArea .incorrect-label',
       '#decisionArea .explanation','#feedbackArea .result-box',
       '#translationArea .translation-feedback','#categoricalArea .translation-feedback',
-      '#categoricalModelWorkbench .cat-feedback'
+      '#categoricalModelWorkbench .cat-feedback',
+      '#categoricalModelWorkbench .cat-reason',
+      '#categoricalVenn .venn-simple-feedback',
+      '#categoricalVenn .venn-verdict-feedback',
+      '#vennArea .venn-simple-feedback', '#vennArea .venn-verdict-feedback',
+      '#truthVennPanel .venn-simple-feedback'
     ].join(',');
     for(const node of document.querySelectorAll(selector)){
       const text=node.textContent.trim();
